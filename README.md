@@ -3,3 +3,4 @@ Repository for the improvements and extentions to CodeFeedr, a Streaming (Softwa
 
 Contributors:
 Matthijs van Wijngaarden
+Wouter Zonneveld
