@@ -1,0 +1,7 @@
+# caches related to documentation
+.sass-cache/
+_pdf
+.DS_Store
+.idea
+*/.idea/*
+.idea/*
