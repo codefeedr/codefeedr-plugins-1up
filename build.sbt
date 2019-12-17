@@ -10,7 +10,7 @@ organization := "org.tudelft"
 
 ThisBuild / scalaVersion := "2.12.8"
 
-val flinkVersion = "1.8.0"
+val flinkVersion = "1.9.1"
 val codefeedrVersion = "0.1.3"
 
 val flinkDependencies = Seq(
@@ -19,6 +19,10 @@ val flinkDependencies = Seq(
 
 val codefeedrDependencies = Seq(
   "org.codefeedr" %% "codefeedr-core" %  codefeedrVersion
+)
+
+val otherDependencies = Seq(
+  "org.jsoup" % "jsoup" % "1.6.1"
 )
 
 lazy val dependencies =
@@ -30,6 +34,7 @@ lazy val dependencies =
 lazy val root = (project in file(".")).
   settings(
     libraryDependencies ++= flinkDependencies,
+    libraryDependencies ++= otherDependencies,
     libraryDependencies ++= codefeedrDependencies ++ Seq(
       // JSON
       dependencies.spray,
