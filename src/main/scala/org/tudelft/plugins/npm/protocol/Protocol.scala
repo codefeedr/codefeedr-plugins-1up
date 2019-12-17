@@ -4,38 +4,48 @@ import java.util.Date
 
 object Protocol {
 
-  case class NpmRelease(name: String,
-                        retrieveDate: Date)
+  case class NpmRelease( name         : String,
+                         retrieveDate : Date) // using ingestion time
 
-  case class NpmReleaseExt(name: String,
-                           retrieveDate: Date,
-                           project: NpmProject)
+  case class NpmReleaseExt(name         : String,
+                           retrieveDate : Date,
+                           project      : NpmProject)
 
-  case class NpmProject(name: String,
-                        version: String,
-                        license: Option[String], //sometimes license is simply a string
-                        licenseObject: Option[License], //sometimes license is an object
-                        licenses: Option[List[License]], //somtimes multiple licenses
-                        repository: Option[Repository],
-//                        dependencies: Option[List[Dependency]]
-                        )
+  case class NpmProject(_id             : String,
+                        _rev            : Option[String],
+                        name            : String,
+                        author          : Option[PersonSimple],
+                        authorObject    : Option[PersonObject],
+                        contributors    : Option[List[PersonObject]],
+                        description     : Option[String],
+                        homepage        : Option[String],
+                        keywords        : Option[List[String]],
+                        license         : Option[String],
+                        dependencies    : Option[List[DependencyObject]],
+                        maintainers     : List[PersonObject],
+                        readme          : String,
+                        readmeFilename  : String,
+                        bugs            : Option[Bug],
+                        bugString       : Option[String],
+                        repository      : Option[Repository],
+                        time            : TimeObject
+                       )
 
-  case class License(lType: String,
-                     url: String)
+  case class DependencyObject( packageName : String,
+                               version     : String)
+  case class PersonObject( name   : String,
+                           email  : Option[String],
+                           url    : Option[String])
 
-//  case class DraftNPMProject(name : String, // what about enforcing <= 214 chars?, can't start with _ or . and new packages no Uppercase in the name? & have to be url-safe chars
-//                            version : String, // combination of name/version should be unique, can it occur that this is violated?
-//                            description : Option[String], // it doesn't say it's required, only to 'put in a description, to help ppl discover your package'
-//                            keywords: Option[Array[String]],
-//                            homepage : Option[String]) // url
+  case class PersonSimple( nameAndOptEmailOptURL : String)
 
+  case class Repository(`type`     : String,
+                        url        : String,
+                        directory  : Option[String])
 
-  case class Dependency(iterall: String)
+  case class Bug( url   : Option[String],
+                  email : Option[String])
 
-  case class Engine(node: String)
-
-  case class Repository(rType: String,
-                        url: String)
-
-  case class Bug(url: String)
+  case class TimeObject( created  : String,
+                         modified : Option[String])
 }

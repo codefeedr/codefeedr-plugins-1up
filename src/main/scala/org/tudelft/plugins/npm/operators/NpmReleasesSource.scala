@@ -1,8 +1,6 @@
 package org.tudelft.plugins.npm.operators
 
-import java.text.SimpleDateFormat
-import java.util.Date
-
+import java.util.{Calendar, Date}
 import org.apache.flink.api.common.accumulators.LongCounter
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.configuration.Configuration
@@ -12,47 +10,92 @@ import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, Sour
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
 import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
 import scalaj.http.Http
-
 import scala.collection.JavaConverters._
 
-case class NpmSourceConfig(pollingInterval: Int = 1000,
-                             maxNumberOfRuns: Int = -1)
+/**
+ * Configuration parameters for connecting to the NPM Packages data source
+ *
+ * @param pollingInterval the milliseconds between consecutive polls
+ * @param maxNumberOfRuns the maximum number of polls executed
+ *
+ * @author Roald van der Heijden
+ * Date: 2019 - 12 - 03
+ */
+case class NpmSourceConfig(pollingInterval: Int = 1000, maxNumberOfRuns: Int = -1)
 
-
+/**
+ * Class to represent a source in CodeFeedr to query NPM package releases
+ *
+ * This files gets information on NPM packages from "https://npm-update-stream.libraries.io/"
+ * Then queries "http://registry.npmjs.com/%packagenameWithPossibleScope%
+ * to acquire the information for each specific package
+ *
+ * @param config the configuration paramaters object for this specific data source
+ *
+ * @author Roald van der Heijden
+ * Date: 2019 - 12 - 03
+ */
 class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   extends RichSourceFunction[NpmRelease]
     with CheckpointedFunction {
 
-  // URL to get update stream from
-  val url = "https://npm-update-stream.libraries.io/"
+  /**
+   * URL to get update stream from
+   */
+  val url_updatestream = "https://npm-update-stream.libraries.io/"
 
-  /* Some track variables of this source. */
+  /**
+   * Indication of operation status, i.e. running or not
+   */
   private var isRunning = false
+
+  /**
+   * Counter to indicate the number of polls left to poll the update stream
+   */
   private var runsLeft = 0
+
+  /**
+   * The last item that got processed from the update stream
+   */
   private var lastItem: Option[NpmRelease] = None
+
+  /**
+   * ??? @TODO figure out what this does
+   */
   @transient
   private var checkpointedState: ListState[NpmRelease] = _
 
+  /**
+   * @return whether this source is running or not
+   */
   def getIsRunning: Boolean = isRunning
 
-  /** Accumulator for the amount of processed releases. */
+  /**
+   * Accumulator for the amount of processed releases.
+   */
   val releasesProcessed = new LongCounter()
 
-  /** Opens this source. */
+  /**
+   * Opens this source.
+   * @param parameters ??? @TODO figure out???
+   */
   override def open(parameters: Configuration): Unit = {
     isRunning = true
     runsLeft = config.maxNumberOfRuns
   }
 
-  /** Close the source. */
+  /**
+   * Close the source.
+   */
+
   override def cancel(): Unit = {
     isRunning = false
   }
 
-  /** Runs the source.
-    *
-    * @param ctx the source the context.
-    */
+  /**
+   * Runs the source.
+   * @param ctx the source the context.
+   */
   override def run(ctx: SourceFunction.SourceContext[NpmRelease]): Unit = {
     val lock = ctx.getCheckpointLock
 
@@ -60,18 +103,19 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
     while (isRunning && runsLeft != 0) {
       lock.synchronized { // Synchronize to the checkpoint lock.
         try {
-          // Polls the RSS feed
-          val rssAsString = getRSSAsString
-          // Parses the received rss items
-          val items: Seq[NpmRelease] = stringToNpmReleases(rssAsString)
+          // Polls the update stream
+          val resultString = retrieveUpdateStringFrom(url_updatestream)
+
+          val now = Calendar.getInstance().getTime()
+          // convert string with updated packages into list of updated packages
+          val items: Seq[NpmRelease] = createListOfUpdatedNpmIdsFrom(resultString, now)
 
           // Decrease the amount of runs left.
           decreaseRunsLeft()
 
           // Collect right items and update last item
           val validSortedItems = sortAndDropDuplicates(items)
-          validSortedItems.foreach(x =>
-            ctx.collectWithTimestamp(x, x.retrieveDate.getTime))
+          validSortedItems.foreach(x => ctx.collectWithTimestamp(x, x.retrieveDate.getTime))
           releasesProcessed.add(validSortedItems.size)
           if (validSortedItems.nonEmpty) {
             lastItem = Some(validSortedItems.last)
@@ -87,29 +131,8 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   }
 
   /**
-    * Requests the RSS feed and returns its body as a string.
-    * Will keep trying with increasing intervals if it doesn't succeed
-    *
-    * @return Body of requested RSS feed
-    */
-  @throws[RequestException]
-  def getRSSAsString: String = {
-    new HttpRequester().retrieveResponse(Http(url)).body
-  }
-
-  /**
-    * Turns a string into npm releases
-    * @param input the input string containing the names of the releases
-    * @return a sequence of npm releases
-    */
-  def stringToNpmReleases(input: String) : Seq[NpmRelease] = {
-    val splitted = input.replace("\"", "").replace("[", "").replace("]", "").split(",")
-    // for every npm package, there is no event time, so use ingestion time as event time for now,
-    // to at least have a timestamp to process
-    val res = splitted.map(x => NpmRelease(x, new Date(System.currentTimeMillis())))
-    res
-  }
-
+   * Decreases the number of times the source will be polled by 1
+   */
   def decreaseRunsLeft(): Unit = {
     if (runsLeft > 0) {
       runsLeft -= 1
@@ -141,7 +164,9 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
     Thread.sleep(times * config.pollingInterval)
   }
 
-  /** Make a snapshot of the current state. */
+  /**
+   * Make a snapshot of the current state.
+   */
   override def snapshotState(context: FunctionSnapshotContext): Unit = {
     if (lastItem.isDefined) {
       checkpointedState.clear()
@@ -149,7 +174,9 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
     }
   }
 
-  /** Initializes state by reading from a checkpoint or creating an empty one. */
+  /**
+   * Initializes state by reading from a checkpoint or creating an empty one.
+   */
   override def initializeState(context: FunctionInitializationContext): Unit = {
     val descriptor =
       new ListStateDescriptor[NpmRelease]("last_element", classOf[NpmRelease])
@@ -160,6 +187,36 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
       checkpointedState.get().asScala.foreach { x =>
         lastItem = Some(x)
       }
+    }
+  }
+
+  /**
+   * Requests the update stream and returns its body as a string.
+   * Will keep trying with increasing intervals if it doesn't succeed
+   *
+   * @return Body of requested update stream
+   */
+  @throws[RequestException]
+  def retrieveUpdateStringFrom(urlEndpoint : String) : String = {
+    val result = new HttpRequester().retrieveResponse(Http(urlEndpoint)).body
+    result
+  }
+
+  /**
+   * Turns a given string (following request response from Librarios.io's update stream) into npm ids
+   * @param input the string containing the names of the releases
+   * @return a sequence of NPMRelease case classes
+   */
+  def createListOfUpdatedNpmIdsFrom(input: String, time : Date) : List[NpmRelease] = {
+    val packageList = input
+      .replace("\"", "")
+      .replace("[", "")
+      .replace("]", "")
+      .split(",")
+      .toList
+    packageList match {
+      case List("") => Nil
+      case _ =>     packageList.map(arg => NpmRelease(arg, time))
     }
   }
 

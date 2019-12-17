@@ -2,12 +2,17 @@ package org.tudelft.plugins.maven.stages
 
 import java.util.concurrent.TimeUnit
 
-import org.apache.flink.api.scala._
-import org.apache.flink.streaming.api.datastream.{AsyncDataStream => JavaAsyncDataStream}
 import org.apache.flink.streaming.api.scala.DataStream
+import org.apache.flink.streaming.api.datastream.{
+  AsyncDataStream => JavaAsyncDataStream
+}
+import org.tudelft.plugins.maven.protocol.Protocol.{
+  MavenRelease,
+  MavenReleaseExt
+}
 import org.codefeedr.stages.TransformStage
+import org.apache.flink.api.scala._
 import org.tudelft.plugins.maven.operators.RetrieveProjectAsync
-import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
 
 /** Transform a [[MavenRelease]] to [[MavenReleaseExt]].
   *
