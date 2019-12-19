@@ -66,6 +66,7 @@ class NpmReleasesSourceTest extends FunSuite {
     assert(listReleases.size == 0)
     assert(listReleases == List())
   }
+
   test("waiting for a PollingInterval takes equal to or more than 1/2 second") {
     val startTime = System.currentTimeMillis()
     npmReleasesSource.waitPollingInterval()

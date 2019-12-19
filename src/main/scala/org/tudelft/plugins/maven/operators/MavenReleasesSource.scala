@@ -47,7 +47,6 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   /** Close the source. */
   override def cancel(): Unit = {
     isRunning = false
-
   }
 
   /** Runs the source.

@@ -6,7 +6,6 @@ import java.util.Date
 import org.tudelft.plugins.cargo.protocol.Protocol._
 import spray.json.{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsValue}
 
-// static methods in Scala like this?
 object JsonParser {
   //TODO, The last 3 S's might create bugs
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
@@ -103,12 +102,14 @@ object JsonParser {
   def parseCrateJsonToCrateRelease(jsObject: JsObject): Option[CrateRelease] = {
     try {
       val crate         : JsObject = jsObject.fields("crate").asJsObject()
-      val latestVersion : JsObject = jsObject.fields("versions").asInstanceOf[JsArray].elements.head.asJsObject()
+      val versions      : List[JsValue] = jsObject.fields("versions").asInstanceOf[JsArray].elements.toList
       val keywords      : List[JsValue] = jsObject.fields("keywords").asInstanceOf[JsArray].elements.toList
       val categories    : List[JsValue] = jsObject.fields("categories").asInstanceOf[JsArray].elements.toList
 
       val crateObject         : Crate        = this.parseCrateJsonToCrateObject(crate).get
-      val latestVersionObject : CrateVersion = this.parseCrateVersionsJsonToCrateVersionsObject(latestVersion).get
+      val versionsObject      : List[CrateVersion] = versions.map({
+        x => this.parseCrateVersionsJsonToCrateVersionsObject(x.asJsObject).get
+      })
       val keywordsObject      : List[CrateKeyword] = keywords.map(
         x => this.parseCrateKeywordsJsonToCrateKeywordsObject(x.asInstanceOf[JsObject])
           .get)
@@ -116,8 +117,7 @@ object JsonParser {
         x => this.parseCrateCategoryJsonToCrateCategoryObject(x.asInstanceOf[JsObject])
           .get)
 
-      // Current implementation is only taking the latest version. TODO?
-      Some(CrateRelease(crateObject, List(latestVersionObject), keywordsObject, categoriesObject))
+      Some(CrateRelease(crateObject, versionsObject, keywordsObject, categoriesObject))
     }
     catch {
       case e: Throwable =>

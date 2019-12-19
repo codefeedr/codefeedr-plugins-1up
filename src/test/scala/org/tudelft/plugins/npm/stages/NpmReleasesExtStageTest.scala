@@ -65,9 +65,9 @@ class NpmReleasesExtStageTest extends FunSuite {
 }
 
 /**
- * ??
+ * Collects a list of NPM releases
  *
- * Adapted from W.R. Zonnveld's Maven plugin tests
+ * Adapted from W.R. Zonneveld's Maven plugin tests
  * Date: 2019-12-01
  */
 object CollectReleases {
@@ -75,7 +75,7 @@ object CollectReleases {
 }
 
 /**
- * ??
+ * Class for keeping track of collected NPM releases
  *
  * Adapted from W.R. Zonnveld's Maven plugin tests
  * Date: 2019-12-01

@@ -30,7 +30,6 @@ object Protocol extends Enumeration {
                    exact_match: Boolean
                   )
 
-  // Is this always constant?
   case class CrateLinks(version_downloads: String,
                         versions: Option[String],
                         owners: String,
@@ -54,7 +53,6 @@ object Protocol extends Enumeration {
                           published_by: CrateVersionPublishedBy
                          )
 
-  // checked ~5 repos this is all JSON {}, which means empty complex object...
   case class CrateVersionFeatures()
 
   case class CrateVersionLinks(dependencies: String,

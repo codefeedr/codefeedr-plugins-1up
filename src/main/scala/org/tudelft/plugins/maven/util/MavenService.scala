@@ -25,9 +25,7 @@ object MavenService extends Logging with Serializable {
 
     val rawProject = getProjectRaw(projectName).get
     if (rawProject.isEmpty) {
-      logger.error(
-        s"Couldn't retrieve Maven project with name $projectName.")
-
+      logger.error(s"Couldn't retrieve Maven project with name $projectName.")
       return None
     }
 
@@ -47,9 +45,7 @@ object MavenService extends Logging with Serializable {
 
 
     if (project.isEmpty) {
-      logger.error(
-        s"Couldn't retrieve Maven project with name $projectName and xml $xml.")
-
+      logger.error(s"Couldn't retrieve Maven project with name $projectName and xml $xml.")
       return None
     }
 

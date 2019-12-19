@@ -28,7 +28,7 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
   extends RichSourceFunction[CrateRelease]
     with CheckpointedFunction {
 
-  /** url */
+  /** url for the stream of updated and new crates */
   val url = "https://crates.io/api/v1/summary"
 
   /** Accumulator for the amount of processed releases. */

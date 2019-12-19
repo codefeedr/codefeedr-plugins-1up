@@ -22,8 +22,11 @@ class MavenReleasesStageTest extends FunSuite {
   }
 }
 
-// Simple Sink Pipeline Object that limits the output to a certain number
-// and is able to get a list of all the items that were received in the sink
+/**
+ * Simple Sink Pipeline Object that limits the output to a certain number
+ * and is able to get a list of all the items that were received in the sink
+ * @param elements
+ */
 class LimitingSinkStage(elements: Int = -1)
   extends OutputStage[MavenRelease]
     with Serializable {

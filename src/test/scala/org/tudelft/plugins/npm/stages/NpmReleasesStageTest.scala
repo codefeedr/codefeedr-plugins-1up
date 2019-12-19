@@ -47,8 +47,8 @@ class LimitingSinkStage(elements: Int = -1)
 }
 
 /**
- * ??
- * @param elements ??
+ * Class for limiting the stream process
+ * @param elements Number of elements to process
  * Adapted from:  W.R. Zonneveld's Maven plugin for CodeFeedr
  *
  */

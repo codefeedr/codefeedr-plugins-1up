@@ -37,6 +37,7 @@ class NpmReleasesExtStage(stageId: String = "npm_releases") extends TransformSta
       TimeUnit.SECONDS,
       100)
 
+    // TODO remove after local deployment to Hyperion is done
 //    new org.apache.flink.streaming.api.scala.DataStream(async)
 //      .map(x => (x.name, x.retrieveDate, x.project))
 //      .print()

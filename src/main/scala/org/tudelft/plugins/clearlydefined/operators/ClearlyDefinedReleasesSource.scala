@@ -1,7 +1,6 @@
 package org.tudelft.plugins.clearlydefined.operators
 
 import java.text.SimpleDateFormat
-
 import org.apache.flink.api.common.accumulators.LongCounter
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.configuration.Configuration
@@ -9,7 +8,6 @@ import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSn
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
 import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
-import org.json4s.JsonAST.JNothing
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import scalaj.http.Http
 import org.json4s._
@@ -18,17 +16,31 @@ import org.json4s.jackson.Serialization.read
 
 import scala.collection.JavaConverters._
 
+/**
+ * The configuration class for the ClearlyDefinedReleasesSource class
+ * @param pollingInterval Amount of milliseconds to wait for next poll
+ * @param maxNumberOfRuns if positive, runs definitely up till x. If negative, runs indefinitely.
+ */
 case class ClearlyDefinedSourceConfig(pollingInterval: Int = 1000,
                              maxNumberOfRuns: Int = -1)
 
+/**
+ * Important to note in retrieving data from the stream of projects in ClearlyDefined is the following:
+ *  - The stream URL is https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true
+ *  - 100 most recently changed packages can be found there, which is way too much to process with each poll
+ *  - Therefore only the first {packageAmount} number of packages are processed
+ * @param config the ClearlyDefined source configuration, has pollingInterval and maxNumberOfRuns fields
+ */
 class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
     extends RichSourceFunction[ClearlyDefinedRelease]
       with CheckpointedFunction {
 
-  /** url */
+  /** url for the stream of new CD projects */
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
 
-  //TODO, The last 3 S's might create bugs
+  /** The first x number of packages to process with each poll */
+  val packageAmount = 10
+
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
 
   /** Accumulator for the amount of processed releases. */
@@ -153,8 +165,8 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       // Parse the big release string as a Json object
       val json: JValue = parse(rssString)
 
-      // Retrieve the first 10 packages (design choice, since polling 100 packages is overkill)
-      val packages: List[JValue] = (json\"data").children.take(10)
+      // Retrieve the first {packageAmount} packages
+      val packages: List[JValue] = (json\"data").children.take(this.packageAmount)
 
       // Render back to string to prepare for the 'read' call (requires string input)
       val packagesString: List[String] = packages.map(x => compact(render(x)))
