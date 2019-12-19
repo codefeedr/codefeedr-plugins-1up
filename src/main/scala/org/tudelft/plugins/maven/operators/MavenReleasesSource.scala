@@ -47,12 +47,13 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   /** Close the source. */
   override def cancel(): Unit = {
     isRunning = false
+
   }
 
   /** Runs the source.
-    *
-    * @param ctx the source the context.
-    */
+   *
+   * @param ctx the source the context.
+   */
   override def run(ctx: SourceFunction.SourceContext[MavenRelease]): Unit = {
     val lock = ctx.getCheckpointLock
 
@@ -87,22 +88,22 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   }
 
   /**
-    * Requests the RSS feed and returns its body as a string.
-    * Will keep trying with increasing intervals if it doesn't succeed
-    *
-    * @return Body of requested RSS feed
-    */
+   * Requests the RSS feed and returns its body as a string.
+   * Will keep trying with increasing intervals if it doesn't succeed
+   *
+   * @return Body of requested RSS feed
+   */
   @throws[RequestException]
   def getRSSAsString: String = {
     new HttpRequester().retrieveResponse(Http(url)).body
   }
 
   /**
-    * Parses a string that contains xml with RSS items
-    *
-    * @param rssString XML string with RSS items
-    * @return Sequence of RSS items
-    */
+   * Parses a string that contains xml with RSS items
+   *
+   * @param rssString XML string with RSS items
+   * @return Sequence of RSS items
+   */
   def parseRSSString(rssString: String): Seq[MavenRelease] = {
     try {
       val xml = XML.loadString(rssString)
@@ -115,11 +116,11 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   }
 
   /**
-    * Parses a xml node to a RSS item
-    *
-    * @param node XML node
-    * @return RSS item
-    */
+   * Parses a xml node to a RSS item
+   *
+   * @param node XML node
+   * @return RSS item
+   */
   def xmlToMavenRelease(node: scala.xml.Node): MavenRelease = {
     val title = (node \ "title").text
     val link = (node \ "link").text
@@ -128,7 +129,7 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
     val pubDate = formatterPub.parse((node \ "pubDate").text)
 
     val tag = (node \ "guid").text
-    MavenRelease(title, description, link, pubDate, Guid(tag))
+    MavenRelease(title, link, description, pubDate, Guid(tag))
   }
 
   def decreaseRunsLeft(): Unit = {
@@ -138,11 +139,11 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   }
 
   /**
-    * Drops items that already have been collected and sorts them based on times
-    *
-    * @param items Potential items to be collected
-    * @return Valid sorted items
-    */
+   * Drops items that already have been collected and sorts them based on times
+   *
+   * @param items Potential items to be collected
+   * @return Valid sorted items
+   */
   def sortAndDropDuplicates(items: Seq[MavenRelease]): Seq[MavenRelease] = {
     items
       .filter((x: MavenRelease) => {
@@ -155,10 +156,10 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   }
 
   /**
-    * Wait a certain amount of times the polling interval
-    *
-    * @param times Times the polling interval should be waited
-    */
+   * Wait a certain amount of times the polling interval
+   *
+   * @param times Times the polling interval should be waited
+   */
   def waitPollingInterval(times: Int = 1): Unit = {
     Thread.sleep(times * config.pollingInterval)
   }

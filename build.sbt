@@ -21,6 +21,13 @@ val codefeedrDependencies = Seq(
   "org.codefeedr" %% "codefeedr-core" %  codefeedrVersion
 )
 
+val sqlDependencies = Seq(
+  "org.apache.flink" %% "flink-table-api-scala-bridge" % flinkVersion,
+  "org.apache.flink" %% "flink-table-api-java-bridge" % flinkVersion,
+  "org.apache.flink" %% "flink-table-planner" % flinkVersion,
+  "org.scala-lang" % "scala-reflect" % "2.12.8"
+)
+
 val otherDependencies = Seq(
   "org.jsoup" % "jsoup" % "1.6.1"
 )
@@ -35,7 +42,8 @@ lazy val root = (project in file(".")).
   settings(
     libraryDependencies ++= flinkDependencies,
     libraryDependencies ++= otherDependencies,
-    libraryDependencies ++= codefeedrDependencies ++ Seq(
+    libraryDependencies ++= codefeedrDependencies,
+    libraryDependencies ++= sqlDependencies ++ Seq(
       // JSON
       dependencies.spray,
 

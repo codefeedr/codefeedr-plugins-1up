@@ -16,10 +16,10 @@ class RetrieveProjectAsync
   implicit lazy val executor: ExecutionContext = ExecutionContext.global
 
   /** Async retrieves the project belonging to the release.
-    *
-    * @param input        the release.
-    * @param resultFuture the future to add the project to.
-    */
+   *
+   * @param input        the release.
+   * @param resultFuture the future to add the project to.
+   */
   override def asyncInvoke(input: MavenRelease,
                            resultFuture: ResultFuture[MavenReleaseExt]): Unit = {
 

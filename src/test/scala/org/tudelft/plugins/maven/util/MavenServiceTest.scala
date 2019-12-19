@@ -55,7 +55,7 @@ class MavenServiceTest extends FunSuite{
     val res = MavenService.parseDependencies(dependencyNodesMinimal, "").get
 
     assert(res.size == 1)
-    assert(res.head.dType.isEmpty)
+    assert(res.head.`type`.isEmpty)
     assert(res.head.scope.isEmpty)
     assert(res.head.optional.isEmpty)
   }
@@ -64,7 +64,7 @@ class MavenServiceTest extends FunSuite{
     val res = MavenService.parseDependencies(dependencyNodesFull, "").get
 
     assert(res.size == 1)
-    assert(res.head.dType.get == "jar")
+    assert(res.head.`type`.get == "jar")
     assert(res.head.scope.get == "test")
     assert(res.head.optional.get == true)
   }
@@ -140,7 +140,7 @@ class MavenServiceTest extends FunSuite{
     val res = MavenService.parseSCM(scmNode).get
 
     assert(res.connection == "127.0.0.1/")
-    assert(res.developerConnection.get == "127.0.0.1/svn/")
+    assert(res.developerConnection.get.contains("127.0.0.1/svn/"))
     assert(res.tag.get == "HEAD")
     assert(res.url == "http://127.0.0.1")
   }

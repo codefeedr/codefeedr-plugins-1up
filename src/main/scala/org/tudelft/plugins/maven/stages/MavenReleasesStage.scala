@@ -13,10 +13,10 @@ class MavenReleasesStage(stageId: String = "maven_releases_min",
   extends InputStage[MavenRelease](Some(stageId)) {
 
   /** Fetches [[MavenRelease]] from real-time Maven feed.
-    *
-    * @param context The context to add the source to.
-    * @return The stream of type [[MavenRelease]].
-    */
+   *
+   * @param context The context to add the source to.
+   * @return The stream of type [[MavenRelease]].
+   */
   override def main(context: Context): DataStream[MavenRelease] = {
     implicit val typeInfo: TypeInformation[MavenRelease] = TypeInformation.of(classOf[MavenRelease])
     context.env

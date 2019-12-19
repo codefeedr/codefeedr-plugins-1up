@@ -16,16 +16,18 @@ object MavenService extends Logging with Serializable {
   private val url = "https://repo1.maven.org/maven2/"
 
   /** Retrieves a Maven project.
-    *
-    * @param projectName the name of the project.
-    * @return an optional MavenProject.
-    */
+   *
+   * @param projectName the name of the project.
+   * @return an optional MavenProject.
+   */
   def getProject(projectName: String): Option[MavenProject] = {
     /** Retrieve the project. */
 
     val rawProject = getProjectRaw(projectName).get
     if (rawProject.isEmpty) {
-      logger.error(s"Couldn't retrieve Maven project with name $projectName.")
+      logger.error(
+        s"Couldn't retrieve Maven project with name $projectName.")
+
       return None
     }
 
@@ -45,7 +47,9 @@ object MavenService extends Logging with Serializable {
 
 
     if (project.isEmpty) {
-      logger.error(s"Couldn't retrieve Maven project with name $projectName and xml $xml.")
+      logger.error(
+        s"Couldn't retrieve Maven project with name $projectName and xml $xml.")
+
       return None
     }
 
@@ -54,11 +58,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Turns xml of a pom.xml to a MavenProject
-    *
-    * @param node the xml containing the pom.xml
-    * @return an option of a MavenProject Some(project) if parsed successfully, else otherwise
-    */
+   * Turns xml of a pom.xml to a MavenProject
+   *
+   * @param node the xml containing the pom.xml
+   * @return an option of a MavenProject Some(project) if parsed successfully, else otherwise
+   */
   def xmlToMavenProject(node: scala.xml.Node): Option[MavenProject] = {
     // Set initial values
     // Modelversion is always the same, so read the value
@@ -110,21 +114,21 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * This function is used as often a check is needed to determine whether a option field was filled or not
-    *
-    * @param in the string which needs to be checked if it is empty
-    * @return Option of $in if filled, None if $in == ""
-    */
+   * This function is used as often a check is needed to determine whether a option field was filled or not
+   *
+   * @param in the string which needs to be checked if it is empty
+   * @return Option of $in if filled, None if $in == ""
+   */
   def checkEmpty(in: String): Option[String] = {
     if(in == "") None else Some(in)
   }
   /**
-    * Helper function for xmlToMavenProject as often we need to get an inner node with a certain label
-    *
-    * @param node  the node from which to get the inner node
-    * @param label the label for the inner node
-    * @return a sequence of inner nodes corresponding to $label
-    */
+   * Helper function for xmlToMavenProject as often we need to get an inner node with a certain label
+   *
+   * @param node  the node from which to get the inner node
+   * @param label the label for the inner node
+   * @return a sequence of inner nodes corresponding to $label
+   */
   def getInnerNode(node: Node, label: String): Seq[Node] = {
     node.child.filter(item => item.label == label)
   }
@@ -144,11 +148,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Parses the issueManagement from a xml node
-    *
-    * @param nodes the node which (possibly) contains the organization information
-    * @return Option of IssueManagement, Some(IM) if $nodes was nonEmpty, None otherwise
-    */
+   * Parses the issueManagement from a xml node
+   *
+   * @param nodes the node which (possibly) contains the organization information
+   * @return Option of IssueManagement, Some(IM) if $nodes was nonEmpty, None otherwise
+   */
   def parseIssueManagement(nodes: Seq[Node]): Option[IssueManagement] = {
     if (nodes.isEmpty) {
       None
@@ -162,11 +166,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Parses the organizatino from a xml node
-    *
-    * @param nodes the node which (possibly) contains the organization information
-    * @return Option of Organization, Some(org) if $nodes was nonEmpty, None otherwise
-    */
+   * Parses the organizatino from a xml node
+   *
+   * @param nodes the node which (possibly) contains the organization information
+   * @return Option of Organization, Some(org) if $nodes was nonEmpty, None otherwise
+   */
   def parseOrganization(nodes: Seq[Node]): Option[Organization] = {
     if (nodes.isEmpty) {
       None
@@ -180,11 +184,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Parses the parent from a xml node
-    *
-    * @param parentNode the node which (possibly) contains the parent information
-    * @return Option of Parent, Some(parent) if $parentNode was nonEmpty, None otherwise
-    */
+   * Parses the parent from a xml node
+   *
+   * @param parentNode the node which (possibly) contains the parent information
+   * @return Option of Parent, Some(parent) if $parentNode was nonEmpty, None otherwise
+   */
   def parseParent(parentNode: Seq[Node]): Option[Parent] = {
     // If the parentNode is empty, return None
     if (parentNode.isEmpty) {
@@ -202,11 +206,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Parses the repositories from a xml node
-    *
-    * @param nodes the nodes which (possibly) contain the repository information
-    * @return Option of List[Repository], Some(list) if $nodes was filled, None otherwise
-    */
+   * Parses the repositories from a xml node
+   *
+   * @param nodes the nodes which (possibly) contain the repository information
+   * @return Option of List[Repository], Some(list) if $nodes was filled, None otherwise
+   */
   def parseRepositories(nodes: Seq[Node]): Option[List[Repository]] = {
     //If there are repositories parse them
     if (nodes.nonEmpty) {
@@ -230,11 +234,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Parses the licenses from a xml node
-    *
-    * @param nodes the nodes which (possibly) contain the licenses information
-    * @return Option of List[License], Some(list) if $nodes was filled, None otherwise
-    */
+   * Parses the licenses from a xml node
+   *
+   * @param nodes the nodes which (possibly) contain the licenses information
+   * @return Option of List[License], Some(list) if $nodes was filled, None otherwise
+   */
   def parseLicenses(nodes: Seq[Node]): Option[List[License]] = {
     //If there are licenses parse them
     if (nodes.nonEmpty) {
@@ -260,11 +264,11 @@ object MavenService extends Logging with Serializable {
   }
 
   /**
-    * Returns a list of Dependencies if the xml node contains them
-    *
-    * @param node the list of nodes from which the depencies will be extracted
-    * @return An option of a list of dependencies, Some(list) if $node contained them, None otherwise
-    */
+   * Returns a list of Dependencies if the xml node contains them
+   *
+   * @param node the list of nodes from which the depencies will be extracted
+   * @return An option of a list of dependencies, Some(list) if $node contained them, None otherwise
+   */
   def parseDependencies(node: Seq[Node], projectVersion: String): Option[List[Dependency]] = {
     //If there are dependencies parse them
     if (node.nonEmpty) {
@@ -301,10 +305,10 @@ object MavenService extends Logging with Serializable {
   }
 
   /** Returns a project as a raw string.
-    *
-    * @param endpoint the end_point to do the request.
-    * @return an optional String.
-    */
+   *
+   * @param endpoint the end_point to do the request.
+   * @return an optional String.
+   */
   def getProjectRaw(endpoint: String): Option[String] = {
     val response = try {
       val request = Http(url + endpoint).headers(getHeaders)

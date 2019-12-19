@@ -15,17 +15,17 @@ import org.apache.flink.api.scala._
 import org.tudelft.plugins.maven.operators.RetrieveProjectAsync
 
 /** Transform a [[MavenRelease]] to [[MavenReleaseExt]].
-  *
-  * @param stageId the name of this stage.
-  */
+ *
+ * @param stageId the name of this stage.
+ */
 class MavenReleasesExtStage(stageId: String = "maven_releases")
   extends TransformStage[MavenRelease, MavenReleaseExt](Some(stageId)) {
 
   /** Transform a [[MavenRelease]] to [[MavenReleaseExt]].
-    *
-    * @param source The input source with type [[MavenRelease]].
-    * @return The transformed stream with type [[MavenReleaseExt]].
-    */
+   *
+   * @param source The input source with type [[MavenRelease]].
+   * @return The transformed stream with type [[MavenReleaseExt]].
+   */
   override def transform(
                           source: DataStream[MavenRelease]): DataStream[MavenReleaseExt] = {
 
@@ -35,10 +35,6 @@ class MavenReleasesExtStage(stageId: String = "maven_releases")
       5,
       TimeUnit.SECONDS,
       100)
-
-    new org.apache.flink.streaming.api.scala.DataStream(async)
-      .map(x => (x.title, x.project.artifactId))
-      .print()
 
     new org.apache.flink.streaming.api.scala.DataStream(async)
   }
