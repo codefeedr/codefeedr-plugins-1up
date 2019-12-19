@@ -345,6 +345,7 @@ object Protocol {
     var `type`: String = _
     var provider: String = _
     var name: String = _
+    var namespace: Option[String] = _
     var revision: String = _
   }
 
@@ -354,6 +355,7 @@ object Protocol {
       pojo.`type` = cdCoordinates.`type`
       pojo.provider = cdCoordinates.provider
       pojo.name = cdCoordinates.name
+      pojo.namespace = cdCoordinates.namespace
       pojo.revision = cdCoordinates.revision
       pojo
     }
