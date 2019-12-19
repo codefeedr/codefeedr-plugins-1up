@@ -60,7 +60,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   private var lastItem: Option[NpmRelease] = None
 
   /**
-   * Keeps track of a checkpointed state of NpmReleases
+   * ??? @TODO figure out what this does
    */
   @transient
   private var checkpointedState: ListState[NpmRelease] = _
@@ -77,7 +77,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
 
   /**
    * Opens this source.
-   * @param parameters Configuration data
+   * @param parameters ??? @TODO figure out???
    */
   override def open(parameters: Configuration): Unit = {
     isRunning = true
@@ -140,10 +140,10 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   }
 
   /**
-    * Drops items that already have been collected and sorts them based on times
-    * @param items Potential items to be collected
-    * @return Valid sorted items
-    */
+   * Drops items that already have been collected and sorts them based on times
+   * @param items Potential items to be collected
+   * @return Valid sorted items
+   */
   def sortAndDropDuplicates(items: Seq[NpmRelease]): Seq[NpmRelease] = {
     items
       .filter((x: NpmRelease) => {
@@ -156,10 +156,10 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   }
 
   /**
-    * Wait a certain amount of times the polling interval
-    *
-    * @param times Times the polling interval should be waited
-    */
+   * Wait a certain amount of times the polling interval
+   *
+   * @param times Times the polling interval should be waited
+   */
   def waitPollingInterval(times: Int = 1): Unit = {
     Thread.sleep(times * config.pollingInterval)
   }

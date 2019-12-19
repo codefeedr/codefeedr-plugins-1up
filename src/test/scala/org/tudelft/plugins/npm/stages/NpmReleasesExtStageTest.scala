@@ -2,7 +2,7 @@ package org.tudelft.plugins.npm.stages
 
 import java.text.SimpleDateFormat
 import java.util
-import java.util.Calendar
+import java.util.{Calendar, Date}
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.functions.sink.SinkFunction
@@ -65,9 +65,7 @@ class NpmReleasesExtStageTest extends FunSuite {
 }
 
 /**
- * Collects a list of NPM releases
- *
- * Adapted from W.R. Zonneveld's Maven plugin tests
+ * Adapted from W.R. Zonnveld's Maven plugin tests
  * Date: 2019-12-01
  */
 object CollectReleases {
@@ -75,8 +73,6 @@ object CollectReleases {
 }
 
 /**
- * Class for keeping track of collected NPM releases
- *
  * Adapted from W.R. Zonnveld's Maven plugin tests
  * Date: 2019-12-01
  */

@@ -1,7 +1,7 @@
 package org.tudelft.plugins.npm.operators
 
 import org.apache.flink.streaming.api.functions.async.{ResultFuture, RichAsyncFunction}
-import org.tudelft.plugins.npm.protocol.Protocol._
+import org.tudelft.plugins.npm.protocol.Protocol.{NpmRelease, NpmReleaseExt}
 import org.tudelft.plugins.npm.util.NpmService
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -23,10 +23,10 @@ class RetrieveProjectAsync
 
   /**
    * Async retrieves the project belonging to the release.
-    *
-    * @param input        the release.
-    * @param resultFuture the future to add the project to.
-    */
+   *
+   * @param input        the release.
+   * @param resultFuture the future to add the project to.
+   */
   override def asyncInvoke(input: NpmRelease,
                            resultFuture: ResultFuture[NpmReleaseExt]): Unit = {
 
@@ -57,7 +57,7 @@ class RetrieveProjectAsync
         }
       }
       case Failure(e) =>
-        resultFuture.complete(List().asJava)    
+        resultFuture.complete(List().asJava)
         e.printStackTrace()
     }
 
