@@ -1,8 +1,6 @@
 package org.tudelft.plugins.npm.operators
 
-import java.text.SimpleDateFormat
 import java.util.Calendar
-
 import org.scalatest.FunSuite
 import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
 
@@ -22,3 +20,4 @@ class RetrieveProjectASyncTest extends FunSuite{
     assert(release.name=="@microservices/cli")
   }
 }
+

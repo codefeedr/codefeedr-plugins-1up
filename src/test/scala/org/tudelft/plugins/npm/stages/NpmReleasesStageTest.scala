@@ -47,10 +47,7 @@ class LimitingSinkStage(elements: Int = -1)
 }
 
 /**
- * Class for limiting the stream process
- * @param elements Number of elements to process
  * Adapted from:  W.R. Zonneveld's Maven plugin for CodeFeedr
- *
  */
 class LimitingSink(elements: Int) extends SinkFunction[NpmRelease] {
   var count = 0
