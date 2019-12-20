@@ -7,20 +7,20 @@ class ProtocolTests extends FunSuite {
   /** all full example classes */
   val cdDescribedUrls = CDDescribedUrls("registry", "version", "download")
   val cdDescribedHashes = CDDescribedHashes(Some("gitSha"), Some("sha1"), Some("sha256"))
-  val cdDescribedToolScore = CDDescribedToolScore(1, 1, 1)
+  val cdDescribedToolScore = CDDescribedToolScore(1, 2, 3)
   val cdDescribedSourceLocation = CDDescribedSourceLocation("locationType", "provider", "namespace", "name", "revision",
     "url")
-  val cdDescribedScore = CDDescribedScore(1, 1, 1)
-  val cdLicensedToolScore = CDLicensedToolScore(1, 1, 1, 1, 1, 1)
+  val cdDescribedScore = CDDescribedScore(4, 5, 6)
+  val cdLicensedToolScore = CDLicensedToolScore(11, 12, 13, 14, 15, 16)
   val cdlfCoreAttribution = CDLFCoreAttribution(1, List("parties1", "parties2"))
   val cdlfCoreDiscovered = CDLFCoreDiscovered(1, List("expressions1", "expressions2"))
   val cdlfCore = CDLFCore(cdlfCoreAttribution, cdlfCoreDiscovered, 1)
   val cdLicensedFacets = CDLicensedFacets(cdlfCore)
-  val cdLicensedScore = CDLicensedScore(1, 1, 1, 1, 1, 1)
+  val cdLicensedScore = CDLicensedScore(117, 118, 119, 120, 121, 122)
   val cdLicensed = CDLicensed("declared", cdLicensedToolScore, cdLicensedFacets, cdLicensedScore)
   val cdCoordinates = CDCoordinates("type", "provider", "name", Some("namespace"), "revision")
   val cd_meta = CD_meta("schemaVersion", "updated")
-  val cdScores = CDScores(1, 1)
+  val cdScores = CDScores(7, 8)
   val cdDescribed = CDDescribed("releaseDate", cdDescribedUrls, Some("projectWebsite"), Some("issueTracker"),
     cdDescribedHashes, 1, List("tools1", "tools2"), cdDescribedToolScore, Some(cdDescribedSourceLocation),
     cdDescribedScore)
@@ -41,10 +41,10 @@ class ProtocolTests extends FunSuite {
     // Assert various normal members and None members
     assert(pojo.described.releaseDate.equals("releaseDate"))
     assert(pojo.described.issueTracker.get.equals("issueTracker"))
-    assert(pojo.licensed.score.spdx == 1)
+    assert(pojo.licensed.score.spdx == 121)
     assert(pojo.coordinates.namespace.get.equals("namespace"))
     assert(pojo._meta.updated.equals("updated"))
-    assert(pojo.scores.effective == 1)
+    assert(pojo.scores.effective == 7)
   }
 
   test("ClearlyDefinedReleasePojo convert with None fields success") {
@@ -122,8 +122,8 @@ class ProtocolTests extends FunSuite {
 
     // Assert fields
     assert(pojo.total == 1)
-    assert(pojo.date == 1)
-    assert(pojo.source == 1)
+    assert(pojo.date == 2)
+    assert(pojo.source == 3)
   }
 
   test("CDDescribedSourceLocation convert success") {
@@ -142,9 +142,9 @@ class ProtocolTests extends FunSuite {
     val pojo = CDDescribedScorePojo.fromCDDescribedScore(cdDescribedScore)
 
     // Assert fields
-    assert(pojo.total == 1)
-    assert(pojo.date == 1)
-    assert(pojo.source == 1)
+    assert(pojo.total == 4)
+    assert(pojo.date == 5)
+    assert(pojo.source == 6)
   }
 
   test("CDLicensed convert success") {
@@ -161,12 +161,12 @@ class ProtocolTests extends FunSuite {
     val pojo = CDLicensedToolScorePojo.fromCDLicensedToolScore(cdLicensedToolScore)
 
     // Assert fields
-    assert(pojo.total == 1)
-    assert(pojo.declared == 1)
-    assert(pojo.discovered == 1)
-    assert(pojo.consistency == 1)
-    assert(pojo.spdx == 1)
-    assert(pojo.texts == 1)
+    assert(pojo.total == 11)
+    assert(pojo.declared == 12)
+    assert(pojo.discovered == 13)
+    assert(pojo.consistency == 14)
+    assert(pojo.spdx == 15)
+    assert(pojo.texts == 16)
   }
 
   test("CDLicensedFacets convert success") {
@@ -205,12 +205,12 @@ class ProtocolTests extends FunSuite {
     val pojo = CDLicensedScorePojo.fromCDLicensedScore(cdLicensedScore)
 
     // Assert fields
-    assert(pojo.total == 1)
-    assert(pojo.declared == 1)
-    assert(pojo.discovered == 1)
-    assert(pojo.consistency == 1)
-    assert(pojo.spdx == 1)
-    assert(pojo.texts == 1)
+    assert(pojo.total == 117)
+    assert(pojo.declared == 118)
+    assert(pojo.discovered == 119)
+    assert(pojo.consistency == 120)
+    assert(pojo.spdx == 121)
+    assert(pojo.texts == 122)
   }
 
   test("CDCoordinates convert success") {
@@ -247,8 +247,8 @@ class ProtocolTests extends FunSuite {
     val pojo = CDScoresPojo.fromCDScores(cdScores)
 
     // Assert fields
-    assert(pojo.effective == 1)
-    assert(pojo.tool == 1)
+    assert(pojo.effective == 7)
+    assert(pojo.tool == 8)
   }
 
 }
