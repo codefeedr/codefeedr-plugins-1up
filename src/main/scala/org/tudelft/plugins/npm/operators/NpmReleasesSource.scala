@@ -60,7 +60,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   private var lastItem: Option[NpmRelease] = None
 
   /**
-   * ??? @TODO figure out what this does
+   * Keeps track of a checkpointed state of NpmReleases
    */
   @transient
   private var checkpointedState: ListState[NpmRelease] = _
@@ -77,7 +77,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
 
   /**
    * Opens this source.
-   * @param parameters ??? @TODO figure out???
+   * @param parameters configuration data
    */
   override def open(parameters: Configuration): Unit = {
     isRunning = true
