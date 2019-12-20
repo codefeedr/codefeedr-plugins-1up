@@ -202,7 +202,7 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
     }
     catch {
       case _: Throwable =>
-        printf("Failed transforming json craterelease to its case class")
+        printf("\nFailed transforming json craterelease to its case class")
         Nil
     }
   }

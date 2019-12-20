@@ -143,8 +143,8 @@ object Protocol extends Enumeration {
                           yanked: Boolean,
                           license: String,
                           links: CrateVersionLinks,
-                          crate_size: Int,
-                          published_by: CrateVersionPublishedBy
+                          crate_size: Option[Int],
+                          published_by: Option[CrateVersionPublishedBy]
                          )
 
   class CrateVersionPojo extends Serializable {
@@ -160,8 +160,8 @@ object Protocol extends Enumeration {
     var yanked: Boolean = _
     var license: String = _
     var links: CrateVersionLinksPojo = _
-    var crate_size: Int = _
-    var published_by: CrateVersionPublishedByPojo = _
+    var crate_size: Option[Int] = _
+    var published_by: Option[CrateVersionPublishedByPojo] = _
   }
 
   object CrateVersionPojo {
@@ -178,7 +178,12 @@ object Protocol extends Enumeration {
       pojo.license = crateVersion.license
       pojo.links = CrateVersionLinksPojo.fromCrateVersionLinks(crateVersion.links)
       pojo.crate_size = crateVersion.crate_size
-      pojo.published_by = CrateVersionPublishedByPojo.fromCrateVersionPublishedBy(crateVersion.published_by)
+      if(crateVersion.published_by.isEmpty) {
+        pojo.published_by = None
+      }
+      else {
+        pojo.published_by = Some(CrateVersionPublishedByPojo.fromCrateVersionPublishedBy(crateVersion.published_by.get))
+      }
       pojo
     }
   }

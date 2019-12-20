@@ -13,7 +13,7 @@ class ProtocolTests extends FunSuite {
   val crateVersionPublishedBy = CrateVersionPublishedBy(1, "login", Some("name"), "avatar", "url")
   val crateVersion = CrateVersion(1, "crate", "num", "dl_path", "readme_path",
     new Date(), new Date(), 100, crateVersionFeatures, true, "license", crateVersionLinks,
-    20, crateVersionPublishedBy)
+    Some(20), Some(crateVersionPublishedBy))
   val crateKeyword = CrateKeyword("id", "keyword", "created_at", 1)
   val crateCategory =  CrateCategory("id", "category", "slug", "description", "created_at", 1)
   val crateLinks = CrateLinks("version_downloads", Some("versions"), "owners",
@@ -34,7 +34,7 @@ class ProtocolTests extends FunSuite {
     "description", None, None, None, crateLinksEmpty, true)
   val crateVersionEmpty = CrateVersion(1, "crate", "num", "dl_path", "readme_path",
     new Date(), new Date(), 100, crateVersionFeatures, true, "license", crateVersionLinks,
-    20, crateVersionPublishedByEmpty)
+    None, None)
 
   val crateReleaseEmpty = CrateRelease(crateEmpty, List(crateVersionEmpty, crateVersionEmpty),
     List(crateKeyword, crateKeyword), List(crateCategory, crateCategory))
@@ -45,7 +45,7 @@ class ProtocolTests extends FunSuite {
     // Assert certain fields, e.g. Option[Int] crate.recent_downloads
     assert(pojo.crate.recent_downloads.get == 4)
     assert(pojo.crate.links.versions.get.equals("versions"))
-    assert(pojo.versions.head.published_by.login.equals("login"))
+    assert(pojo.versions.head.published_by.get.login.equals("login"))
     assert(pojo.keywords.head.keyword.equals("keyword"))
     assert(pojo.categories.head.category.equals("category"))
   }
@@ -56,7 +56,7 @@ class ProtocolTests extends FunSuite {
     // Assert certain None fields
     assert(pojo.crate.recent_downloads.isEmpty)
     assert(pojo.crate.links.versions.isEmpty)
-    assert(pojo.versions.head.published_by.name.isEmpty)
+    assert(pojo.versions.head.published_by.isEmpty)
     // Assert a regular field
     assert(pojo.crate.name.equals("name"))
   }
@@ -87,7 +87,7 @@ class ProtocolTests extends FunSuite {
 
     // Assert certain fields
     assert(pojo.version_downloads.equals("version_downloads"))
-    assert(pojo.versions.equals("versions"))
+    assert(pojo.versions.get.equals("versions"))
     assert(pojo.owner_user.equals("owner_user"))
   }
 
@@ -104,7 +104,7 @@ class ProtocolTests extends FunSuite {
     val pojo = CrateVersionPojo.fromCrateVersion(crateVersion)
 
     // Assert certain fields
-    assert(pojo.id.equals("id"))
+    assert(pojo.id == 1)
     assert(pojo.yanked == true)
     assert(pojo.license.equals("license"))
   }

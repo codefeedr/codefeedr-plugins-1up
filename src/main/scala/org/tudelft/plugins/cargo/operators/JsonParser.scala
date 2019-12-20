@@ -111,8 +111,7 @@ object JsonParser {
         x => this.parseCrateVersionsJsonToCrateVersionsObject(x.asJsObject).get
       })
       val keywordsObject      : List[CrateKeyword] = keywords.map(
-        x => this.parseCrateKeywordsJsonToCrateKeywordsObject(x.asInstanceOf[JsObject])
-          .get)
+        x => this.parseCrateKeywordsJsonToCrateKeywordsObject(x.asInstanceOf[JsObject]).get)
       val categoriesObject    : List[CrateCategory] = categories.map(
         x => this.parseCrateCategoryJsonToCrateCategoryObject(x.asInstanceOf[JsObject])
           .get)
@@ -178,16 +177,17 @@ object JsonParser {
       val updated_at  : Date    = this.getDateFieldFromCrate(jsObject, "updated_at").get
       val created_at  : Date    = this.getDateFieldFromCrate(jsObject, "created_at").get
       val downloads   : Int     = this.getIntFieldFromCrate(jsObject, "downloads").get
-      val features    : CrateVersionFeatures = new CrateVersionFeatures // this is always empty?
+      val features    : CrateVersionFeatures = new CrateVersionFeatures // this is always empty
       val yanked      : Boolean = this.getBoolFieldFromCrate(jsObject, "yanked").get
       val license     : String  = this.getStringFieldFromCrate(jsObject, "license").get
       val links       : CrateVersionLinks =
         this.parseCrateVersionLinksJsonToCrateVersionLinksObject(jsObject.fields("links").asJsObject()).get
-      val crate_size  : Int     = this.getIntFieldFromCrate(jsObject, "crate_size").get
-      val published_by: CrateVersionPublishedBy =
-        this.parseCrateVersionPublishedByJsonToCrateVersionPublishedByObject(
-          jsObject.fields("published_by").asJsObject()
-        ).get
+      val crate_size  : Option[Int]     = this.getIntFieldFromCrate(jsObject, "crate_size")
+      val published_by: Option[CrateVersionPublishedBy] = try {
+        this.parseCrateVersionPublishedByJsonToCrateVersionPublishedByObject(jsObject.fields("published_by").asJsObject())
+      } catch {
+        case _: Throwable => None
+      }
 
       Some(
         CrateVersion(id, crate, num, dl_path, readme_path, updated_at, created_at, downloads, features,
