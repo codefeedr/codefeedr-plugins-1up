@@ -1,6 +1,5 @@
 package org.tudelft.plugins.maven.stages
 
-import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.stages.OutputStage
 import org.tudelft.plugins.maven.protocol.Protocol._

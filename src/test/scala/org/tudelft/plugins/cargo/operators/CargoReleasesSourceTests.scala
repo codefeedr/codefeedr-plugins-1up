@@ -1,6 +1,5 @@
 package org.tudelft.plugins.cargo.operators
 
-import org.apache.flink.api.common.state.ListState
 import org.apache.flink.runtime.state.FunctionSnapshotContext
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
