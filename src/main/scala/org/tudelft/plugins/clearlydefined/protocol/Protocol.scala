@@ -59,7 +59,7 @@ object Protocol {
       pojo.urls = CDDescribedUrlsPojo.fromCDDescribedUrls(cdDescribed.urls)
       pojo.projectWebsite = cdDescribed.projectWebsite
       pojo.issueTracker = cdDescribed.issueTracker
-      pojo.hashes = CDDescribedHashes.fromCDDescribedHashes(cdDescribed.hashes)
+      pojo.hashes = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribed.hashes)
       pojo.files = cdDescribed.files
       pojo.tools = cdDescribed.tools
       pojo.toolScore = CDDescribedToolScorePojo.fromCDDescribedToolScore(cdDescribed.toolScore)
@@ -107,7 +107,7 @@ object Protocol {
     var sha256: Option[String] = _
   }
 
-  object CDDescribedHashes {
+  object CDDescribedHashesPojo {
     def fromCDDescribedHashes(cdDescribedHashes: CDDescribedHashes): CDDescribedHashesPojo = {
       val pojo = new CDDescribedHashesPojo
       pojo.gitSha = cdDescribedHashes.gitSha
