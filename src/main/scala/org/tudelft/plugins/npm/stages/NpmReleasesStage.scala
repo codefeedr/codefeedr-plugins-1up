@@ -4,8 +4,8 @@ import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.pipeline.Context
 import org.codefeedr.stages.InputStage
-import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
 import org.tudelft.plugins.npm.operators.{NpmReleasesSource, NpmSourceConfig}
+import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
 
 /**
  * Fetches real-time releases from Npm.

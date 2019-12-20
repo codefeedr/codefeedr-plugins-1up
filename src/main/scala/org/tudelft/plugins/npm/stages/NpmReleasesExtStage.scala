@@ -1,17 +1,11 @@
 package org.tudelft.plugins.npm.stages
 
 import java.util.concurrent.TimeUnit
-
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.streaming.api.datastream.{
-  AsyncDataStream => JavaAsyncDataStream
-}
-import org.tudelft.plugins.npm.protocol.Protocol.{
-  NpmRelease,
-  NpmReleaseExt
-}
+import org.apache.flink.streaming.api.datastream.{AsyncDataStream => JavaAsyncDataStream}
 import org.codefeedr.stages.TransformStage
 import org.tudelft.plugins.npm.operators.RetrieveProjectAsync
+import org.tudelft.plugins.npm.protocol.Protocol.{NpmRelease, NpmReleaseExt}
 
 /** Transform a [[NpmRelease]] to [[NpmReleaseExt]].
  *
@@ -37,10 +31,14 @@ class NpmReleasesExtStage(stageId: String = "npm_releases") extends TransformSta
       TimeUnit.SECONDS,
       100)
 
-    // TODO remove after local deployment to Hyperion is done
-//    new org.apache.flink.streaming.api.scala.DataStream(async)
-//      .map(x => (x.name, x.retrieveDate, x.project))
-//      .print()
     new org.apache.flink.streaming.api.scala.DataStream(async)
   }
 }
+
+/*
+Notes - for testing purposes - debug by printf :)
+    //    new org.apache.flink.streaming.api.scala.DataStream(async)
+    //      .map(x => (x.name, x.retrieveDate, x.project))
+    //      .print()
+
+ */

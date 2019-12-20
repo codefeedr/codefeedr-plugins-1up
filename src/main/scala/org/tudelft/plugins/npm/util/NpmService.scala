@@ -2,8 +2,6 @@ package org.tudelft.plugins.npm.util
 
 import org.apache.logging.log4j.scala.Logging
 import org.codefeedr.stages.utilities.HttpRequester
-import org.tudelft.plugins.npm.protocol.Protocol.{DependencyObject, NpmProject, TimeObject}
-import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
 import scalaj.http.Http
 import org.json4s.{DefaultFormats, Formats}
 import org.json4s.ext.JavaTimeSerializers
@@ -12,6 +10,7 @@ import org.jsoup.Jsoup
 import org.json4s.jackson.Serialization.read
 import org.json4s.jackson.JsonMethods._
 import java.util.Date
+import org.tudelft.plugins.npm.protocol.Protocol.{DependencyObject, NpmProject, NpmReleaseExt, TimeObject}
 
 /**
  * Services to retrieve a project from the NPM API registry.
@@ -64,7 +63,6 @@ object NpmService extends Logging with Serializable {
         None
     }
 
-
     // STEP 1: now set the time right (find the created / modified field and update the time)
 
     val json = parse(jsonString)
@@ -113,8 +111,8 @@ object NpmService extends Logging with Serializable {
     // then get me that version object with all info
     val dependenciesObject = (( json \ "versions" ) \ versionNroflatestVersion ) \ "dependencies"
     val dependenciesList = dependenciesObject match {
-          case JObject(lijstje) => lijstje
-          case _ => Nil
+      case JObject(lijstje) => lijstje
+      case _ => Nil
     }
 
     val finalListOfTuplesWithDeps = dependenciesList.map { case (x, JString(y)) => DependencyObject(x,y) }
