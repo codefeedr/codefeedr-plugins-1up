@@ -3,6 +3,7 @@ package org.tudelft.repl.commands
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
 import org.tudelft.CrateDownloadsOutput
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
+import org.tudelft.plugins.maven.stages.MavenReleasesStage
 import org.tudelft.repl.{Command, Parser, ReplEnv}
 
 import scala.Option
@@ -46,30 +47,51 @@ object PipelineCommand extends Parser with Command {
     */
   def createPipeline(input: ArrayBuffer[String], env: ReplEnv): Option[Pipeline] = {
     //Check if the name of the pipeline is already in use
-    if (env.pipelines.exists(x => x._1.name == input(0))){
+    if (env.pipelines.exists(x => x._1.name == input(0))) {
       return None
     }
 
     //TODO actually generate pipelines
     //Temporary implementation to test
-    val pipeline = new PipelineBuilder()
+    var builder = new PipelineBuilder()
       .setPipelineName(input(0))
-      .append(new CargoReleasesStage())
-      .append (new CrateDownloadsOutput)
-      .build()
+
+    for (i <- 1 until (input.size - 1)) {
+      builder = buildStage(input(i), builder).getOrElse(return None)
+    }
+    //      .append(new CargoReleasesStage())
+
+    //Build the pipeline
+    val pipeline = builder.build()
 
     //Return the new pipeline added to the env
     Some(pipeline)
   }
 
   /**
+    * Builds a stage from a string
+    * @param str the input which should correspond to a stage
+    * @param builder the incoming PipelineBuilder
+    * @return Some(builder) if added stage successfully, else None
+    */
+  def buildStage(str: String, builder: PipelineBuilder): Option[PipelineBuilder] = {
+    str match {
+      case "CargoReleases" => Some(builder.append(new CargoReleasesStage()))
+      case "MavenReleases" => Some(builder.append(new MavenReleasesStage()))
+        //TODO all the other stages
+      case _ => None
+    }
+  }
+
+  /**
     * Add a pipeline to the env
+    *
     * @param maybePipeline the option of pipeline to add
-    * @param env the current env
+    * @param env           the current env
     * @return the new env containing maybePipeline
     */
   def addPipelineToEnv(maybePipeline: Option[Pipeline], env: ReplEnv): (ReplEnv, Try[String]) = {
-    if (maybePipeline.isEmpty){
+    if (maybePipeline.isEmpty) {
       (env, Failure(new IllegalArgumentException("Pipeline with that name already exists")))
     } else {
       (ReplEnv(env.pipelines :+ (maybePipeline.get, false)), Success("Pipeline " + maybePipeline.get.name + " created"))
@@ -85,7 +107,7 @@ object PipelineCommand extends Parser with Command {
     */
   def startPipeline(input: ArrayBuffer[String], env: ReplEnv): (ReplEnv, Try[String]) = {
     val pipeline = env.pipelines.find(x => x._1.name == input(0))
-    if (pipeline.isEmpty){
+    if (pipeline.isEmpty) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " does not exist")))
     } else if (pipeline.get._2 == true) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " is already running")))
@@ -93,12 +115,12 @@ object PipelineCommand extends Parser with Command {
 
       //TODO select option for what mode to run in, for now startMock
       //Start pipeline
-//      pipeline.get._1.startMock()
+      //      pipeline.get._1.startMock()
 
       //Return pipeline now indicated as running
       (ReplEnv(env.pipelines.filterNot(x => x._1.name == input(0)) :+ (pipeline.get._1, true)), Success("Successfully started pipeline"))
-      }
     }
+  }
 
   /**
     * Deletes a given pipeline from $env
@@ -110,7 +132,7 @@ object PipelineCommand extends Parser with Command {
   def deletePipeline(input: ArrayBuffer[String], env: ReplEnv): (ReplEnv, Try[String]) = {
     //Duplicate code with start pipeline, refactor?
     val pipeline = env.pipelines.find(x => x._1.name == input(0))
-    if (pipeline.isEmpty){
+    if (pipeline.isEmpty) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " does not exist")))
     } else if (pipeline.get._2 == true) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " is still running")))
@@ -128,7 +150,7 @@ object PipelineCommand extends Parser with Command {
     */
   def stopPipeline(input: ArrayBuffer[String], env: ReplEnv): (ReplEnv, Try[String]) = {
     val pipeline = env.pipelines.find(x => x._1.name == input(0))
-    if (pipeline.isEmpty){
+    if (pipeline.isEmpty) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " does not exist")))
     } else if (pipeline.get._2 == false) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " is not running")))
