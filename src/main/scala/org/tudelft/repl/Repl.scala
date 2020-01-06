@@ -1,7 +1,7 @@
 package org.tudelft.repl
 
 import org.codefeedr.pipeline.Pipeline
-import org.tudelft.repl.commands.PipelineCommand
+import org.tudelft.repl.commands.{MetaCommand, PipelineCommand}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -21,6 +21,7 @@ trait Parser {
 
 object Commands {
   val parsers: List[Parser] = List[Parser](
+    MetaCommand,
 //    SQLCommand,
     PipelineCommand
   )

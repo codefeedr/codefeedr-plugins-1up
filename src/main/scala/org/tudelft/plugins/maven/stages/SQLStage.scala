@@ -5,9 +5,9 @@ import org.codefeedr.stages.OutputStage
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.tudelft.plugins.maven.util.SQLService
 
-class SQLStage extends OutputStage[MavenReleaseExt](stageId = Some("maven_SQL")){
+class SQLStage extends OutputStage[MavenRelease](stageId = Some("maven_SQL")){
 
-  override def main(source: DataStream[MavenReleaseExt]): Unit = {
+  override def main(source: DataStream[MavenRelease]): Unit = {
     //Perform the query
     SQLService.performQuery(source)
   }

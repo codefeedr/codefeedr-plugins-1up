@@ -1,14 +1,29 @@
 package org.tudelft.repl.commands
 
+import java.util.concurrent.Executors
+
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
-import org.tudelft.CrateDownloadsOutput
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
-import org.tudelft.plugins.maven.stages.MavenReleasesStage
+import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
+import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
+import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
 
-import scala.Option
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
+import scala.concurrent.JavaConversions.asExecutionContext
 import scala.util.{Failure, Success, Try}
+
+/**
+  * Class for running code in a different Thread
+  */
+class ApplicationThread {
+  protected implicit val context =
+    asExecutionContext(Executors.newSingleThreadExecutor())
+
+  def run(code: => Unit) = Future(code)
+
+}
 
 object PipelineCommand extends Parser with Command {
   //Check regex
@@ -51,16 +66,20 @@ object PipelineCommand extends Parser with Command {
       return None
     }
 
-    //TODO actually generate pipelines
-    //Temporary implementation to test
-    var builder = new PipelineBuilder()
-      .setPipelineName(input(0))
-
-    for (i <- 1 until (input.size - 1)) {
-      builder = buildStage(input(i), builder).getOrElse(return None)
+    //if the input is smaller than 2, there are no stages defined
+    if (input.size < 2) {
+      return None
     }
-    //      .append(new CargoReleasesStage())
 
+    //TODO currently only 'simple' pipelines are supported, need to add support for DAGs
+    //Setup builder
+    var builder = new PipelineBuilder().setPipelineName(input(0))
+    //For each stage, build a stage
+    for (i <- 1 until input.size) {
+      val maybeBuilder = buildStage(input(i), builder)
+      if (maybeBuilder.isEmpty) return None
+      else builder = maybeBuilder.get
+    }
     //Build the pipeline
     val pipeline = builder.build()
 
@@ -70,7 +89,8 @@ object PipelineCommand extends Parser with Command {
 
   /**
     * Builds a stage from a string
-    * @param str the input which should correspond to a stage
+    *
+    * @param str     the input which should correspond to a stage
     * @param builder the incoming PipelineBuilder
     * @return Some(builder) if added stage successfully, else None
     */
@@ -78,10 +98,16 @@ object PipelineCommand extends Parser with Command {
     str match {
       case "CargoReleases" => Some(builder.append(new CargoReleasesStage()))
       case "MavenReleases" => Some(builder.append(new MavenReleasesStage()))
-        //TODO all the other stages
+      case "MavenReleasesExt" => Some(builder.append(new MavenReleasesExtStage()))
+      case "NpmReleases" => Some(builder.append(new NpmReleasesStage()))
+      case "NpmReleasesExt" => Some(builder.append(new NpmReleasesExtStage()))
+      case "ClearlyDefinedReleases" => Some(builder.append(new ClearlyDefinedReleasesStage()))
+      case "SQL" => Some(builder.append(new SQLStage()))
+      //TODO all the other stages from existing plugins, e.g. ghtorrent
       case _ => None
     }
   }
+
 
   /**
     * Add a pipeline to the env
@@ -92,7 +118,8 @@ object PipelineCommand extends Parser with Command {
     */
   def addPipelineToEnv(maybePipeline: Option[Pipeline], env: ReplEnv): (ReplEnv, Try[String]) = {
     if (maybePipeline.isEmpty) {
-      (env, Failure(new IllegalArgumentException("Pipeline with that name already exists")))
+      //These are 2 completely different errors, maybe try to catch them at different points
+      (env, Failure(new IllegalArgumentException("Pipeline with that name already exists or one of its stages is not recognised")))
     } else {
       (ReplEnv(env.pipelines :+ (maybePipeline.get, false)), Success("Pipeline " + maybePipeline.get.name + " created"))
     }
@@ -112,14 +139,22 @@ object PipelineCommand extends Parser with Command {
     } else if (pipeline.get._2 == true) {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " is already running")))
     } else {
-
-      //TODO select option for what mode to run in, for now startMock
-      //Start pipeline
-      //      pipeline.get._1.startMock()
-
+      //Start the pipeline in a new thread
+      val thread = new ApplicationThread
+      thread.run(runPipeline(pipeline.get._1))
       //Return pipeline now indicated as running
       (ReplEnv(env.pipelines.filterNot(x => x._1.name == input(0)) :+ (pipeline.get._1, true)), Success("Successfully started pipeline"))
     }
+  }
+
+  //TODO select option for what mode to run in, for now startMock
+  /**
+    * Runs a pipeline
+    *
+    * @param pipeline the pipeline to be run
+    */
+  def runPipeline(pipeline: Pipeline): Unit = {
+    pipeline.startMock()
   }
 
   /**
@@ -156,7 +191,7 @@ object PipelineCommand extends Parser with Command {
       (env, Failure(new IllegalArgumentException("Pipeline with name " + input(0) + " is not running")))
     } else {
 
-      //TODO currently stopping pipelines is not supported in codefeedr, this is something we may need to add ourself
+      //TODO For this we need to manually stop a thread, no clue how though
       //Stop pipeline
       //      pipeline.get._1.stop()
 
