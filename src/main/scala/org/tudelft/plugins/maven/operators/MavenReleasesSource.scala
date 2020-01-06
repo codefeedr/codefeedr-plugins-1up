@@ -148,7 +148,7 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
     items
       .filter((x: MavenRelease) => {
         if (lastItem.isDefined)
-          lastItem.get.pubDate.before(x.pubDate) && lastItem.get.link != x.link
+          lastItem.get.pubDate.before(x.pubDate)
         else
           true
       })

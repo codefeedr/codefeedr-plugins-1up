@@ -1,5 +1,7 @@
 package org.tudelft.plugins.cargo.operators
 
+import java.util.Date
+
 import org.apache.flink.api.common.accumulators.LongCounter
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.configuration.Configuration
@@ -13,7 +15,7 @@ import spray.json._
 
 import scala.collection.JavaConverters._
 
-case class CargoSourceConfig(pollingInterval: Int = 1000,
+case class CargoSourceConfig(pollingInterval: Int = 10000,
                              maxNumberOfRuns: Int = -1)
 
 /**
@@ -38,6 +40,7 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
   private var isRunning = false
   private var runsLeft = 0
   private var lastItem: Option[CrateRelease] = None
+  private var lastPollTimestamp = System.currentTimeMillis();
   @transient
   private var checkpointedState: ListState[CrateRelease] = _
 
@@ -83,6 +86,11 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
             lastItem = Some(validSortedItems.last)
           }
 
+          println(items.size)
+          println(validSortedItems.size)
+          print("Poll interval: " + (System.currentTimeMillis() - lastPollTimestamp) + "\n")
+          lastPollTimestamp = System.currentTimeMillis()
+
           // Wait until the next poll
           waitPollingInterval()
         } catch {
@@ -111,7 +119,7 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
     items
       .filter((x: CrateRelease) => {
         if (lastItem.isDefined)
-          lastItem.get.crate.updated_at.before(x.crate.updated_at) && lastItem.get.crate.name != x.crate.name
+          lastItem.get.crate.updated_at.before(x.crate.updated_at)
         else
           true
       })
