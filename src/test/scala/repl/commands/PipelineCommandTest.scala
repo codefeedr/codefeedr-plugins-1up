@@ -1,0 +1,90 @@
+package repl.commands
+
+import org.codefeedr.pipeline.PipelineBuilder
+import org.scalatest.FunSuite
+import org.tudelft.plugins.cargo.stages.CargoReleasesStage
+import org.tudelft.repl.ReplEnv
+import org.tudelft.repl.commands.PipelineCommand
+
+import scala.collection.mutable.ArrayBuffer
+
+class PipelineCommandTest extends FunSuite {
+
+  val emptyEnv = ReplEnv(Nil)
+
+  val pipeline = new PipelineBuilder().setPipelineName("test").append(new CargoReleasesStage()).build()
+  val filledEnvNotRunning = ReplEnv(List((pipeline, false)))
+  val filledEnvRunning = ReplEnv(List((pipeline, true)))
+
+  val buffer = new ArrayBuffer[String]()
+  buffer += "test"
+
+  test("applyTestDefault") {
+    val res = PipelineCommand.apply(emptyEnv, "test")
+    assert(res._2.isFailure)
+  }
+
+  test("applyTestCreate") {
+    val res = PipelineCommand.apply(emptyEnv, "create test")
+    assert(res._2.isSuccess)
+    assert(res._1.pipelines.exists(x => x._1.name == "test"))
+  }
+
+  test("applyTestDelete") {
+    val res = PipelineCommand.apply(filledEnvNotRunning, "delete test")
+    assert(res._2.isSuccess)
+    assert(res._1.pipelines.isEmpty)
+  }
+
+  test("applyTestStart") {
+    val res = PipelineCommand.apply(filledEnvNotRunning, "start test")
+    assert(res._2.isSuccess)
+    assert(res._1.pipelines.head._2 == true)
+  }
+
+  test("applyTestStop") {
+    val res = PipelineCommand.apply(filledEnvRunning, "stop test")
+    assert(res._2.isSuccess)
+    assert(res._1.pipelines.head._2 == false)
+  }
+
+  test("createPipelineExistingTest") {
+    val res = PipelineCommand.createPipeline(buffer, filledEnvRunning)
+    assert(res.isEmpty)
+  }
+
+  test("addEmptyPipelineToEnvTest") {
+    val res = PipelineCommand.addPipelineToEnv(None, emptyEnv)
+    assert(res._2.isFailure)
+  }
+
+  test("startNonExistingPipelineTest") {
+    val res = PipelineCommand.startPipeline(buffer, emptyEnv)
+    assert(res._2.isFailure)
+  }
+
+  test("startPipelineAlreadyRunningTest") {
+    val res = PipelineCommand.startPipeline(buffer, filledEnvRunning)
+    assert(res._2.isFailure)
+  }
+
+  test("deletePipelineNonExistingTest") {
+    val res = PipelineCommand.deletePipeline(buffer, emptyEnv)
+    assert(res._2.isFailure)
+  }
+
+  test("deleteRunningPipelineTest") {
+    val res = PipelineCommand.deletePipeline(buffer, filledEnvRunning)
+    assert(res._2.isFailure)
+  }
+
+  test("stopNonExistingTest") {
+    val res = PipelineCommand.stopPipeline(buffer, emptyEnv)
+    assert(res._2.isFailure)
+  }
+
+  test("stopNonRunningPipelineTest") {
+    val res = PipelineCommand.stopPipeline(buffer, filledEnvNotRunning)
+    assert(res._2.isFailure)
+  }
+}
