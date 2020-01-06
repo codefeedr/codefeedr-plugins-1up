@@ -18,10 +18,10 @@ import scala.collection.JavaConverters._
 
 /**
  * The configuration class for the ClearlyDefinedReleasesSource class
- * @param pollingInterval Amount of milliseconds to wait for next poll
+ * @param pollingInterval Amount of milliseconds to wait for next poll. Put to 30 seconds due to typically slow feed
  * @param maxNumberOfRuns if positive, runs definitely up till x. If negative, runs indefinitely.
  */
-case class ClearlyDefinedSourceConfig(pollingInterval: Int = 1000,
+case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
                              maxNumberOfRuns: Int = -1)
 
 /**
@@ -115,6 +115,7 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
 
   /**
     * Drops items that already have been collected and sorts them based on times
+    * TODO: x._meta.updated is not chronological ~5% of the time, which means 1 in 20 packages are SKIPPED
     *
     * @param items Potential items to be collected
     * @return Valid sorted items
@@ -123,7 +124,7 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
     items
       .filter((x: ClearlyDefinedRelease) => {
         if (lastItem.isDefined)
-          dateFormat.parse(lastItem.get._meta.updated).before(dateFormat.parse(x._meta.updated)) && lastItem.get.coordinates.name != x.coordinates.name
+          dateFormat.parse(lastItem.get._meta.updated).before(dateFormat.parse(x._meta.updated))
         else
           true
       })
