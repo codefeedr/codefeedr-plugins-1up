@@ -1,6 +1,7 @@
 package org.tudelft.repl.commands
 
 import java.util.concurrent.Executors
+import java.util.regex.Pattern
 
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
@@ -9,7 +10,8 @@ import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesSta
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
 import scala.util.{Failure, Success, Try}
@@ -36,13 +38,7 @@ object PipelineCommand extends Parser with Command {
   }
 
   override def apply(env: ReplEnv, input: String): (ReplEnv, Try[String]) = {
-    //Remove the word 'pipeline' since it no longer serves a use
-    val newInput = input.replaceFirst("pipeline ", "")
-
-    //Inside the (first) [], remove the spaces
-    //    val stages = input.split("\\[(.*?)\\]").head.replace(" ", "")
-
-    val splitted: ArrayBuffer[String] = newInput.split(" ").to[ArrayBuffer]
+    val splitted = transformInput(input)
 
     //Match second argument to determine what operation to perform
     splitted(0) match {
@@ -52,6 +48,43 @@ object PipelineCommand extends Parser with Command {
       case "stop" => stopPipeline(splitted -= "stop", env)
       case x => (env, Failure(new IllegalArgumentException(s"Couldn't match second argument: $x")))
     }
+  }
+
+  /**
+    * Transforms the user input to something which can be used properly
+    *
+    * @param str the user input
+    * @return the transformed user input split into meaningful parts
+    */
+  def transformInput(str: String): ArrayBuffer[String] = {
+    //Remove the word 'pipeline' since it no longer serves a use
+    val in = str.replaceFirst("pipeline ", "")
+
+    //Capture all groups within brackets
+    val captured = new ListBuffer[String]()
+    val matcher = Pattern.compile("\\((.*?)\\)").matcher(in)
+    while(matcher.find()){
+      captured += matcher.group(1)
+    }
+
+    //Remove all whitespaces between ()
+    val test = in.replaceAll(" (?=[^(]*\\))", "")
+
+    //Split the input
+    val splitted = test.split(" ").to[ArrayBuffer]
+
+    //Set back the captured groups between brackets
+    var counter = 0
+    var i = 0
+    for (s <- splitted){
+      if (s.contains("(")){
+        splitted(i) = s.replace(s.substring(s.indexOf("(") + 1, s.indexOf(")")), captured(counter))
+        counter = counter + 1
+      }
+      i = i + 1
+    }
+
+    return splitted
   }
 
   /**
@@ -102,7 +135,11 @@ object PipelineCommand extends Parser with Command {
       case "NpmReleases" => Some(builder.append(new NpmReleasesStage()))
       case "NpmReleasesExt" => Some(builder.append(new NpmReleasesExtStage()))
       case "ClearlyDefinedReleases" => Some(builder.append(new ClearlyDefinedReleasesStage()))
-      case "SQL" => Some(builder.append(new SQLStage()))
+      case x if x.startsWith("SQL") => {
+        val query = x.substring(4, x.length - 1)
+        println(query)
+        Some(builder.append(SQLStage.createSQLStage(query)))
+      }
       //TODO all the other stages from existing plugins, e.g. ghtorrent
       case _ => None
     }
