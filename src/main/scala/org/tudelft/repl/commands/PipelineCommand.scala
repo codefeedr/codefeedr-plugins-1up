@@ -46,6 +46,7 @@ object PipelineCommand extends Parser with Command {
       case "start" => startPipeline(splitted -= "start", env)
       case "delete" => deletePipeline(splitted -= "delete", env)
       case "stop" => stopPipeline(splitted -= "stop", env)
+      case "list" => (env, Success(listPipelines(env)))
       case x => (env, Failure(new IllegalArgumentException(s"Couldn't match second argument: $x")))
     }
   }
@@ -235,6 +236,26 @@ object PipelineCommand extends Parser with Command {
 
       //Return pipeline now indicated as running
       (ReplEnv(env.pipelines.filterNot(x => x._1.name == input(0)) :+ (pipeline.get._1, false)), Success("Successfully stopped pipeline"))
+    }
+  }
+
+  /**
+    * Build a string containing a pretty representation of all pipelines
+    * @param env the environment containing all the pipelines
+    * @return a pretty string represending all the pipelines
+    */
+  def listPipelines(env: ReplEnv) : String = {
+    if (env.pipelines.isEmpty) "There are no pipelines"
+    else {
+      var res = ""
+      for ((pipeline, running) <- env.pipelines){
+        var runningString = ""
+        if (running) runningString = ", Status: Running"
+        else runningString = ", Status: Stopped"
+
+        res = res + pipeline.name + runningString + "\n"
+      }
+      res
     }
   }
 }

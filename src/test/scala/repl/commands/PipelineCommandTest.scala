@@ -99,6 +99,26 @@ class PipelineCommandTest extends FunSuite {
     assert(res(2) == "SQL(a b)")
   }
 
+  test("applyListEmptyTest"){
+    val res = PipelineCommand.apply(emptyEnv, "pipeline list")
+    assert(res._2.isSuccess)
+  }
+
+  test("listPipelinesEmptyTest"){
+    val res = PipelineCommand.listPipelines(emptyEnv)
+    assert(res == "There are no pipelines")
+  }
+
+  test("listPipelinesStoppedTest"){
+    val res = PipelineCommand.listPipelines(filledEnvNotRunning)
+    assert(res == "test, Status: Stopped\n")
+  }
+
+  test("listPipelinesRunningTest"){
+    val res = PipelineCommand.listPipelines(filledEnvRunning)
+    assert(res == "test, Status: Running\n")
+  }
+
   //TODO testing of buildStage method is difficult due to the properties of pipelineBuilder being protected
 
 }

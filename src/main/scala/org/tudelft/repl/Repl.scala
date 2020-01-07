@@ -52,7 +52,6 @@ object Repl extends App{
           case Success(x) => println(x)
           case Failure(x) => System.err.println(x.getMessage)
         }
-        println(res._1.pipelines)
         loop(res._1)
       }
       case None => {
