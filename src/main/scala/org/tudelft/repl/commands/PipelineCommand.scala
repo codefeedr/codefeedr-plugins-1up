@@ -155,8 +155,9 @@ object PipelineCommand extends Parser with Command {
     */
   def addPipelineToEnv(maybePipeline: Option[Pipeline], env: ReplEnv): (ReplEnv, Try[String]) = {
     if (maybePipeline.isEmpty) {
-      //These are 2 completely different errors, maybe try to catch them at different points
-      (env, Failure(new IllegalArgumentException("Pipeline with that name already exists or one of its stages is not recognised")))
+      //These are 3 completely different errors, maybe try to catch them at different points
+      (env, Failure(new IllegalArgumentException("Pipeline with that name already exists " +
+        "or one of its stages is not recognised or no stages are defined")))
     } else {
       (ReplEnv(env.pipelines :+ (maybePipeline.get, false)), Success("Pipeline " + maybePipeline.get.name + " created"))
     }

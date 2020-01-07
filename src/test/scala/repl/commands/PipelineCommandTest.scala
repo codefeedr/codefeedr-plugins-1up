@@ -25,7 +25,7 @@ class PipelineCommandTest extends FunSuite {
   }
 
   test("applyTestCreate") {
-    val res = PipelineCommand.apply(emptyEnv, "create test")
+    val res = PipelineCommand.apply(emptyEnv, "create test MavenReleases")
     assert(res._2.isSuccess)
     assert(res._1.pipelines.exists(x => x._1.name == "test"))
   }
@@ -51,6 +51,10 @@ class PipelineCommandTest extends FunSuite {
   test("createPipelineExistingTest") {
     val res = PipelineCommand.createPipeline(buffer, filledEnvRunning)
     assert(res.isEmpty)
+  }
+
+  test("createPipelineNoStagesTest") {
+    val res = PipelineCommand.createPipeline(buffer, emptyEnv)
   }
 
   test("addEmptyPipelineToEnvTest") {
@@ -87,4 +91,14 @@ class PipelineCommandTest extends FunSuite {
     val res = PipelineCommand.stopPipeline(buffer, filledEnvNotRunning)
     assert(res._2.isFailure)
   }
+
+  test("transformInputTest") {
+    val res = PipelineCommand.transformInput("pipeline create test SQL(a b)")
+    assert(res(0) == "create")
+    assert(res(1) == "test")
+    assert(res(2) == "SQL(a b)")
+  }
+
+  //TODO testing of buildStage method is difficult due to the properties of pipelineBuilder being protected
+
 }
