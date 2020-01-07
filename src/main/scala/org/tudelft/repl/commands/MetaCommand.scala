@@ -8,7 +8,7 @@ import scala.util.{Success, Try}
 object MetaCommand extends Parser with Command{
   //Check regex
   val regex =
-    """(?i)^exit.*$"""
+    """(?i)^(exit|quit).*$"""
 
   override def parse(expr: String): Option[Command] = matches(expr) match {
     case true => Option(MetaCommand)

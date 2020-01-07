@@ -34,16 +34,12 @@ object Commands {
 }
 
 object Repl extends App{
-  val history = new mutable.MutableList()
 
   @tailrec def loop(env: ReplEnv): Unit = {
     printf("codefeedr> ")
     Console.flush()
 
     val input = scala.io.StdIn.readLine()
-
-    //Check if actually adds
-    history +: input
 
     Commands(input) match {
       case Some(cmd) => {
