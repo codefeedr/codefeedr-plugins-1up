@@ -2,11 +2,10 @@ package org.tudelft.plugins.maven.stages
 
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.stages.OutputStage
-import org.tudelft.plugins.maven.protocol.Protocol._
 import org.tudelft.plugins.maven.util.SQLService
 
-import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 /**
   * SQL object to enable the passing of a string
@@ -19,13 +18,17 @@ object SQLStage{
     new SQLStage[T]()
   }
 
+  /**
+    * This stage takes in a stream and performs a query on it
+    *
+    * @param classTag$T The classTag of the input stream
+    * @param typeTag$T The typeTag of the input stream
+    * @tparam T Type of the input stream
+    */
   class SQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag] extends OutputStage[T](stageId = id){
-
     override def main(source: DataStream[T]): Unit = {
-      //Perform the query
       SQLService.performQuery(source, this.stageId.get)
     }
-
   }
 
 }

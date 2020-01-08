@@ -11,7 +11,6 @@ import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesSta
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
 
-import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Future
 import scala.concurrent.JavaConversions.asExecutionContext
@@ -65,7 +64,7 @@ object PipelineCommand extends Parser with Command {
     //Capture all groups within brackets
     val captured = new ListBuffer[String]()
     val matcher = Pattern.compile("\\((.*?)\\)").matcher(in)
-    while(matcher.find()){
+    while (matcher.find()) {
       captured += matcher.group(1)
     }
 
@@ -78,14 +77,13 @@ object PipelineCommand extends Parser with Command {
     //Set back the captured groups between brackets
     var counter = 0
     var i = 0
-    for (s <- splitted){
-      if (s.contains("(")){
+    for (s <- splitted) {
+      if (s.contains("(")) {
         splitted(i) = s.replace(s.substring(s.indexOf("(") + 1, s.indexOf(")")), captured(counter))
         counter = counter + 1
       }
       i = i + 1
     }
-
     return splitted
   }
 
@@ -243,14 +241,15 @@ object PipelineCommand extends Parser with Command {
 
   /**
     * Build a string containing a pretty representation of all pipelines
+    *
     * @param env the environment containing all the pipelines
     * @return a pretty string represending all the pipelines
     */
-  def listPipelines(env: ReplEnv) : String = {
+  def listPipelines(env: ReplEnv): String = {
     if (env.pipelines.isEmpty) "There are no pipelines"
     else {
       var res = ""
-      for ((pipeline, running) <- env.pipelines){
+      for ((pipeline, running) <- env.pipelines) {
         var runningString = ""
         if (running) runningString = ", Status: Running"
         else runningString = ", Status: Stopped"
