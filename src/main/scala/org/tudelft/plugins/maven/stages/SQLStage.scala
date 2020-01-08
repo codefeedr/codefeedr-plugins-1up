@@ -5,20 +5,23 @@ import org.codefeedr.stages.OutputStage
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.tudelft.plugins.maven.util.SQLService
 
+import scala.reflect.runtime.universe._
+import scala.reflect.ClassTag
+
 /**
   * SQL object to enable the passing of a string
   * This string originally is the stageID, however in our case it will be used to pass the SQLQuery
   */
 object SQLStage{
   var id: Option[String] = None
-  def createSQLStage(in: String) : SQLStage = {
+  def createSQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag](in: String) : SQLStage[T] = {
     this.id = Some(in)
-    new SQLStage()
+    new SQLStage[T]()
   }
 
-  class SQLStage extends OutputStage[MavenRelease](stageId = id){
+  class SQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag] extends OutputStage[T](stageId = id){
 
-    override def main(source: DataStream[MavenRelease]): Unit = {
+    override def main(source: DataStream[T]): Unit = {
       //Perform the query
       SQLService.performQuery(source, this.stageId.get)
     }

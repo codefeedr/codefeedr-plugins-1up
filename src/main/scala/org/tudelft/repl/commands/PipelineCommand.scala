@@ -6,6 +6,7 @@ import java.util.regex.Pattern
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
+import org.tudelft.plugins.maven.protocol.Protocol.MavenRelease
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
@@ -139,7 +140,8 @@ object PipelineCommand extends Parser with Command {
       case x if x.startsWith("SQL") => {
         val query = x.substring(4, x.length - 1)
         println(query)
-        Some(builder.append(SQLStage.createSQLStage(query)))
+        //TODO MavenRelease is now hardcoded, but this should be somehow inferred
+        Some(builder.append(SQLStage.createSQLStage[MavenRelease](query)))
       }
       //TODO all the other stages from existing plugins, e.g. ghtorrent
       case _ => None
