@@ -58,7 +58,7 @@ class LimitingSink(elements: Int) extends SinkFunction[NpmRelease] {
     count += 1
     items = value :: items
 
-    println(count)
+    //println(count) // annoyed by this during testing, commented out
 
     if (elements != -1 && count >= elements) {
       throw new RuntimeException()

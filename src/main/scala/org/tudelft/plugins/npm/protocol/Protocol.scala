@@ -10,244 +10,180 @@ import java.util.Date
  */
 object Protocol {
 
-  case class NpmRelease( name         : String,
-                         retrieveDate : Date) // using ingestion time
+  case class NpmRelease(name: String,
+                        retrieveDate: Date) // using ingestion time
 
-  case class NpmReleaseExt(name         : String,
-                           retrieveDate : Date,
-                           project      : NpmProject)
+  case class NpmReleaseExt(name: String,
+                           retrieveDate: Date,
+                           project: NpmProject)
 
-  case class NpmProject(_id             : String,
-                        _rev            : Option[String],
-                        name            : String,
-                        author          : Option[PersonSimple],
-                        authorObject    : Option[PersonObject],
-                        contributors    : Option[List[PersonObject]],
-                        description     : Option[String],
-                        homepage        : Option[String],
-                        keywords        : Option[List[String]],
-                        license         : Option[String],
-                        dependencies    : Option[List[DependencyObject]],
-                        maintainers     : List[PersonObject],
-                        readme          : String,
-                        readmeFilename  : String,
-                        bugs            : Option[Bug],
-                        bugString       : Option[String],
-                        repository      : Option[Repository],
-                        time            : TimeObject
+  case class NpmProject(_id: String,
+                        _rev: Option[String],
+                        name: String,
+                        author: Option[PersonSimple],
+                        authorObject: Option[PersonObject],
+                        contributors: Option[List[PersonObject]],
+                        description: Option[String],
+                        homepage: Option[String],
+                        keywords: Option[List[String]],
+                        license: Option[String],
+                        dependencies: Option[List[Dependency]],
+                        maintainers: List[PersonObject],
+                        readme: String,
+                        readmeFilename: String,
+                        bugs: Option[Bug],
+                        bugString: Option[String],
+                        repository: Option[Repository],
+                        time: TimeObject
                        )
 
-  case class DependencyObject( packageName : String,
-                               version     : String)
-  case class PersonObject( name   : String,
-                           email  : Option[String],
-                           url    : Option[String])
+  case class Dependency(packageName: String,
+                        version: String)
 
-  case class PersonSimple( nameAndOptEmailOptURL : String)
+  case class PersonObject(name: String,
+                          email: Option[String],
+                          url: Option[String])
 
-  case class Repository(`type`     : String,
-                        url        : String,
-                        directory  : Option[String])
+  case class PersonSimple(nameAndOptEmailOptURL: String)
 
-  case class Bug( url   : Option[String],
-                  email : Option[String])
+  case class Repository(`type`: String,
+                        url: String,
+                        directory: Option[String])
 
-  case class TimeObject( created  : String,
-                         modified : Option[String])
+  case class Bug(url: Option[String],
+                 email: Option[String])
 
-  // underneath is a POJO representation of all case classes mentioned above
+  case class TimeObject(created: String,
+                        modified: Option[String])
 
-  class NpmReleasePojo extends Serializable {
-    var name: String = _
-    var retrieveDate: Long = _
-  }
+  // underneath is a POJO representation of all case classes mentioned above (in a functional style ^_^ )
+
+  class NpmReleasePojo(val name: String,
+                       val retrieveDate: Long) extends Serializable {}
 
   object NpmReleasePojo {
-    def fromNpmRelease(release : NpmRelease) : NpmReleasePojo = {
-      val pojo = new NpmReleasePojo()
-      pojo.name = release.name
-      pojo.retrieveDate = release.retrieveDate.getTime
-      pojo
-    }
+    def fromNpmRelease(release: NpmRelease): NpmReleasePojo =
+      new NpmReleasePojo(release.name, release.retrieveDate.getTime)
   }
 
-  class NpmReleaseExtPojo extends Serializable {
-    var name: String = _
-    var retrieveDate: Long = _
-    var project: NpmProjectPojo = _
-  }
+  class NpmReleaseExtPojo(val name: String,
+                          val retrieveDate: Long,
+                          val project: NpmProjectPojo) extends Serializable {}
 
   object NpmReleaseExtPojo {
-    def fromNpmReleaseExt(release : NpmReleaseExt) : NpmReleaseExtPojo = {
-      val pojo = new NpmReleaseExtPojo()
-      pojo.name = release.name
-      pojo.retrieveDate = release.retrieveDate.getTime
-      pojo.project = NpmProjectPojo.fromNpmProject(release.project)
-      pojo
-    }
+    def fromNpmReleaseExt(release: NpmReleaseExt): NpmReleaseExtPojo =
+      new NpmReleaseExtPojo(release.name, release.retrieveDate.getTime, NpmProjectPojo.fromNpmProject(release.project))
   }
 
-  class NpmProjectPojo extends Serializable {
-    var _id: String = _
-    var _rev: Option[String] = _
-    var name: String = _
-    var author: Option[PersonSimplePojo] = _
-    var authorObject: Option[PersonObjectPojo] = _
-    var contributors: Option[List[PersonObjectPojo]] = _
-    var description: Option[String] = _
-    var homepage: Option[String] = _
-    var keywords: Option[List[String]] = _
-    var license: Option[String] = _
-    var dependencies: Option[List[DependencyPojo]] = _
-    var maintainers: List[PersonObjectPojo] = _
-    var readme: String = _
-    var readmeFilename: String = _
-    var bugs: Option[BugPojo] = _
-    var bugString: Option[String] = _
-    var repository: Option[RepositoryPojo] = _
-    var time: TimePojo = _
-  }
+  class NpmProjectPojo(
+                        val _id: String,
+                        val _rev: Option[String],
+                        val name: String,
+                        val author: Option[PersonSimplePojo],
+                        val authorObject: Option[PersonObjectPojo],
+                        val contributors: Option[List[PersonObjectPojo]],
+                        val description: Option[String],
+                        val homepage: Option[String],
+                        val keywords: Option[List[String]],
+                        val license: Option[String],
+                        val dependencies: Option[List[DependencyPojo]],
+                        val maintainers: List[PersonObjectPojo],
+                        val readme: String,
+                        val readmeFilename: String,
+                        val bugs: Option[BugPojo],
+                        val bugString: Option[String],
+                        val repository: Option[RepositoryPojo],
+                        val time: TimePojo)
+    extends Serializable {}
 
   object NpmProjectPojo {
     def fromNpmProject(project: NpmProject): NpmProjectPojo = {
-      val pojo = new NpmProjectPojo()
-      pojo._id = project._id
-      pojo._rev = project._rev
-      pojo.name = project.name
-
-      // Transform author
-      pojo.author =
+      // transform author
+      val author =
         if (project.author.isEmpty) None
         else Some(PersonSimplePojo.fromPersonSimple(project.author.get))
 
-      // Transform the authorObject
-      pojo.authorObject =
-        if (project.author.isEmpty) None
+      // transform the authorObject
+      val authorObject =
+        if (project.authorObject.isEmpty) None
         else Some(PersonObjectPojo.fromPersonObject(project.authorObject.get))
 
-      // Map contributors
-      pojo.contributors =
+      // map contributors
+      val contributors =
         if (project.contributors.isEmpty) None
         else Some(project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person)))
 
-      pojo.description = project.description
-      pojo.homepage = project.homepage
-
       // map the keywords
-      pojo.keywords =
+      val keywords =
         if (project.keywords.isEmpty) None
         else Some(project.keywords.get)
 
-      pojo.license = project.license
-
       // map the dependencies
-      pojo.dependencies =
+      val dependencies =
         if (project.dependencies.isEmpty) None
         else Some(project.dependencies.get.map(x => DependencyPojo.fromDependency(x)))
 
-      pojo.maintainers = project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg))
-      pojo.readme = project.readme
-      pojo.readmeFilename = project.readmeFilename
-
       // transform the bug
-      pojo.bugs =
+      val bugs =
         if (project.bugs.isEmpty) None
         else Some(BugPojo.fromBug(project.bugs.get))
 
-      pojo.bugString = project.bugString
-
       // transform the repo
-      pojo.repository =
+      val repository =
         if (project.repository.isEmpty) None
         else Some(RepositoryPojo.fromRepository(project.repository.get))
-      pojo.time = TimePojo.fromTime(project.time)
-      pojo
+      val time = TimePojo.fromTime(project.time)
+      // now create a new POJO with these vals
+      new NpmProjectPojo(project._id, project._rev, project.name, author, authorObject, contributors,
+        project.description, project.homepage, keywords, project.license, dependencies,
+        project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
+        bugs, project.bugString, repository, time)
     }
   }
 
-  class DependencyPojo extends Serializable {
-    var packageName: String = _
-    var version: String = _
-  }
+  class DependencyPojo(val packageName: String,
+                       val version: String) extends Serializable {}
 
   object DependencyPojo {
-    def fromDependency(dep : DependencyObject) : DependencyPojo = {
-      val pojo = new DependencyPojo()
-      pojo.packageName = dep.packageName
-      pojo.version = dep.version
-      pojo
-    }
+    def fromDependency(dep: Dependency): DependencyPojo = new DependencyPojo(dep.packageName, dep.version)
   }
 
-  class PersonObjectPojo extends Serializable {
-    var name: String = _
-    var email: Option[String] = _
-    var url: Option[String] = _
-  }
+  class PersonObjectPojo(val name: String,
+                         val email: Option[String],
+                         val url: Option[String]) extends Serializable {}
 
   object PersonObjectPojo {
-    def fromPersonObject(person : PersonObject) : PersonObjectPojo = {
-      val pojo = new PersonObjectPojo
-      pojo.name = person.name
-      pojo.email = person.email
-      pojo.url = person.url
-      pojo
-    }
+    def fromPersonObject(person: PersonObject): PersonObjectPojo =
+      new PersonObjectPojo(person.name, person.email, person.url)
   }
 
-  class PersonSimplePojo extends Serializable {
-    var nameAndOptEmailOptUrl: String = _
-  }
+  class PersonSimplePojo(val nameAndOptEmailOptUrl: String) extends Serializable {}
 
   object PersonSimplePojo {
-    def fromPersonSimple(person : PersonSimple): PersonSimplePojo = {
-      val pojo = new PersonSimplePojo()
-      pojo.nameAndOptEmailOptUrl = person.nameAndOptEmailOptURL
-      pojo
-    }
+    def fromPersonSimple(person: PersonSimple): PersonSimplePojo = new PersonSimplePojo(person.nameAndOptEmailOptURL)
   }
 
-  class RepositoryPojo extends Serializable {
-    var `type`: String = _
-    var url: String = _
-    var directory: Option[String] = _
-  }
+  class RepositoryPojo(val `type`: String,
+                       val url: String,
+                       val directory: Option[String]) extends Serializable {}
 
   object RepositoryPojo {
-    def fromRepository(r: Repository): RepositoryPojo = {
-      val pojo = new RepositoryPojo()
-      pojo.`type` = r.`type`
-      pojo.url = r.url
-      pojo.directory = r.directory
-      pojo
-    }
+    def fromRepository(r: Repository): RepositoryPojo = new RepositoryPojo(r.`type`, r.url, r.directory)
   }
 
-  class BugPojo extends Serializable {
-    var url: Option[String] = _
-    var email: Option[String] = _
-  }
+  class BugPojo(val url: Option[String],
+                val email: Option[String]) extends Serializable {}
 
   object BugPojo {
-    def fromBug(b : Bug) : BugPojo = {
-      val pojo = new BugPojo()
-      pojo.url = b.url
-      pojo.email = b.email
-      pojo
-    }
+    def fromBug(b: Bug): BugPojo = new BugPojo(b.url, b.email)
   }
 
-  class TimePojo extends Serializable {
-    var created: String = _
-    var modified: Option[String] = _
-  }
+  class TimePojo(val created: String,
+                 val modified: Option[String]) extends Serializable {}
 
   object TimePojo {
-    def fromTime(obj : TimeObject ) : TimePojo = {
-      val pojo = new TimePojo()
-      pojo.created = obj.created
-      pojo.modified = obj.modified
-      pojo
-    }
+    def fromTime(obj: TimeObject): TimePojo = new TimePojo(obj.created, obj.modified)
   }
+
+  override def toString : String = "Protocol companion object"
 }

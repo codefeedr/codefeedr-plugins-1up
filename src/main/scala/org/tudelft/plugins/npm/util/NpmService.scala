@@ -10,7 +10,7 @@ import org.jsoup.Jsoup
 import org.json4s.jackson.Serialization.read
 import org.json4s.jackson.JsonMethods._
 import java.util.Date
-import org.tudelft.plugins.npm.protocol.Protocol.{DependencyObject, NpmProject, NpmReleaseExt, TimeObject}
+import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, TimeObject}
 
 /**
  * Services to retrieve a project from the NPM API registry.
@@ -115,7 +115,7 @@ object NpmService extends Logging with Serializable {
       case _ => Nil
     }
 
-    val finalListOfTuplesWithDeps = dependenciesList.map { case (x, JString(y)) => DependencyObject(x,y) }
+    val finalListOfTuplesWithDeps = dependenciesList.map { case (x, JString(y)) => Dependency(x,y) }
 
 
     // STEP 3: Update the Case Class with the results of time & dependencies
