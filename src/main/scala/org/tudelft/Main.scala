@@ -11,6 +11,7 @@ import org.codefeedr.stages.OutputStage
 import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
+import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
 // Cargo
 /*object Main {
@@ -57,15 +58,39 @@ class WordCountOutput extends OutputStage[ClearlyDefinedRelease] {
  */
 
 // Maven
+//object Main {
+//  def main(args: Array[String]): Unit = {
+//
+//    val releaseSource = new MavenReleasesStage()
+//    val enrichReleases = new MavenReleasesExtStage()
+//    val sqlStage = new SQLStage()
+//
+//    new PipelineBuilder()
+//      .setPipelineName("Maven plugin")
+//      .setRestartStrategy(RestartStrategies.fixedDelayRestart(
+//        3,
+//        Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
+//      .enableCheckpointing(1000) // checkpointing every 1000ms
+//      .setBufferProperty(KafkaBuffer.COMPRESSION_TYPE, "gzip")
+//      .setBufferProperty(KafkaBuffer.BROKER, "localhost:9092")
+//      .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
+//      .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
+//      .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
+//      .edge(releaseSource, enrichReleases)
+//      .edge(enrichReleases, sqlStage)
+//      //      .edge(releaseSource, sqlStage)
+//      .build()
+//      .startMock()
+//  }
+//}
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val releaseSource = new MavenReleasesStage()
-    val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = new SQLStage()
+    val releaseSource = new NpmReleasesStage()
+    val enrichReleases = new NpmReleasesExtStage()
 
     new PipelineBuilder()
-      .setPipelineName("Maven plugin")
+      .setPipelineName("NPM plugin")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
         3,
         Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
@@ -76,10 +101,8 @@ object Main {
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
       .edge(releaseSource, enrichReleases)
-      .edge(enrichReleases, sqlStage)
-      //      .edge(releaseSource, sqlStage)
       .build()
-      .startMock()
+      .startLocal()
   }
 }
 
