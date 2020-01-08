@@ -30,52 +30,26 @@ class ProtocolTest extends FunSuite {
   val personobj = PersonObject("cxtom", Some("cxtom2010@gmail.com"), None)
   val emptypersonobj = PersonObject("", None, None)
   val dependencyobj = Dependency("semver", "^6.2.0")
-  val bigProject = NpmProject(
-    "ts2php",
-    Some("82-79c18b748261d1370bd45e0efa753721"),
-    "ts2php",
-    None,
-    None,
-    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))),
-    Some("TypeScript to PHP Transpiler"),
-    Some("https://github.com/searchfe/ts2php#readme"),
-    None,
-    Some("MIT"),
-    Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))),
-    List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
-    "some story on how this project came to be",
-    "indication where to find the above line",
-    Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
-    None,
-    Some(Repository("git", "git+https://github.com/searchfe/ts2php.git", None)),
-    TimeObject("2019-02-19T06:00:04.974Z", Some("2019-12-13T07:51:00.925Z"))
+  val bigProject = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", None, None,
+    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"), None, Some("MIT"),
+    Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
+    "some story on how this project came to be", "indication where to find the above line", Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
+    None, Some(Repository("git", "git+https://github.com/searchfe/ts2php.git", None)), TimeObject("2019-02-19T06:00:04.974Z", Some("2019-12-13T07:51:00.925Z"))
   )
   val now = new Date(0)
   val npmrel = NpmRelease("ts2php", now)
   val npmrele = NpmReleaseExt("ts2php", now, bigProject)
 
-  val bigProject2 = NpmProject(
-    "ts2php",
-    Some("82-79c18b748261d1370bd45e0efa753721"),
-    "ts2php",
-    Some(PersonSimple("nonEmptyAuthorForTs2php")),
-    Some(personobj), // cxtom version
-    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))),
-    Some("TypeScript to PHP Transpiler"),
-    Some("https://github.com/searchfe/ts2php#readme"),
-    Some(List("testing", "fullcoverage")),
-    Some("MIT"),
-    Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))),
-    List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
-    "some story on how this project came to be",
-    "indication where to find the above line",
-    Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
-    None,
-    Some(Repository("git", "git+https://github.com/searchfe/ts2php.git", None)),
-    TimeObject("2019-02-19T06:00:04.974Z", Some("2019-12-13T07:51:00.925Z"))
+  val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some(PersonSimple("nonEmptyAuthorForTs2php")), Some(personobj), // cxtom version
+    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"), Some(List("testing", "fullcoverage")), Some("MIT"),
+    Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
+    "some story on how this project came to be", "indication where to find the above line", Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
+    None, Some(Repository("git", "git+https://github.com/searchfe/ts2php.git", None)), TimeObject("2019-02-19T06:00:04.974Z", Some("2019-12-13T07:51:00.925Z"))
   )
 
+
   // Start of tests
+
 
   test("POJO Test - NpmRelease POJO creation") {
     val pojo = NpmReleasePojo.fromNpmRelease(npmrel)

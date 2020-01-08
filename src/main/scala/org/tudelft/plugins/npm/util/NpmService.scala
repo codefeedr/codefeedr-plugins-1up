@@ -1,16 +1,17 @@
 package org.tudelft.plugins.npm.util
 
+import java.util.Date
 import org.apache.logging.log4j.scala.Logging
 import org.codefeedr.stages.utilities.HttpRequester
-import scalaj.http.Http
-import org.json4s.{DefaultFormats, Formats}
+import org.json4s.JsonAST.{JObject, JString}
 import org.json4s.ext.JavaTimeSerializers
-import org.json4s.JsonAST._
-import org.jsoup.Jsoup
+import org.json4s.jackson.JsonMethods.parse
 import org.json4s.jackson.Serialization.read
-import org.json4s.jackson.JsonMethods._
-import java.util.Date
+import org.json4s.{DefaultFormats, Formats, JValue}
+import org.jsoup.Jsoup
+import org.tudelft.plugins.npm.protocol.Protocol
 import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, TimeObject}
+import scalaj.http.Http
 
 /**
  * Services to retrieve a project from the NPM API registry.
@@ -19,11 +20,6 @@ import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmRel
  * Date: 2019-12-01 (YYYY-MM-DD)
  */
 object NpmService extends Logging with Serializable {
-
-  /**
-   * Extraction formats.
-   */
-  lazy implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
 
   /**
    * the API url to retrieve projects from.
@@ -37,102 +33,113 @@ object NpmService extends Logging with Serializable {
    * @return an optional NpmProject.
    */
   def getProject(projectName: String): Option[NpmReleaseExt] = {
-    // retrieve the project, returns complex HTML string
-    val rawProject = getProjectRaw(projectName)
+    for {
+      jsonString <- createJsonStringFor(url_packageInfo, projectName)
+      npmProject <- convertProjectFrom(jsonString)
+    } yield buildNpmReleaseExtUsing(projectName, jsonString, npmProject)
+  }
 
-    // preliminary checks if the project request got through ok
-    if (rawProject.isEmpty || rawProject.get == """{"error":"Not found"}""") {
+  /**
+   * Creates a JSON String for this project
+   *
+   * @param projectName the project for which to get the information and create the JSON String
+   * @return the JSON in Option[String] (so None, if something went wrong)
+   */
+  def createJsonStringFor(updateStreamBaseURL : String, projectName: String) : Option[String] = {
+    val jsonString: Option[String] = getProjectRaw(updateStreamBaseURL, projectName)
+    // I think during debugging this is already JSON... so skip the doc, escapedString/jsonString?
+    if (jsonString.isEmpty || jsonString.get == """{"error":"Not found"}""") {
       logger.error(s"Couldn't retrieve npm project with name $projectName.")
       return None
     }
+    jsonString
+  }
 
-    // some intermediate setup values culminating in the parsing of the project into a case class
-    val doc = Jsoup.parse(rawProject.get)
-
-    //If the parser fails in the future, its because of this line
-    val escapedString = doc.body().text() + doc.body().data()
-
-    val jsonString = escapedString.slice(escapedString.indexOf('{'), escapedString.lastIndexOf('}') + 1)
-
-    var myJsonProject: NpmProject = null
-    try{
-      myJsonProject = read[NpmProject](jsonString: String)
+  /**
+   * Creates a NpmProject from given JSON String while taking care of some error handling as well
+   * @param json the JSON String to parse
+   * @return None if something went wrong or Some[NpmProject]
+   */
+  def convertProjectFrom(json : String) : Option[NpmProject] = {
+    implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
+    val myProject = try {
+      Some(read[Protocol.NpmProject](json))
+    } catch {
+      case _ : Throwable => None
     }
-    catch{
-      case _: Throwable =>
-        None
-    }
+    myProject
+  }
 
-    // STEP 1: now set the time right (find the created / modified field and update the time)
-
+  /**
+   * Builds an extended Release from given name, JSON String and NpmProject.
+   * @param projectName the name of the project we want to build an extended release for
+   * @param jsonString the JSON string belonging to this projectName
+   * @param project the NPMproject extracted from given JSON String
+   * @return an NpmReleaseExt with all required details filled in
+   */
+  def buildNpmReleaseExtUsing(projectName: String, jsonString: String, project: NpmProject): NpmReleaseExt = {
     val json = parse(jsonString)
-
-    // TODO separate method!
-
-    val timelog = (json \ "time")
-
-    // first get the field with id "created", if it's a JNothing, the extract[String] will throw an exception!
-    // so case match to convert JNothing to JString, or otherwise leave it be
-    // since this is not an Option[String], we don't need to match twice
-    val createdField = timelog \ "created" match {
-      case JNothing         => JString("unknown")
-      case otherStuff       => otherStuff
-    }
-    val createdValue = createdField match {
-      case JString("unknown")   => "unknown" // design choice
-      case JString(s : String)  => createdField.extract[String]
-      //case _                    => "unknown"
-    }
-
-    // with the modified field it's different, if it's not in it, we need to accumulate a None, otherwise a Some(s...)
-    // the intermediate step is because extract[String] can't handle JNothing -> None / JString(s) -> Some(s)
-    val modifiedField = (timelog \ "modified" ) match {
-      case JNothing       => JString("unknown")
-      case otherStuff       => otherStuff
-    }
-    val modifiedValue = modifiedField match {
-      case JString("unknown")   => None
-      case JString(s : String)  => Some(s)
-      //case _                    => Some("unknown")
-    }
-
-    val myTimeObject = TimeObject(createdField.extract[String], modifiedValue)
-
-
+    // STEP 1: now set the time right (find the created / modified field and update the time)
+    val myTime = extractTimeFrom(json)
     // STEP 2 : Now lookup the dependencies
-
-    val firstLookupLatest = (json \ "dist-tags") \ "latest"
-
-    val versionNroflatestVersion = firstLookupLatest match {
-      case JString(x) => x
-      case _ => "-1"
-    }
-
-    // then get me that version object with all info
-    val dependenciesObject = (( json \ "versions" ) \ versionNroflatestVersion ) \ "dependencies"
-    val dependenciesList = dependenciesObject match {
-      case JObject(lijstje) => lijstje
-      case _ => Nil
-    }
-
-    val finalListOfTuplesWithDeps = dependenciesList.map { case (x, JString(y)) => Dependency(x,y) }
-
-
+    val myDependencies = extractDependenciesFrom(json)
+    // TODO wait for point by client on whether author is really important
     // STEP 3: Update the Case Class with the results of time & dependencies
+    NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, dependencies = Some(myDependencies)))
+  }
 
-    val myNpmProject = myJsonProject.copy(time = myTimeObject, dependencies = Some(finalListOfTuplesWithDeps))
-    return Some(NpmReleaseExt(projectName, new Date(), myNpmProject))
+  /**
+   * Parses the time for a given project
+   * @param json the JValue to parse the time from
+   * @return a case class TimeObject with relevant details filled in
+   */
+  def extractTimeFrom(json : JValue) : TimeObject = {
+    // find the first creation time
+    val createdField = ( (json \ "time") \ "created") match {
+      case JString(s: String) => s
+      case _                  => "unknown"
+    }
+    // find the latest modification time
+    val modifiedField = ((json \ "time") \ "modified") match {
+      case JString(s: String) => Some(s)
+      case _                  => None
+    }
+    TimeObject(createdField, modifiedField)
+  }
+
+  /**
+   * Parses the dependencies for the latest version of a given project, if the field "latest" exists within the JSON
+   * @param json the JValue from which we glean the List[DependencyObject]
+   * @return the list with Dependencies or Nil if something went wrong
+   */
+  def extractDependenciesFrom(json : JValue): List[Dependency] = {
+    // first look up the latest version number
+    val latestVersionNr = (json \ "dist-tags") \ "latest" match {
+      case JString(x) => x
+      case _          => "-1"
+    }
+    // then get me that version object and look up the dependencies field
+    val dependenciesList = ((json \ "versions") \ latestVersionNr) \ "dependencies" match {
+      case JObject(lijstje) => lijstje
+      case _                => Nil
+    }
+    // EXHAUSTIVE match using Option, then flatMap to get the correct type back!
+    dependenciesList.flatMap(tupleElem => tupleElem match {
+      case (name, JString(version)) => Some(Dependency(name, version))
+      case _                        => None
+    })
   }
 
   /**
    * Returns a project as a raw string.
    *
    * @param endpoint the end_point to do the request.
-   * @return an optional String.
+   *
+   * @return an optional JSON String.
    */
-  def getProjectRaw(endpoint : String): Option[String] = {
+  def getProjectRaw(base_url : String, endpoint : String): Option[String] = {
     val response = try {
-      val request = Http(url_packageInfo + endpoint).headers(withConfiguredHeaders)
+      val request = Http(base_url + endpoint).headers(withConfiguredHeaders)
       new HttpRequester().retrieveResponse(request)
     } catch {
       case _: Throwable => return None
@@ -143,6 +150,22 @@ object NpmService extends Logging with Serializable {
   /**
    * Add a user-agent with contact details.
    */
-  def withConfiguredHeaders: List[(String, String)] =
+  def withConfiguredHeaders: List[(String, String)] = {
     ("User-Agent", "CodeFeedr-Npm/1.0 Contact: zonneveld.noordwijk@gmail.com") :: Nil
+  }
+  override def toString() = "NpmService Companion Object"
 }
+
+/*
+    // TODO determine which time we want to use for NPMReleaseExt as 2nd field
+
+    //https://markhneedham.com/blog/2011/09/15/scala-for-comprehensions-with-options/
+
+    Notes on dependency extraction:
+    in stead of the non exhaustive match of
+          dependenciesList.map { case (x, JString(y)) => Dependency(x,y) }
+
+    wanted to test out and had to create an Option[Dependency] to get the match working with None, or otherwise
+    I would've gotten nasty type errors and conversion/compilation error msgs... so I applied FULL matching with Option
+    then flatMap to remove the Some/None from it...
+     */

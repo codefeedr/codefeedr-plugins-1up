@@ -30,6 +30,7 @@ class NpmReleasesSourceTest extends FunSuite {
     assert(working)
   }
 
+// time consuming
   test("retrieve from incorrect url will fail") {
     // Arrange
     val jsonString = npmReleasesSource.retrieveUpdateStringFrom("http://www.idontexisturl.com")
