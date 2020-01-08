@@ -196,10 +196,14 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
    *
    * @return Body of requested update stream
    */
-  @throws[RequestException]
   def retrieveUpdateStringFrom(urlEndpoint : String) : String = {
-    val result = new HttpRequester().retrieveResponse(Http(urlEndpoint)).body
-    result
+    val response = try {
+      val request = Http(urlEndpoint)
+      return new HttpRequester().retrieveResponse(request).body
+    } catch {
+      case _ : Throwable => ""
+    }
+    response
   }
 
   /**
