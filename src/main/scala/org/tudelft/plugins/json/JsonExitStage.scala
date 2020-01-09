@@ -16,8 +16,8 @@ import scala.reflect.runtime.universe._
   */
 class JsonExitStage[T <: Serializable with AnyRef with Jsonable : ClassTag : TypeTag] extends OutputStage[T] {
   override def main(source: DataStream[T]): Unit = {
-    implicit val typeInfo: TypeInformation[String] = TypeInformation.of(classOf[String])
-    source.map(x => x.toJson())
+    implicit val typeInfo: TypeInformation[Unit] = TypeInformation.of(classOf[Unit])
+    source.map((x: T) => println(x.toJson()))
   }
 
 }

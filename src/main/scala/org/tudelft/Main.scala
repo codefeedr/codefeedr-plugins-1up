@@ -5,17 +5,19 @@ import java.util.Date
 import org.apache.flink.streaming.api.scala._
 import org.codefeedr.pipeline.PipelineBuilder
 import org.codefeedr.stages.OutputStage
-import org.tudelft.plugins.json.{JsonTransformStage, StringWrapper}
-import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
+import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
+import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
+import org.tudelft.plugins.maven.stages.SQLStage.SQLStage
+import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
 
 object Main {
   def main(args: Array[String]): Unit = {
     new PipelineBuilder()
       .append(new MavenReleasesStage())
       .append(new MavenReleasesExtStage())
-      .append(new JsonTransformStage[MavenReleaseExt]())
-      .append (new CrateDownloadsOutput)
+//      .append(SQLStage.createSQLStage[MavenReleaseExt]("Select * from Maven"))
+      .append(new JsonExitStage[MavenReleaseExt]())
+//      .append (new CrateDownloadsOutput)
       .build()
       .startMock()
   }
