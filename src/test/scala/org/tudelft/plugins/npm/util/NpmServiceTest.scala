@@ -20,9 +20,12 @@ import scala.io.Source
  */
 class NpmServiceTest extends FunSuite {
 
-  // variables to test conditions for getProjectRaw
+  // variables to test conditions for getProjectRaw & convertProjectFrom
   val correct_base_url = "http://registry.npmjs.com/"
   val incorrect_base_url = "http://somenonexistentdomain.com"
+  val nonExistingProject = "roaldroaldroaldroaldroald8D"
+  val unPublishedProject = "/@lizheng11/t1"
+  val existingProject = "ts2php"
 
   // variables simulating certain conditions in JSON for testing dependencies extraction method
   val jsonStringWithNoDistTags = """{"_id": "@bamblehorse/tiny","_rev": "2-9526bb8fdedb67c1fe82abbad9de9a4f","name": "@bamblehorse/tiny" }"""
@@ -55,27 +58,19 @@ class NpmServiceTest extends FunSuite {
   // tests for getProjectRaw
 
 // time consuming
-  test("getProjectRaw - fetching from a bogus domain raises an exception and thus returns None") {
-      // Act
-      val result = NpmService.getProjectRaw(incorrect_base_url, "ts2php")
-      // Assert
-      assert(result.isEmpty)
-    }
+//  test("getProjectRaw - fetching from a bogus domain raises an exception and thus returns None") {
+//      val result = NpmService.getProjectRaw(incorrect_base_url, existingProject)
+//      assert(result.isEmpty)
+//  }
 
   test("getProjectRAW - fetching a NONEXISTING Npm package returns a JSON ERROR string") {
-    // Arrange
-    val nonExistingProject = "roaldroaldroaldroaldroald8D"
-    // Act
     val result = NpmService.getProjectRaw(correct_base_url, nonExistingProject)
-    // Assert
     assert(result.get=="""{"error":"Not found"}""")
   }
 
   test("getProjectRaw - fetching an UNPUBLISHED Npm package returns some JSON string") {
-    // Arrange
-    val nonPublishedProject = "/@lizheng11/t1"
     // Act
-    val result = NpmService.getProjectRaw(correct_base_url, nonPublishedProject)
+    val result = NpmService.getProjectRaw(correct_base_url, unPublishedProject)
     val json = parse(result.get)
     val unpublishedTimeField =  (json \ "time") \ "unpublished"
 
@@ -87,11 +82,7 @@ class NpmServiceTest extends FunSuite {
   }
 
   test("getProjectRAW - fetching a EXISTING Npm package returns a good JSON string") {
-    // Arrange
-    val existingProject = "ts2php"
-    // Act
     val optionString = NpmService.getProjectRaw(correct_base_url, existingProject)
-    // Assert
     assert(optionString.isInstanceOf[Option[String]])
   }
 
@@ -100,27 +91,18 @@ class NpmServiceTest extends FunSuite {
 
 
   test (" getProject - fetching a NONEXISTING Npm package yields None") {
-    // Arrange
-    val projectName = "/roaldisfinallyfinishingup_thisprojectnamedoesnotexist"
-    // Act
-    val result = NpmService.getProject(projectName)
-    // Assert
+    val result = NpmService.getProject(nonExistingProject)
     assert(result.isEmpty)
   }
 
   test("getProject - fetching an UNPUBLISHED Npm package yields None") {
-    // Arrange
-    val nonPublishedProject = "/@lizheng11/t1"
-    // Act
-    val result = NpmService.getProject(nonPublishedProject)
+    val result = NpmService.getProject(unPublishedProject)
     assert(result.isEmpty)
   }
 
   test("getProject - fetching an EXISTING project works correctly") {
-    // Arrange
-    val projectName = "ts2php"
     // Act
-    val result = NpmService.getProject(projectName)
+    val result = NpmService.getProject(existingProject)
     // Assert
     assert(result.isDefined)
     val pid = result.get.project._id
@@ -134,10 +116,8 @@ class NpmServiceTest extends FunSuite {
 
 
   test("createjsonString - working ok") {
-    // Arrange
-    val workingProject = "ts2php"
     // Act 1
-    val jsonString = NpmService.createJsonStringFor(correct_base_url , workingProject)
+    val jsonString = NpmService.createJsonStringFor(correct_base_url , existingProject)
     println(jsonString)
     // Assert 1
     assert(jsonString.isInstanceOf[Option[String]])
@@ -151,10 +131,8 @@ class NpmServiceTest extends FunSuite {
   }
 
   test("createjsonString - unpublished npm package results in Some(...)") {
-    // Arrange
-    val workingProject = "@lizheng11/t1"
     // Act 1
-    val jsonString = NpmService.createJsonStringFor(correct_base_url ,workingProject)
+    val jsonString = NpmService.createJsonStringFor(correct_base_url, unPublishedProject)
     // Assert 1
     assert(jsonString.isInstanceOf[Option[String]])
     assert(jsonString != "")
@@ -165,24 +143,16 @@ class NpmServiceTest extends FunSuite {
   }
 
   test("createJsonString - incorrectly specified npm package url results in None") {
-    // Arrange
-    val bogusProject = "nonExistent" // results in error: not found!
-    // Act
-    val jsonString = NpmService.createJsonStringFor(correct_base_url, bogusProject)
-    // Assert
+    val jsonString = NpmService.createJsonStringFor(correct_base_url, nonExistingProject)
     assert(jsonString == None)
   }
 
 // time consuming
-  test("createJsonString - bogus domain will fail and result in None") {
-    // Arrange
-    val bogusProject = "someNonExistentProjectSomewhere" // results in error: not found!
-    // Act
-    val jsonString = NpmService.createJsonStringFor(incorrect_base_url, bogusProject)
-    // Assert
-    assert(jsonString.isInstanceOf[Option[String]])
-    assert(jsonString == None)
-  }
+//  test("createJsonString - bogus domain will fail and result in None") {
+//    val jsonString = NpmService.createJsonStringFor(incorrect_base_url, nonExistingProject)
+//    assert(jsonString.isInstanceOf[Option[String]])
+//    assert(jsonString == None)
+//  }
 
   // Time extraction tests
 
