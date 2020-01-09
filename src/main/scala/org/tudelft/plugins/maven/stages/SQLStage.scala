@@ -20,6 +20,7 @@ object SQLStage{
 
   /**
     * This stage takes in a stream and performs a query on it
+    * For constructing an SQLStage use SQLStage.createSQLStage or a None.get exception is thrown
     *
     * @param classTag$T The classTag of the input stream
     * @param typeTag$T The typeTag of the input stream

@@ -6,7 +6,8 @@ import java.util.regex.Pattern
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
-import org.tudelft.plugins.maven.protocol.Protocol.MavenRelease
+import org.tudelft.plugins.json.JsonExitStage
+import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
@@ -114,6 +115,7 @@ object PipelineCommand extends Parser with Command {
       else builder = maybeBuilder.get
     }
     //Build the pipeline
+    //TODO maybe add try catch here
     val pipeline = builder.build()
 
     //Return the new pipeline added to the env
@@ -136,15 +138,32 @@ object PipelineCommand extends Parser with Command {
       case "NpmReleasesExt" => Some(builder.append(new NpmReleasesExtStage()))
       case "ClearlyDefinedReleases" => Some(builder.append(new ClearlyDefinedReleasesStage()))
       case x if x.startsWith("SQL") => {
-        val query = x.substring(4, x.length - 1)
-        println(query)
+        val query = x.substring(x.indexOf("(") + 1, x.indexOf(")"))
         //TODO MavenRelease is now hardcoded, but this should be somehow inferred
         Some(builder.append(SQLStage.createSQLStage[MavenRelease](query)))
       }
+      case x if x.startsWith("Json") => buildJsonStage(x.substring(x.indexOf("[") + 1, x.indexOf("]")), builder)
+
       //TODO all the other stages from existing plugins, e.g. ghtorrent
       case _ => None
     }
   }
+
+
+  /**
+    * Takes in a string representing the type of json (exit) stage to append to the builder
+    *
+    * @param s The string representing the type of json (exit) stage to append
+    * @param builder The builder containing all the previously built stages
+    * @return a new builder with appended a json (exit) stage
+    */
+  def buildJsonStage(s: String, builder: PipelineBuilder): Option[PipelineBuilder] = s match {
+    case "MavenRelease" => Some(builder.append(new JsonExitStage[MavenRelease]()))
+    case "MavenReleaseExt" => Some(builder.append(new JsonExitStage[MavenReleaseExt]()))
+    //TODO all the other stuff, but they first need to implement Jsonable
+    case _ => None
+  }
+
 
 
   /**
@@ -180,6 +199,7 @@ object PipelineCommand extends Parser with Command {
     } else {
       //Start the pipeline in a new thread
       val thread = new ApplicationThread
+      //TODO maybe add try catch here
       thread.run(runPipeline(pipeline.get._1))
       //Return pipeline now indicated as running
       (ReplEnv(env.pipelines.filterNot(x => x._1.name == input(0)) :+ (pipeline.get._1, true)), Success("Successfully started pipeline"))

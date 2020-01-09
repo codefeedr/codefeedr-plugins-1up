@@ -1,5 +1,6 @@
 package org.tudelft
 
+import java.lang.reflect.Constructor
 import java.util.Date
 
 import org.apache.flink.streaming.api.scala._
@@ -12,6 +13,7 @@ import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesSta
 
 object Main {
   def main(args: Array[String]): Unit = {
+
     new PipelineBuilder()
       .append(new MavenReleasesStage())
       .append(new MavenReleasesExtStage())
