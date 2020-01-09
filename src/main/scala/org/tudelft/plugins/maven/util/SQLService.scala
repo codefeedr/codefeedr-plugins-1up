@@ -15,6 +15,16 @@ import scala.reflect.runtime.universe._
 
 
 object SQLService {
+  val rootTableName: String = "Maven"
+  val projectTableName: String = "MavenProject"
+  val projectParentTableName: String = "MavenProjectParent"
+  val projectDependenciesTableName: String = "MavenProjectDependencies"
+  val projectLicensesTableName: String = "MavenProjectLicenses"
+  val projectRepositoriesTableName: String = "MavenProjectRepositories"
+  val projectOrganizationTableName: String = "MavenProjectOrganization"
+  val projectIssueManagementTableName: String = "MavenProjectIssueManagement"
+  val projectSCMTableName: String = "MavenProjectSCM"
+
   def performQuery[T: TypeTag](in: DataStream[T]): Unit = {
 
     //Get the required environments
@@ -32,30 +42,18 @@ object SQLService {
 
     registerTableFromStream[T](in, tEnv)
 
-    //      tEnv.registerDataStream("MavenTest", in)
-
-    println(tEnv.explain(tEnv.fromDataStream(in)))
-
-    val tables: Array[String] = tEnv.listTables()
-
-    //    tEnv.fromDataStream(in)
-
-    println(tEnv.fromDataStream(in).getSchema())
-
-    val query = "SELECT * FROM MavenProjectPojo"
+    val query = "SELECT * FROM " + projectTableName
     //Perform query
-    val res: Table = tEnv.sqlQuery(query)
-    println(tEnv.explain(res))
+    val queryTable: Table = tEnv.sqlQuery(query)
+    tEnv.explain(queryTable)
 
     // Just for printing purposes, in reality you would need something other than Row
     implicit val typeInfo = TypeInformation.of(classOf[Row])
 
-    tEnv.toAppendStream(res)(typeInfo).print()
+    tEnv.toAppendStream(queryTable)(typeInfo).print()
 
     env.execute()
   }
-
-  var projectPojoTable: Table = _
 
   /**
    * Registers a table from a DataStream
@@ -76,6 +74,7 @@ object SQLService {
         val pojos = in.map(x => {
           MavenReleasePojo.fromMavenRelease(x)
         })
+
         tEnv.registerDataStream("Maven", pojos)
       }
 
@@ -85,11 +84,7 @@ object SQLService {
           MavenReleaseExtPojo.fromMavenReleaseExt(x)
         })
 
-        tEnv.registerDataStream("Maven", dataStream = pojos)
-
-        registerSubtables(pojos, tEnv)
-
-        println("he")
+        registerTables(pojos, tEnv)
       }
 
       // Other plugins
@@ -99,91 +94,25 @@ object SQLService {
     }
   }
 
-  def registerSubtables[T: TypeTag](field: DataStream[T], tEnv: StreamTableEnvironment): Unit = field match {
+  def registerTables[T: TypeTag](field: DataStream[T], tEnv: StreamTableEnvironment): Unit = field match {
     case _ if typeOf[T] <:< typeOf[MavenReleaseExtPojo] => {
-      val projectTableName = "MavenProjectPojo"
-      val projectPojoStream: DataStream[MavenProjectPojo] = field
-        .getSideOutput(OutputTag[MavenProjectPojo](projectTableName))
+      val releasesStream = field.asInstanceOf[DataStream[MavenReleaseExtPojo]]
+      tEnv.registerDataStream(rootTableName, releasesStream)
 
-      tEnv.registerDataStream(projectTableName, field.map(x => x.asInstanceOf[MavenReleaseExtPojo].project))
-//      projectPojoTable = tEnv.fromDataStream(projectPojoStream)
-//      println(tEnv.explain(projectPojoTable))
-//      println(projectPojoTable.getSchema)
+      val projectPojoStream: DataStream[MavenProjectPojo] = releasesStream.map(x => x.project)
+      tEnv.registerDataStream(projectTableName, projectPojoStream)
 
-      val organizationTableName = "MavenProjectOrganizationPojo"
-      val organizationPojoStream: DataStream[OrganizationPojo] = field
-        .getSideOutput(OutputTag[OrganizationPojo](organizationTableName))
-      tEnv.registerDataStream(organizationTableName, organizationPojoStream)
+      val organizationPojoStream: DataStream[OrganizationPojo] = releasesStream.map(x => x.project.organization)
+      tEnv.registerDataStream(projectOrganizationTableName, organizationPojoStream)
 
-      // Activate table
-//      val table: Table = tEnv.fromDataStream(projectPojoStream)
-//      println(tEnv.explain(table))
-//      println(table.getSchema())
-//      implicit val typeInfo = TypeInformation.of(classOf[Row])
-//      tEnv.toAppendStream(table)(typeInfo).print()
+      val issueManagementPojoStream: DataStream[IssueManagementPojo] = releasesStream.map(x => x.project.issueManagement)
+      tEnv.registerDataStream(projectIssueManagementTableName, issueManagementPojoStream)
 
-
-    }
-//    case _ if typeOf[T] <:< typeOf[MavenProjectPojo] => {
-//      val organizationTableName = "MavenProjectOrganization"
-//      val organizationPojoStream: DataStream[OrganizationPojo] = field
-//        .getSideOutput(OutputTag[OrganizationPojo](organizationTableName))
-//      tEnv.registerDataStream(organizationTableName, organizationPojoStream)
-
-//      val issuemanagementPojo: DataStream[IssueManagementPojo] = mavenProjectPojoStream.map(x => x.issueManagement)
-//      registerSubtables(issuemanagementPojo, tEnv)
-//
-//      val scmPojo: DataStream[SCMPojo] = mavenProjectPojoStream.map(x => x.scm)
-//      registerSubtables(scmPojo, tEnv)
-//
-//      val dependenciesPojo: DataStream[List[DependencyPojo]] = mavenProjectPojoStream.map(x => x.dependencies)
-//      registerSubtables(dependenciesPojo, tEnv)
-    case _ if typeOf[T] <:< typeOf[OrganizationPojo] => {
-      tEnv.registerDataStream("MavenProjectOrganization", field)
-    }
-    case _ if typeOf[T] <:< typeOf[IssueManagementPojo] => {
-      tEnv.registerDataStream("MavenProjectIssueManagement", field)
-    }
-    case _ if typeOf[T] <:< typeOf[SCMPojo] => {
-      tEnv.registerDataStream("MavenProjectSCM", field)
-    }
-    case _ if typeOf[T] <:< typeOf[List[DependencyPojo]] => {
-      tEnv.registerDataStream("MavenProjectDependencies", field)
+      val scmPojoStream: DataStream[SCMPojo] = releasesStream.map(x => x.project.scm)
+      tEnv.registerDataStream(projectSCMTableName, scmPojoStream)
     }
 
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }
-
-//  def fixPojos[T: TypeTag](pojos: DataStream[T]): DataStream[T] = {
-//    val pojoTypeInfo = pojos.javaStream.getTransformation.getOutputType.asInstanceOf[PojoTypeInfo[T]]
-//    val fieldAmount = pojoTypeInfo.getTotalFields
-//    for(w <- 0 to fieldAmount) {
-//      var pojoField = pojoTypeInfo.getPojoFieldAt(w).getField
-//      pojoField match {
-//        case x if typeOf[x.type] <:< typeOf[Option[String]] => {
-//          //pojoTypeInfo.getPojoFieldAt(w).getField = x.asInstanceOf[Option[String]].get
-//        }
-//      }
-//    }
-//    pojos
-//  }
-
-//  val dependencies: DataStream[List[DependencyPojo]] = pojos.map(x => {
-//    x.project.dependencies
-//  })
-//
-//  val dependencyTable = CsvTableSource.builder()
-//    .fieldDelimiter("|")
-//    .field("groupId", Types.STRING)
-//    .field("artifactId", Types.STRING)
-//    .field("version", Types.STRING)
-//    .field("type", Types.STRING)
-//    .field("scope", Types.STRING)
-//    .field("optional", Types.BOOLEAN)
-//    .build()
-//
-//  val table: Table = tEnv
-//    .scan("Maven")
-//    .filter('project.->('dependencies.isNotNull))
 
 }
