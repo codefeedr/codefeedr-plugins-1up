@@ -9,7 +9,7 @@ class SQLStage extends OutputStage[MavenReleaseExt](stageId = Some("maven_SQL"))
 
   override def main(source: DataStream[MavenReleaseExt]): Unit = {
     //Perform the query
-    SQLService.performQuery(source)
+    //SQLService.performQuery(source)
   }
 
 }
