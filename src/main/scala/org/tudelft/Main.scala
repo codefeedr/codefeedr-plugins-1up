@@ -13,7 +13,8 @@ import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
 
 // Cargo
-/*object Main {
+/*
+object Main {
   def main(args: Array[String]): Unit = {
     new PipelineBuilder()
       .append(new CargoReleasesStage())
@@ -31,7 +32,9 @@ class CrateDownloadsOutput extends OutputStage[CrateRelease] {
         " Nr. of versions: " + item.crate.versions.size) }
       .print()
   }
-}*/
+}
+*/
+
 
 // ClearlyDefined
 /*
@@ -57,6 +60,7 @@ class WordCountOutput extends OutputStage[ClearlyDefinedRelease] {
  */
 
 // Maven
+
 object Main {
   def main(args: Array[String]): Unit = {
 

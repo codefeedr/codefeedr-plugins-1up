@@ -60,7 +60,6 @@ class ProtocolTest extends FunSuite{
     assert(pojo.version.contains("version"))
     assert(pojo.`type`.contains("type"))
     assert(pojo.scope.contains("scope"))
-    assert(pojo.optional.contains(true))
   }
 
   test("dependencyPojoEmptyVersionTest"){
@@ -71,7 +70,6 @@ class ProtocolTest extends FunSuite{
     assert(pojo.version.isEmpty)
     assert(pojo.`type`.isEmpty)
     assert(pojo.scope.isEmpty)
-    assert(pojo.optional.isEmpty)
   }
 
   test("licensePojoFullTest"){
@@ -130,14 +128,7 @@ class ProtocolTest extends FunSuite{
     assert(pojo.groupId == "groupId")
     assert(pojo.artifactId == "artifactId")
     assert(pojo.version == "version")
-    assert(pojo.parent.isDefined)
-    assert(pojo.dependencies.isDefined)
-    assert(pojo.licenses.isDefined)
-    assert(pojo.repositories.isDefined)
-    assert(pojo.organization.isDefined)
     assert(pojo.packaging.contains("packaging"))
-    assert(pojo.issueManagement.isDefined)
-    assert(pojo.scm.isDefined)
     assert(pojo.xml == "xml")
   }
 
@@ -148,14 +139,9 @@ class ProtocolTest extends FunSuite{
     assert(pojo.groupId == "groupId")
     assert(pojo.artifactId == "artifactId")
     assert(pojo.version == "version")
-    assert(pojo.parent.isEmpty)
     assert(pojo.dependencies.isEmpty)
     assert(pojo.licenses.isEmpty)
     assert(pojo.repositories.isEmpty)
-    assert(pojo.organization.isEmpty)
-    assert(pojo.packaging.isEmpty)
-    assert(pojo.issueManagement.isEmpty)
-    assert(pojo.scm.isEmpty)
     assert(pojo.xml == "xml")
   }
 }
