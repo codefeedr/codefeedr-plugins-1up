@@ -24,10 +24,17 @@ class ApplicationThread {
   protected implicit val context =
     asExecutionContext(Executors.newSingleThreadExecutor())
 
+  /**
+    * Run incoming code as a Future
+    * @param code the code to run
+    */
   def run(code: => Unit) = Future(code)
 
 }
 
+/**
+  * The pipeline command handles all input which has to do with managing pipelines
+  */
 object PipelineCommand extends Parser with Command {
   //Check regex
   val regex =

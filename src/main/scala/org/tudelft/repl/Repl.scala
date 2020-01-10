@@ -7,25 +7,58 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-case class ReplEnv(pipelines: List[(Pipeline, Boolean)]){}
+/**
+  * Case class representing the environment of the REPL
+  *
+  * @param pipelines a list of pipeliens
+  */
+case class ReplEnv(pipelines: List[(Pipeline, Boolean)]) {}
 
+/**
+  * Every kind of command will implement this trait to ensure the same functionality
+  */
 trait Command extends ((ReplEnv, String) => (ReplEnv, Try[String]))
 
+/**
+  * The parser trait takes care of user input matching
+  */
 trait Parser {
   val regex: String
+
+  /**
+    * From a given input, return the correct command
+    *
+    * @param expr The user input
+    * @return The corresponding command, or None if it didn't match
+    */
   def parse(expr: String): Option[Command]
 
+  /**
+    * Checks whether the input matches the regex
+    *
+    * @param input the input to match
+    * @return true if input matches regex, else false
+    */
   def matches(input: String): Boolean = input.matches(regex)
 }
 
 
+/**
+  * From a list of commands, select the correct command
+  */
 object Commands {
   val parsers: List[Parser] = List[Parser](
     MetaCommand,
-//    SQLCommand,
+    //    SQLCommand,
     PipelineCommand
   )
 
+  /**
+    * From a user input, parse the correct Command
+    *
+    * @param expr the user input
+    * @return The corresponding command, or None if no Command matched
+    */
   def apply(expr: String): Option[Command] =
     parsers.find(p => p.matches(expr)) match {
       case Some(parser) => parser.parse(expr)
@@ -33,8 +66,16 @@ object Commands {
     }
 }
 
-object Repl extends App{
+/**
+  * The loop functionality of the REPL
+  */
+object Repl extends App {
 
+  /**
+    * Until the program is terminated keep asking for user input and process it
+    *
+    * @param env the current environment of the REPL
+    */
   @tailrec def loop(env: ReplEnv): Unit = {
     printf("codefeedr> ")
     Console.flush()
@@ -57,5 +98,6 @@ object Repl extends App{
     }
   }
 
+  //Call loop with an empty env
   loop(ReplEnv(List[(Pipeline, Boolean)]()))
 }
