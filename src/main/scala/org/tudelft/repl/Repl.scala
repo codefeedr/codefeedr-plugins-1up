@@ -1,10 +1,9 @@
 package org.tudelft.repl
 
 import org.codefeedr.pipeline.Pipeline
-import org.tudelft.repl.commands.{MetaCommand, PipelineCommand}
+import org.tudelft.repl.commands.Commands
 
 import scala.annotation.tailrec
-import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -40,30 +39,6 @@ trait Parser {
     * @return true if input matches regex, else false
     */
   def matches(input: String): Boolean = input.matches(regex)
-}
-
-
-/**
-  * From a list of commands, select the correct command
-  */
-object Commands {
-  val parsers: List[Parser] = List[Parser](
-    MetaCommand,
-    //    SQLCommand,
-    PipelineCommand
-  )
-
-  /**
-    * From a user input, parse the correct Command
-    *
-    * @param expr the user input
-    * @return The corresponding command, or None if no Command matched
-    */
-  def apply(expr: String): Option[Command] =
-    parsers.find(p => p.matches(expr)) match {
-      case Some(parser) => parser.parse(expr)
-      case _ => None
-    }
 }
 
 /**

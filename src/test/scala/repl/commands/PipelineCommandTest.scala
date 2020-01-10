@@ -19,6 +19,14 @@ class PipelineCommandTest extends FunSuite {
   val buffer = new ArrayBuffer[String]()
   buffer += "test"
 
+  test("parseOkTest"){
+    assert(PipelineCommand.parse("pipeline").isDefined)
+  }
+
+  test("parseFailTest"){
+    assert(PipelineCommand.parse("error").isEmpty)
+  }
+
   test("applyTestDefault") {
     val res = PipelineCommand.apply(emptyEnv, "test")
     assert(res._2.isFailure)
