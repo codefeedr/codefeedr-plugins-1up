@@ -42,7 +42,7 @@ object SQLService {
 
     registerTableFromStream[T](in, tEnv)
 
-    val query = "SELECT * FROM " + projectTableName
+    val query = "SELECT optional FROM " + projectDependenciesTableName
     //Perform query
     val queryTable: Table = tEnv.sqlQuery(query)
     tEnv.explain(queryTable)
@@ -102,14 +102,25 @@ object SQLService {
       val projectPojoStream: DataStream[MavenProjectPojo] = releasesStream.map(x => x.project)
       tEnv.registerDataStream(projectTableName, projectPojoStream)
 
-      val organizationPojoStream: DataStream[OrganizationPojo] = releasesStream.map(x => x.project.organization)
+      val organizationPojoStream: DataStream[OrganizationPojo] = releasesStream
+        .filter(x => x.project.organization != null)
+        .map(x => x.project.organization)
       tEnv.registerDataStream(projectOrganizationTableName, organizationPojoStream)
 
-      val issueManagementPojoStream: DataStream[IssueManagementPojo] = releasesStream.map(x => x.project.issueManagement)
+      val issueManagementPojoStream: DataStream[IssueManagementPojo] = releasesStream
+        .filter(x => x.project.issueManagement != null)
+        .map(x => x.project.issueManagement)
       tEnv.registerDataStream(projectIssueManagementTableName, issueManagementPojoStream)
 
-      val scmPojoStream: DataStream[SCMPojo] = releasesStream.map(x => x.project.scm)
+      val scmPojoStream: DataStream[SCMPojo] = releasesStream
+        .filter(x => x.project.scm != null)
+        .map(x => x.project.scm)
       tEnv.registerDataStream(projectSCMTableName, scmPojoStream)
+
+      val dependenciesPojoStream: DataStream[DependencyPojo] = releasesStream
+        .filter(x => x.project.dependencies != null)
+        .flatMap(x => x.project.dependencies)
+      tEnv.registerDataStream(projectDependenciesTableName, dependenciesPojoStream)
     }
 
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
