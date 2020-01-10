@@ -11,7 +11,7 @@ import scala.reflect.runtime.universe._
   * SQL object to enable the passing of a string
   * This string originally is the stageID, however in our case it will be used to pass the SQLQuery
   */
-object SQLStage{
+object SQLStage {
   var id: Option[String] = None
   def createSQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag](in: String) : SQLStage[T] = {
     this.id = Some(in)
@@ -26,7 +26,7 @@ object SQLStage{
     * @param typeTag$T The typeTag of the input stream
     * @tparam T Type of the input stream
     */
-  class SQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag] extends OutputStage[T](stageId = id){
+  class SQLStage[T <: Serializable with AnyRef: ClassTag: TypeTag] extends OutputStage[T](stageId = id) {
     override def main(source: DataStream[T]): Unit = {
       SQLService.performQuery(source, this.stageId.get)
     }

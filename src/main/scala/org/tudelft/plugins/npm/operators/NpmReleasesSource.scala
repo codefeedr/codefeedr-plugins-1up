@@ -7,7 +7,7 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
 import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
-import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
+import org.codefeedr.stages.utilities.HttpRequester
 import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
 import scalaj.http.Http
 import scala.collection.JavaConverters._
@@ -108,7 +108,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
 
           val now = Calendar.getInstance().getTime()
           // convert string with updated packages into list of updated packages
-          val items: Seq[NpmRelease] = createListOfUpdatedNpmIdsFrom(resultString, now)
+          val items: Seq[NpmRelease] = createListOfUpdatedNpmIdsFrom(resultString.get, now)
 
           // Decrease the amount of runs left.
           decreaseRunsLeft()
@@ -148,7 +148,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
     items
       .filter((x: NpmRelease) => {
         if (lastItem.isDefined)
-          lastItem.get.retrieveDate.before(x.retrieveDate) && lastItem.get.name != x.name
+          lastItem.get.retrieveDate.before(x.retrieveDate)
         else
           true
       })
@@ -196,12 +196,12 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
    *
    * @return Body of requested update stream
    */
-  def retrieveUpdateStringFrom(urlEndpoint : String) : String = {
-   val response = try {
+  def retrieveUpdateStringFrom(urlEndpoint : String) : Option[String] = {
+    val response = try {
       val request = Http(urlEndpoint)
-      return new HttpRequester().retrieveResponse(request).body
+      return Some(new HttpRequester().retrieveResponse(request).body)
     } catch {
-        case _ : Throwable => ""
+      case _ : Throwable => None
     }
     response
   }
@@ -223,5 +223,4 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
       case _ =>     packageList.map(arg => NpmRelease(arg, time))
     }
   }
-
-}
+   }

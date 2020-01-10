@@ -2,16 +2,13 @@ package org.tudelft.plugins.maven.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.Table
+import org.apache.flink.table.api.{EnvironmentSettings, Table}
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala._
 import org.apache.flink.types.Row
-
 import scala.reflect.runtime.universe._
-
 
 object SQLService {
   def performQuery[T: TypeTag](in: DataStream[T], query: String): Unit = {

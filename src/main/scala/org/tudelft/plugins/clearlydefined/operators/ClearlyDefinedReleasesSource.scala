@@ -13,7 +13,6 @@ import scalaj.http.Http
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.read
-
 import scala.collection.JavaConverters._
 
 /**
@@ -22,7 +21,7 @@ import scala.collection.JavaConverters._
  * @param maxNumberOfRuns if positive, runs definitely up till x. If negative, runs indefinitely.
  */
 case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
-                             maxNumberOfRuns: Int = -1)
+                                      maxNumberOfRuns: Int = -1)
 
 /**
  * Important to note in retrieving data from the stream of projects in ClearlyDefined is the following:
@@ -32,8 +31,8 @@ case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
  * @param config the ClearlyDefined source configuration, has pollingInterval and maxNumberOfRuns fields
  */
 class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
-    extends RichSourceFunction[ClearlyDefinedRelease]
-      with CheckpointedFunction {
+  extends RichSourceFunction[ClearlyDefinedRelease]
+    with CheckpointedFunction {
 
   /** url for the stream of new CD projects */
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
@@ -68,9 +67,9 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   }
 
   /**
-    * Main fetcher of new items in the ClearlyDefined package source
-    * @param ctx
-    */
+   * Main fetcher of new items in the ClearlyDefined package source
+   * @param ctx
+   */
   override def run(ctx: SourceFunction.SourceContext[ClearlyDefinedRelease]): Unit = {
     val lock = ctx.getCheckpointLock
 
@@ -105,8 +104,8 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   }
 
   /**
-    * Reduces runsLeft by 1
-    */
+   * Reduces runsLeft by 1
+   */
   def decreaseRunsLeft(): Unit = {
     if (runsLeft > 0) {
       runsLeft -= 1
@@ -114,12 +113,12 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   }
 
   /**
-    * Drops items that already have been collected and sorts them based on times
-    * TODO: x._meta.updated is not chronological ~5% of the time, which means 1 in 20 packages are SKIPPED
-    *
-    * @param items Potential items to be collected
-    * @return Valid sorted items
-    */
+   * Drops items that already have been collected and sorts them based on times
+   * TODO: x._meta.updated is not chronological ~5% of the time, which means 1 in 20 packages are SKIPPED
+   *
+   * @param items Potential items to be collected
+   * @return Valid sorted items
+   */
   def sortAndDropDuplicates(items: Seq[ClearlyDefinedRelease]): Seq[ClearlyDefinedRelease] = {
     items
       .filter((x: ClearlyDefinedRelease) => {
@@ -132,20 +131,20 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   }
 
   /**
-    * Wait a certain amount of times the polling interval
-    *
-    * @param times Times the polling interval should be waited
-    */
+   * Wait a certain amount of times the polling interval
+   *
+   * @param times Times the polling interval should be waited
+   */
   def waitPollingInterval(times: Int = 1): Unit = {
     Thread.sleep(times * config.pollingInterval)
   }
 
   /**
-    * Requests the RSS feed and returns its body as a string.
-    * Will keep trying with increasing intervals if it doesn't succeed
-    *
-    * @return Body of requested RSS feed
-    */
+   * Requests the RSS feed and returns its body as a string.
+   * Will keep trying with increasing intervals if it doesn't succeed
+   *
+   * @return Body of requested RSS feed
+   */
   @throws[RequestException]
   def getRSSAsString: Option[String] = {
     try {
@@ -157,10 +156,10 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   }
 
   /**
-    * Parses a string that contains JSON with RSS items into a list of ClearlyDefinedRelease's
-    * @param rssString
-    * @return
-    */
+   * Parses a string that contains JSON with RSS items into a list of ClearlyDefinedRelease's
+   * @param rssString
+   * @return
+   */
   def parseRSSString(rssString: String): Seq[ClearlyDefinedRelease] = {
     try {
       // Parse the big release string as a Json object
@@ -202,5 +201,4 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       checkpointedState.get().asScala.foreach { x => lastItem = Some(x)}
     }
   }
-
 }
