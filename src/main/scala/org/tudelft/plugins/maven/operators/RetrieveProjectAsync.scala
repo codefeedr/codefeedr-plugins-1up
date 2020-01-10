@@ -54,7 +54,7 @@ class RetrieveProjectAsync
     * @param input The project of which the name needs to be transformed
     * @return the transformed project name
     */
-  def transformProjectName(input: MavenRelease): String ={
+  private def transformProjectName(input: MavenRelease): String = {
     val splitTitle = input.title.split(" ")
     val org = splitTitle(0).replace(".", "/").replace(":", "/")
     val name = splitTitle(1).replace(" ", "/")
