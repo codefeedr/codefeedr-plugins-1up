@@ -157,6 +157,27 @@ object Protocol {
     var optional: Boolean = _
   }
 
+  class DependencyPojoExt extends Serializable {
+    var projectId: String = _
+    var groupId: String = _
+    var artifactId: String = _
+    var version: String = _
+    var `type`: String = _
+    var scope: String = _
+    var optional: Boolean = _
+
+//    override def toString(): String = {
+//      "Dependency: \n" +
+//        "\tId: " + id +
+//        "\tgroupId: " + groupId +
+//        "\tartifactId: " + artifactId +
+//        "\tversion: " + version +
+//        "\ttype: " + `type` +
+//        "\tscope: " + scope +
+//        "\toptional: " + optional + "\n"
+//    }
+  }
+
   object DependencyPojo {
     def fromDependency(dependency: Dependency): DependencyPojo = {
       val pojo = new DependencyPojo
@@ -188,6 +209,14 @@ object Protocol {
     var comments: String = _
   }
 
+  class LicensePojoExt extends Serializable {
+    var projectId: String = _
+    var name: String = _
+    var url: String = _
+    var distribution: String = _
+    var comments: String = _
+  }
+
   object LicensePojo {
     def fromLicense(license: License): LicensePojo = {
       val pojo = new LicensePojo
@@ -203,6 +232,13 @@ object Protocol {
   }
 
   class RepositoryPojo extends Serializable {
+    var id: String = _
+    var name: String = _
+    var url: String = _
+  }
+
+  class RepositoryPojoExt extends Serializable {
+    var projectId: String = _
     var id: String = _
     var name: String = _
     var url: String = _
@@ -251,11 +287,6 @@ object Protocol {
     var developerConnection: String = _
     var tag: String = _
     var url: String = _
-
-    override def toString(): String = {
-      "\nConnection: " + connection + "\ndeveloperConnection: " + developerConnection +
-       "\ntag: " + tag + "\nurl: " + url
-    }
   }
 
   object SCMPojo {
