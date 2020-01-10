@@ -25,7 +25,7 @@ object SQLService {
   val projectIssueManagementTableName: String = "MavenProjectIssueManagement"
   val projectSCMTableName: String = "MavenProjectSCM"
 
-  def performQuery[T: TypeTag](in: DataStream[T]): Unit = {
+  def performQuery[T: TypeTag](in: DataStream[T], query: String): Unit = {
 
     //Get the required environments
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -41,7 +41,6 @@ object SQLService {
 
     registerTableFromStream[T](in, tEnv)
 
-    val query = "SELECT * FROM " + projectIssueManagementTableName
     //Perform query
     val queryTable: Table = tEnv.sqlQuery(query)
     tEnv.explain(queryTable)

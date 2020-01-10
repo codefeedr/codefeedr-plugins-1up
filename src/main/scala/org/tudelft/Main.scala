@@ -2,14 +2,19 @@ package org.tudelft
 
 import java.lang.reflect.Constructor
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
+import org.apache.flink.api.common.restartstrategy.RestartStrategies
+import org.apache.flink.api.common.time.Time
 import org.apache.flink.streaming.api.scala._
+import org.codefeedr.buffer.KafkaBuffer
 import org.codefeedr.pipeline.PipelineBuilder
 import org.codefeedr.stages.OutputStage
 import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.maven.stages.SQLStage.SQLStage
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
+import org.tudelft.plugins.maven.util.SQLService
 
 // Cargo
 /*
@@ -56,15 +61,15 @@ class CrateDownloadsOutput extends OutputStage[StringWrapper] {
     source.map(x => println(x.s))
   }
 }
+*/
 
 // Maven
-
 object Main {
   def main(args: Array[String]): Unit = {
 
     val releaseSource = new MavenReleasesStage()
     val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = new SQLStage()
+    val sqlStage = SQLStage.createSQLStage[MavenRelease]("SELECT * FROM MavenProjectDependencies")
 
     new PipelineBuilder()
       .setPipelineName("Maven plugin")
