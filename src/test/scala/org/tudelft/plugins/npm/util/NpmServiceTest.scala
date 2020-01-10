@@ -58,10 +58,10 @@ class NpmServiceTest extends FunSuite {
   // tests for getProjectRaw
 
 // time consuming
-  test("getProjectRaw - fetching from a bogus domain raises an exception and thus returns None") {
-      val result = NpmService.getProjectRaw(incorrect_base_url, existingProject)
-      assert(result.isEmpty)
-  }
+//  test("getProjectRaw - fetching from a bogus domain raises an exception and thus returns None") {
+//      val result = NpmService.getProjectRaw(incorrect_base_url, existingProject)
+//      assert(result.isEmpty)
+//  }
 
   test("getProjectRAW - fetching a NONEXISTING Npm package returns a JSON ERROR string") {
     val result = NpmService.getProjectRaw(correct_base_url, nonExistingProject)
@@ -89,11 +89,11 @@ class NpmServiceTest extends FunSuite {
 
   // tests for getProject
 
-
-  test (" getProject - fetching a NONEXISTING Npm package yields None") {
-    val result = NpmService.getProject(nonExistingProject)
-    assert(result.isEmpty)
-  }
+// time consuming
+//  test (" getProject - fetching a NONEXISTING Npm package yields None") {
+//    val result = NpmService.getProject(nonExistingProject)
+//    assert(result.isEmpty)
+//  }
 
   test("getProject - fetching an UNPUBLISHED Npm package yields None") {
     val result = NpmService.getProject(unPublishedProject)
@@ -148,11 +148,11 @@ class NpmServiceTest extends FunSuite {
   }
 
 // time consuming
-  test("createJsonString - bogus domain will fail and result in None") {
-    val jsonString = NpmService.createJsonStringFor(incorrect_base_url, nonExistingProject)
-    assert(jsonString.isInstanceOf[Option[String]])
-    assert(jsonString == None)
-  }
+//  test("createJsonString - bogus domain will fail and result in None") {
+//    val jsonString = NpmService.createJsonStringFor(incorrect_base_url, nonExistingProject)
+//    assert(jsonString.isInstanceOf[Option[String]])
+//    assert(jsonString == None)
+//  }
 
   // Time extraction tests
 
