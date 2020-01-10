@@ -1,9 +1,8 @@
 package org.tudelft.plugins.npm.protocol
 
-import java.util.{Calendar, Date}
-
+import java.util.Date
 import org.scalatest.FunSuite
-import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonSimple, PersonSimplePojo, Repository, RepositoryPojo, TimeObject, TimePojo}
+import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, Repository, RepositoryPojo, TimeObject, TimePojo}
 
 /**
  * Class to test the creation of POJO for our SQL Service (since the Datastream[NPM Case Class] will not work
@@ -26,7 +25,8 @@ class ProtocolTest extends FunSuite {
   val emptybugobj = Bug(None, None)
   val repoobj = Repository("git", "git+https://github.com/searchfe/ts2php.git", None)
   val emptyrepoobj = Repository("", "", None)
-  val simplepersonobj = PersonSimple("Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
+  //val simplepersonobj = PersonSimple("Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
+  val simplepersonobj = Some("Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
   val personobj = PersonObject("cxtom", Some("cxtom2010@gmail.com"), None)
   val emptypersonobj = PersonObject("", None, None)
   val dependencyobj = Dependency("semver", "^6.2.0")
@@ -40,7 +40,7 @@ class ProtocolTest extends FunSuite {
   val npmrel = NpmRelease("ts2php", now)
   val npmrele = NpmReleaseExt("ts2php", now, bigProject)
 
-  val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some(PersonSimple("nonEmptyAuthorForTs2php")), Some(personobj), // cxtom version
+  val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some("nonEmptyAuthorForTs2php"), Some(personobj), // cxtom version
     Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"), Some(List("testing", "fullcoverage")), Some("MIT"),
     Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
     "some story on how this project came to be", "indication where to find the above line", Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
@@ -97,7 +97,7 @@ class ProtocolTest extends FunSuite {
     assert(result.project._id == "ts2php")
     assert(result.project._rev == Some("82-79c18b748261d1370bd45e0efa753721"))
     assert(result.project.name == "ts2php")
-    assert(result.project.author.get.nameAndOptEmailOptUrl == "nonEmptyAuthorForTs2php")
+    assert(result.project.author.get == "nonEmptyAuthorForTs2php")
     assert(result.project.authorObject.get.name == "cxtom")
     assert(result.project.authorObject.get.email == Some("cxtom2010@gmail.com"))
     assert(result.project.authorObject.get.url == None)
@@ -152,12 +152,6 @@ class ProtocolTest extends FunSuite {
     // Assert
     assert(result.packageName == "semver")
     assert(result.version == "^6.2.0")
-  }
-
-  test("POJO Test - simple person POJO creation") {
-    val result = PersonSimplePojo.fromPersonSimple(simplepersonobj)
-    // Assert
-    assert(result.nameAndOptEmailOptUrl == "Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
   }
 
   test("POJO Test - Person POJO creation") {
@@ -249,7 +243,7 @@ class ProtocolTest extends FunSuite {
         "ts2php",
         Some("82-79c18b748261d1370bd45e0efa753721"),
         "ts2php",
-        Some(PersonSimple("nonEmptyAuthorForTs2php")),
+        Some("nonEmptyAuthorForTs2php"),
         Some(personobj), // cxtom version
         Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))),
         Some("TypeScript to PHP Transpiler"),
@@ -271,11 +265,6 @@ class ProtocolTest extends FunSuite {
   test("Unapply Test - Dependency case class") {
     val depo = Dependency("somepackagename", "0.0.1")
     assert(Dependency.unapply(depo).get == (("somepackagename", "0.0.1")))
-  }
-
-  test("Unapply Test - PersonSimple case class") {
-    val simpleperson = PersonSimple("Roald, roaldvanderheijden@gmail.com, https://github.com/roaldvanderheijden/issues")
-    assert(PersonSimple.unapply(simpleperson).get == "Roald, roaldvanderheijden@gmail.com, https://github.com/roaldvanderheijden/issues")
   }
 
   test("Unapply Test - PersonObject case class") {

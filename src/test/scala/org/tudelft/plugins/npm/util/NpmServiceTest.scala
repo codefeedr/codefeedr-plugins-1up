@@ -135,7 +135,7 @@ class NpmServiceTest extends FunSuite {
     val jsonString = NpmService.createJsonStringFor(correct_base_url, unPublishedProject)
     // Assert 1
     assert(jsonString.isInstanceOf[Option[String]])
-    assert(jsonString != "")
+    assert(jsonString.get != "")
     // Act 2
     val id = parse(jsonString.get) \ "_id"
     // Assert 2
@@ -323,51 +323,7 @@ class NpmServiceTest extends FunSuite {
       assert(NpmService.toString == "NpmService Companion Object")
     }
 
-  //  test("convertProjectFrom - a correct json string will return a NpmProject case class") {
-  //    // Arrange
-  //    val jsonString = Source.fromFile("data/ts2php.json").getLines().mkString
-  //    // Act
-  //    val npmProject = NpmService.convertProjectFrom(jsonString)
-  //    // Assert
-  //    assert(npmProject.get.authorObject.get.name == "meixuguang")
-  //    //assert(npmProject.isEmpty)
-  //    //assert(npmProject.get.authorObject=="meixuguang")
-  //    //assert(npmProject.get.dependencies.get.size == 5)
-  ////    assert(projectWithoutDependencies.head.packageName=="fs-extra")
-  ////    assert(projectWithoutDependencies.last.packageName=="yargs")
-  //  }
 
-//  test("convertProjectFrom - Incorrect json String will fail and result in None") {
-//    val project = NpmService.getProjectRaw("http://registry.npmjs.com/", "ts2php")
-//    assert(project.isDefined)
-//    val result = NpmService.convertProjectFrom(project.get).get
-//
-//    assert(result._id == "ts2php")
-//    assert(result._rev == Some("84-a99a3e14f1d576d910aafb083cba8673"))
-//    assert(result.name == "ts2php")
-//
-//    assert(result.author.isEmpty) // check
-//    assert(result.authorObject.isEmpty) // check
-//
-//    assert(result.contributors.get.size == 1)
-//    assert(result.contributors.get.head.name == "cxtom")
-//    assert(result.contributors.get.head.email == Some("cxtom2008@gmail.com"))
-//    assert(result.contributors.get.head.url == None)
-//    assert(result.description == Some("TypeScript to PHP Transpiler"))
-//    assert(result.homepage == Some("https://github.com/searchfe/ts2php#readme"))
-//    //    assert(result.keywords == None) // Check size, head/last / zoek npm met keywords field
-//    assert(result.license == Some("MIT"))
-//    //    assert(result.dependencies.get.head.packageName == "fs-extra") // check size
-//    //    assert(result.dependencies.get.last.packageName == "semver")
-//    assert(result.maintainers.head.name == "cxtom") // check size
-//    assert(result.maintainers.last.name == "meixg")
-//    //    assert(result.bugs.get.url == Some("https://github.com/searchfe/ts2php/issues"))
-//    assert(result.bugString == None)
-//    assert(result.readme == "some story on how this project came to be")
-//    assert(result.readmeFilename == "indication where to find the above line")
-//    assert(result.repository.get.url == "git+https://github.com/searchfe/ts2php.git")
-//    assert(result.time.modified == Some("2019-12-13T07:51:00.925Z"))
-//  }
 }
 
 /* Notes

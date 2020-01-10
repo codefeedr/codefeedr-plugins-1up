@@ -83,7 +83,6 @@ object NpmService extends Logging with Serializable {
     val myTime = extractTimeFrom(json)
     // STEP 2 : Now lookup the dependencies
     val myDependencies = extractDependenciesFrom(json)
-    // TODO wait for point by client on whether author is really important
     // STEP 3: Update the Case Class with the results of time & dependencies
     NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, dependencies = Some(myDependencies)))
   }
@@ -153,12 +152,13 @@ object NpmService extends Logging with Serializable {
   def withConfiguredHeaders: List[(String, String)] = {
     ("User-Agent", "CodeFeedr-Npm/1.0 Contact: zonneveld.noordwijk@gmail.com") :: Nil
   }
+
   override def toString() = "NpmService Companion Object"
 }
 
 /*
     // TODO determine which time we want to use for NPMReleaseExt as 2nd field
-
+    // TODO wait for point by client on whether author is really important
     //https://markhneedham.com/blog/2011/09/15/scala-for-comprehensions-with-options/
 
     Notes on dependency extraction:
@@ -168,4 +168,4 @@ object NpmService extends Logging with Serializable {
     wanted to test out and had to create an Option[Dependency] to get the match working with None, or otherwise
     I would've gotten nasty type errors and conversion/compilation error msgs... so I applied FULL matching with Option
     then flatMap to remove the Some/None from it...
-     */
+*/

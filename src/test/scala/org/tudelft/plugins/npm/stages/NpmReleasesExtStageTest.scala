@@ -49,7 +49,6 @@ class NpmReleasesExtStageTest extends FunSuite {
     val release = NpmRelease("@microservices/cli", now)
     implicit val typeInfo: TypeInformation[NpmRelease] = TypeInformation.of(classOf[NpmRelease])
 
-
     new PipelineBuilder()
       .appendSource(x => x.fromCollection(List(release))(typeInfo))
       .append(new NpmReleasesExtStage())

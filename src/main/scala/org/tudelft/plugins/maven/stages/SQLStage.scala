@@ -8,8 +8,8 @@ import org.tudelft.plugins.maven.util.SQLService
 class SQLStage extends OutputStage[MavenReleaseExt](stageId = Some("maven_SQL")){
 
   override def main(source: DataStream[MavenReleaseExt]): Unit = {
-    //Perform the query
-    //SQLService.performQuery(source)
+    // Perform the query
+    SQLService.performQuery(source)
   }
 
 }

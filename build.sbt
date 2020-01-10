@@ -10,7 +10,7 @@ organization := "org.tudelft"
 
 ThisBuild / scalaVersion := "2.12.8"
 
-val flinkVersion = "1.8.0"
+val flinkVersion = "1.9.1"
 val codefeedrVersion = "0.1.3"
 
 val flinkDependencies = Seq(

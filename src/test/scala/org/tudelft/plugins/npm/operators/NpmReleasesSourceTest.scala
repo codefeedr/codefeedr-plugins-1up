@@ -1,7 +1,6 @@
 package org.tudelft.plugins.npm.operators
 
 import java.util.Calendar
-import org.codefeedr.stages.utilities.RequestException
 import org.scalatest.FunSuite
 
 /**
@@ -21,13 +20,8 @@ class NpmReleasesSourceTest extends FunSuite {
   test("retrieving the list from the updatestream works correctly ") {
     // Act
     val jsonString = npmReleasesSource.retrieveUpdateStringFrom(npmReleasesSource.url_updatestream)
-    // don't have anything better until I read through Futures and asserts on them
-    val condition1 = jsonString == ""
-    val condition2 = jsonString == "[]"
-    val condition3 = jsonString != ""
-    val working = condition1 || condition2 || condition3
     // Assert
-    assert(working)
+    assert(jsonString.get.isInstanceOf[String])
   }
 
 // time consuming
@@ -35,7 +29,7 @@ class NpmReleasesSourceTest extends FunSuite {
     // Arrange
     val jsonString = npmReleasesSource.retrieveUpdateStringFrom("http://www.idontexisturl.com")
     // Assert
-    assert(jsonString == "")
+    assert(jsonString == None)
   }
 
   // now for other test I'll use the mockedString
@@ -59,6 +53,7 @@ class NpmReleasesSourceTest extends FunSuite {
     assert(listReleases.size == 0)
     assert(listReleases == List())
   }
+
   test("waiting for a PollingInterval takes equal to or more than 1/2 second") {
     val startTime = System.currentTimeMillis()
     npmReleasesSource.waitPollingInterval()
@@ -79,4 +74,6 @@ class NpmReleasesSourceTest extends FunSuite {
   }
 }
 
-// TODO Possibly fix test for fetching updatestream with Future after reading up
+// TODO Possibly fix test for fetching updatestream with Future after reading up, contains a tautology in test atm
+// the test has  a tautology A || !A, I know, but the CI was flaky due to network issues:
+// raising an Exception because of network issues in a case which should be correct, I'll tackle this problem later

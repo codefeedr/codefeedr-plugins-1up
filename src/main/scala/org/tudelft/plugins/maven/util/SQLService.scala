@@ -2,55 +2,52 @@ package org.tudelft.plugins.maven.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.Table
+import org.apache.flink.table.api.{EnvironmentSettings, Table}
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.scala.DataStream
-//import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala._
 import org.apache.flink.types.Row
-
 import scala.reflect.runtime.universe._
 
-
 object SQLService {
-//  def performQuery[T: TypeTag](in: DataStream[T]): Unit = {
-//
-//    //Get the required environments
-//    val env = StreamExecutionEnvironment.getExecutionEnvironment
-//    val settings = EnvironmentSettings.newInstance()
-//      .useOldPlanner()
-//      .inStreamingMode()
-//      .build()
-//
-//    val tEnv = StreamTableEnvironment.create(env)
-//
-//
-//    //Maybe needed later
-//    //    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
-//
-//    registerTableFromStream[T](in, tEnv)
-//
-//    //      tEnv.registerDataStream("MavenTest", in)
-//
-//    println(tEnv.explain(tEnv.fromDataStream(in)))
-//
-//
-//
-//    //    tEnv.fromDataStream(in)
-//
-//    println(tEnv.fromDataStream(in).getSchema())
-//
-//    //Perform query
-//    val res: Table = tEnv.sqlQuery("SELECT * FROM Maven")
-//
-//    // Just for printing purposes, in reality you would need something other than Row
-//    implicit val typeInfo = TypeInformation.of(classOf[Row])
-//
-//    tEnv.toAppendStream(res)(typeInfo).print()
-//
-//    env.execute()
-//  }
+  def performQuery[T: TypeTag](in: DataStream[T]): Unit = {
+
+    //Get the required environments
+    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val settings = EnvironmentSettings.newInstance()
+      .useOldPlanner()
+      .inStreamingMode()
+      .build()
+
+    val tEnv = StreamTableEnvironment.create(env)
+
+
+    //Maybe needed later
+    //    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
+
+    registerTableFromStream[T](in, tEnv)
+
+    //      tEnv.registerDataStream("MavenTest", in)
+
+    println(tEnv.explain(tEnv.fromDataStream(in)))
+
+
+
+    //    tEnv.fromDataStream(in)
+
+    println(tEnv.fromDataStream(in).getSchema())
+
+    //Perform query
+    val res: Table = tEnv.sqlQuery("SELECT * FROM Maven")
+
+    // Just for printing purposes, in reality you would need something other than Row
+    implicit val typeInfo = TypeInformation.of(classOf[Row])
+
+    tEnv.toAppendStream(res)(typeInfo).print()
+
+    env.execute()
+  }
 
   /**
    * Registers a table from a DataStream

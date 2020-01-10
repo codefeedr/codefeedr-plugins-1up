@@ -20,7 +20,7 @@ object Protocol {
   case class NpmProject(_id: String,
                         _rev: Option[String],
                         name: String,
-                        author: Option[PersonSimple],
+                        author:Option[String],
                         authorObject: Option[PersonObject],
                         contributors: Option[List[PersonObject]],
                         description: Option[String],
@@ -44,7 +44,7 @@ object Protocol {
                           email: Option[String],
                           url: Option[String])
 
-  case class PersonSimple(nameAndOptEmailOptURL: String)
+  //case class PersonSimple(nameAndOptEmailOptURL: String)
 
   case class Repository(`type`: String,
                         url: String,
@@ -79,7 +79,8 @@ object Protocol {
                         val _id: String,
                         val _rev: Option[String],
                         val name: String,
-                        val author: Option[PersonSimplePojo],
+                        //val author: Option[PersonSimplePojo],
+                        val author : Option[String],
                         val authorObject: Option[PersonObjectPojo],
                         val contributors: Option[List[PersonObjectPojo]],
                         val description: Option[String],
@@ -101,7 +102,7 @@ object Protocol {
       // transform author
       val author =
         if (project.author.isEmpty) None
-        else Some(PersonSimplePojo.fromPersonSimple(project.author.get))
+        else Some(project.author.get)
 
       // transform the authorObject
       val authorObject =
@@ -155,12 +156,6 @@ object Protocol {
   object PersonObjectPojo {
     def fromPersonObject(person: PersonObject): PersonObjectPojo =
       new PersonObjectPojo(person.name, person.email, person.url)
-  }
-
-  class PersonSimplePojo(val nameAndOptEmailOptUrl: String) extends Serializable {}
-
-  object PersonSimplePojo {
-    def fromPersonSimple(person: PersonSimple): PersonSimplePojo = new PersonSimplePojo(person.nameAndOptEmailOptURL)
   }
 
   class RepositoryPojo(val `type`: String,
