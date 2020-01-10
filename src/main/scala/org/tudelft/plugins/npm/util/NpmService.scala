@@ -159,13 +159,4 @@ object NpmService extends Logging with Serializable {
 /*
     // TODO determine which time we want to use for NPMReleaseExt as 2nd field
     // TODO wait for point by client on whether author is really important
-    //https://markhneedham.com/blog/2011/09/15/scala-for-comprehensions-with-options/
-
-    Notes on dependency extraction:
-    in stead of the non exhaustive match of
-          dependenciesList.map { case (x, JString(y)) => Dependency(x,y) }
-
-    wanted to test out and had to create an Option[Dependency] to get the match working with None, or otherwise
-    I would've gotten nasty type errors and conversion/compilation error msgs... so I applied FULL matching with Option
-    then flatMap to remove the Some/None from it...
 */
