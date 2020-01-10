@@ -16,28 +16,22 @@ class RetrieveProjectAsync
   implicit lazy val executor: ExecutionContext = ExecutionContext.global
 
   /** Async retrieves the project belonging to the release.
-   *
-   * @param input        the release.
-   * @param resultFuture the future to add the project to.
-   */
+    *
+    * @param input        the release.
+    * @param resultFuture the future to add the project to.
+    */
   override def asyncInvoke(input: MavenRelease,
                            resultFuture: ResultFuture[MavenReleaseExt]): Unit = {
 
-    /** transform the title of a project to be retrieved by the MavenService */
-    val splitTitle = input.title.split(" ")
-    val org = splitTitle(0).replace(".", "/").replace(":", "/")
-    val name = splitTitle(1).replace(" ", "/")
-    val version = splitTitle(2)
-    val projectName = org + name + "/" + version + "/" + name + "-" + version + ".pom"
+    val projectName = transformProjectName(input)
 
     /** Retrieve the project in a Future. */
-    val requestProject: Future[Option[MavenProject]] = Future(
-      MavenService.getProject(projectName))
+    val requestProject: Future[Option[MavenProject]] = Future(MavenService.getProject(projectName))
 
     /** Collects the result. */
     requestProject.onComplete {
       case Success(result: Option[MavenProject]) => {
-        if (result.isDefined) { //If we get None, we return nothing.
+        if (result.isDefined) {
           resultFuture.complete(
             List(
               MavenReleaseExt(input.title,
@@ -46,15 +40,26 @@ class RetrieveProjectAsync
                 input.pubDate,
                 input.guid,
                 result.get)).asJava)
-        } else {
-          resultFuture.complete(List().asJava)
         }
+        else resultFuture.complete(List().asJava)
       }
       case Failure(e) =>
         resultFuture.complete(List().asJava)
         e.printStackTrace()
     }
+  }
 
+  /**
+    * Transform the title of a project to be retrieved by the MavenService
+    * @param input The project of which the name needs to be transformed
+    * @return the transformed project name
+    */
+  private def transformProjectName(input: MavenRelease): String = {
+    val splitTitle = input.title.split(" ")
+    val org = splitTitle(0).replace(".", "/").replace(":", "/")
+    val name = splitTitle(1).replace(" ", "/")
+    val version = splitTitle(2)
+    return org + name + "/" + version + "/" + name + "-" + version + ".pom"
   }
 
   /** If we retrieve a time-out, then we just complete the future with an empty list. */
