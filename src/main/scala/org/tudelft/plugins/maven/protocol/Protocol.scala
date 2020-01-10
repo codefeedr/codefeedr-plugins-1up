@@ -131,9 +131,8 @@ object Protocol {
       }
 
       // Set the packaging
-      pojo.packaging = mavenProject.packaging match {
-        case None => ""
-        case Some(x) => x
+      if (mavenProject.packaging.isDefined) {
+        pojo.packaging = mavenProject.packaging.get
       }
 
       // Set the issueManagement
