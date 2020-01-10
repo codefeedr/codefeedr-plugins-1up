@@ -167,17 +167,6 @@ object Protocol {
     var `type`: String = _
     var scope: String = _
     var optional: Boolean = _
-
-//    override def toString(): String = {
-//      "Dependency: \n" +
-//        "\tId: " + id +
-//        "\tgroupId: " + groupId +
-//        "\tartifactId: " + artifactId +
-//        "\tversion: " + version +
-//        "\ttype: " + `type` +
-//        "\tscope: " + scope +
-//        "\toptional: " + optional + "\n"
-//    }
   }
 
   object DependencyPojo {

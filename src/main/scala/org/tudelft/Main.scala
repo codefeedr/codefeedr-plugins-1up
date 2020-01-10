@@ -69,7 +69,7 @@ object Main {
 
     val releaseSource = new MavenReleasesStage()
     val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = SQLStage.createSQLStage[MavenRelease]("SELECT * FROM MavenProjectDependencies")
+    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("SELECT * FROM MavenProjectDependencies")
 
     new PipelineBuilder()
       .setPipelineName("Maven plugin")
