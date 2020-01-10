@@ -223,21 +223,4 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
       case _ =>     packageList.map(arg => NpmRelease(arg, time))
     }
   }
-
-}
-
-/* NOTES
-
-Todo Check if the next really is a bug, if so CodeFeedr-Team needs to update their plugins as well!
-
-def sortAndDropDuplicates(items: Seq[NpmRelease]): Seq[NpmRelease] = {
-    items
-      .filter((x: NpmRelease) => {
-        if (lastItem.isDefined)
-          lastItem.get.retrieveDate.before(x.retrieveDate) && lastItem.get.name != x.name
-        else
-          true
-      })
-      .sortWith((x: NpmRelease, y: NpmRelease) => x.retrieveDate.before(y.retrieveDate))
-}
- */
+   }

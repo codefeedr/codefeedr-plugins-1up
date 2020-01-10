@@ -3,6 +3,7 @@ package org.tudelft.plugins.maven.protocol
 import java.io.Serializable
 import java.util.Date
 
+import org.tudelft.plugins.json.Jsonable
 
 object Protocol {
 
@@ -93,65 +94,37 @@ object Protocol {
       pojo.groupId = mavenProject.groupId
       pojo.artifactId = mavenProject.artifactId
       pojo.version = mavenProject.version
+      pojo.packaging = mavenProject.packaging
+      pojo.xml = mavenProject.xml
 
       // Set the parent
-      if (mavenProject.parent.isEmpty) {
-        pojo.parent = None
-      } else {
-        pojo.parent = Some(ParentPojo.fromParent(mavenProject.parent.get))
-      }
+      if (mavenProject.parent.isEmpty) pojo.parent = None
+      else pojo.parent = Some(ParentPojo.fromParent(mavenProject.parent.get))
 
       // Map the dependencies
-      if (mavenProject.dependencies.isEmpty) {
-        pojo.dependencies = None
-      } else {
-        pojo.dependencies = Some(mavenProject.dependencies.get.map(x => {
-          DependencyPojo.fromDependency(x)
-        }))
-      }
+      if (mavenProject.dependencies.isEmpty) pojo.dependencies = None
+      else pojo.dependencies = Some(mavenProject.dependencies.get.map(x => {DependencyPojo.fromDependency(x)}))
 
       // Map the licenses
-      if (mavenProject.licenses.isEmpty) {
-        pojo.licenses = None
-      } else {
-        pojo.licenses = Some(mavenProject.licenses.get.map(x => {
-          LicensePojo.fromLicense(x)
-        }))
-      }
+      if (mavenProject.licenses.isEmpty) pojo.licenses = None
+      else pojo.licenses = Some(mavenProject.licenses.get.map(x => {LicensePojo.fromLicense(x)}))
 
       // Map the repositories
-      if (mavenProject.repositories.isEmpty) {
-        pojo.repositories = None
-      } else {
-        pojo.repositories = Some(mavenProject.repositories.get.map(x => {
-          RepositoryPojo.fromRepository(x)
-        }))
-      }
+      if (mavenProject.repositories.isEmpty) pojo.repositories = None
+      else pojo.repositories = Some(mavenProject.repositories.get.map(x => {RepositoryPojo.fromRepository(x)}))
 
       // Set the organization
-      if (mavenProject.organization.isEmpty) {
-        pojo.organization = None
-      } else {
-        pojo.organization = Some(OrganizationPojo.fromOrganization(mavenProject.organization.get))
-      }
-
-      pojo.packaging = mavenProject.packaging
+      if (mavenProject.organization.isEmpty) pojo.organization = None
+      else pojo.organization = Some(OrganizationPojo.fromOrganization(mavenProject.organization.get))
 
       // Set the issueManagement
-      if (mavenProject.issueManagement.isEmpty) {
-        pojo.issueManagement = None
-      } else {
-        pojo.issueManagement = Some(IssueManagementPojo.fromIssueManagement(mavenProject.issueManagement.get))
-      }
+      if (mavenProject.issueManagement.isEmpty) pojo.issueManagement = None
+      else pojo.issueManagement = Some(IssueManagementPojo.fromIssueManagement(mavenProject.issueManagement.get))
 
       // Set the SCM
-      if (mavenProject.scm.isEmpty) {
-        pojo.scm = None
-      } else {
-        pojo.scm = Some(SCMPojo.fromSCM(mavenProject.scm.get))
-      }
+      if (mavenProject.scm.isEmpty) pojo.scm = None
+      else pojo.scm = Some(SCMPojo.fromSCM(mavenProject.scm.get))
 
-      pojo.xml = mavenProject.xml
       pojo
     }
   }
@@ -263,16 +236,17 @@ object Protocol {
                           link: String,
                           description: String,
                           pubDate: Date,
-                          guid: Guid)
+                          guid: Guid) extends Jsonable
 
   case class Guid(tag: String)
 
-  case class MavenReleaseExt(title: String,
+  case class MavenReleaseExt (title: String,
                              link: String,
                              description: String,
                              pubDate: Date,
                              guid: Guid,
-                             project: MavenProject)
+                             project: MavenProject) extends Jsonable
+
 
   case class MavenProject(
                            modelVersion: String,

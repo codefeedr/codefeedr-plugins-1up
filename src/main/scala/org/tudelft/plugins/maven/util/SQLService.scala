@@ -11,7 +11,7 @@ import org.apache.flink.types.Row
 import scala.reflect.runtime.universe._
 
 object SQLService {
-  def performQuery[T: TypeTag](in: DataStream[T]): Unit = {
+  def performQuery[T: TypeTag](in: DataStream[T], query: String): Unit = {
 
     //Get the required environments
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -30,16 +30,16 @@ object SQLService {
 
     //      tEnv.registerDataStream("MavenTest", in)
 
-    println(tEnv.explain(tEnv.fromDataStream(in)))
+//    println(tEnv.explain(tEnv.fromDataStream(in)))
 
 
 
     //    tEnv.fromDataStream(in)
 
-    println(tEnv.fromDataStream(in).getSchema())
+//    println(tEnv.fromDataStream(in).getSchema())
 
     //Perform query
-    val res: Table = tEnv.sqlQuery("SELECT * FROM Maven")
+    val res: Table = tEnv.sqlQuery(query)
 
     // Just for printing purposes, in reality you would need something other than Row
     implicit val typeInfo = TypeInformation.of(classOf[Row])
