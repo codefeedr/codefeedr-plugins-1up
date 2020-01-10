@@ -96,7 +96,6 @@ object Protocol {
       pojo.groupId = mavenProject.groupId
       pojo.artifactId = mavenProject.artifactId
       pojo.version = mavenProject.version
-      pojo.packaging = mavenProject.packaging
       pojo.xml = mavenProject.xml
 
       // Set the parent
@@ -130,6 +129,7 @@ object Protocol {
         pojo.organization = OrganizationPojo.fromOrganization(mavenProject.organization.get)
       }
 
+      // Set the packaging
       pojo.packaging = mavenProject.packaging match {
         case None => ""
         case Some(x) => x

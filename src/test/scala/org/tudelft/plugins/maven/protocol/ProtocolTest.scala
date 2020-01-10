@@ -139,9 +139,9 @@ class ProtocolTest extends FunSuite{
     assert(pojo.groupId == "groupId")
     assert(pojo.artifactId == "artifactId")
     assert(pojo.version == "version")
-    assert(pojo.dependencies.isEmpty)
-    assert(pojo.licenses.isEmpty)
-    assert(pojo.repositories.isEmpty)
+    assert(pojo.dependencies == null)
+    assert(pojo.licenses == null)
+    assert(pojo.repositories == null)
     assert(pojo.xml == "xml")
   }
 }

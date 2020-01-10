@@ -35,7 +35,7 @@ object SQLService {
       .build()
 
     val tEnv = StreamTableEnvironment.create(env)
-    
+
     //Maybe needed later
     //    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
