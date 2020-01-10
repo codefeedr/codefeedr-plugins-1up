@@ -3,6 +3,7 @@ package org.tudelft.plugins.maven.protocol
 import java.io.Serializable
 import java.util.Date
 
+import org.tudelft.plugins.json.Jsonable
 
 object Protocol {
 
@@ -235,16 +236,17 @@ object Protocol {
                           link: String,
                           description: String,
                           pubDate: Date,
-                          guid: Guid)
+                          guid: Guid) extends Jsonable
 
   case class Guid(tag: String)
 
-  case class MavenReleaseExt(title: String,
+  case class MavenReleaseExt (title: String,
                              link: String,
                              description: String,
                              pubDate: Date,
                              guid: Guid,
-                             project: MavenProject)
+                             project: MavenProject) extends Jsonable
+
 
   case class MavenProject(
                            modelVersion: String,
