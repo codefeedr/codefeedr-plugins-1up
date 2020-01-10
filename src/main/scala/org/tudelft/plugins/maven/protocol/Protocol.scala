@@ -57,7 +57,7 @@ object Protocol {
     var groupId: String = _
     var artifactId: String = _
     var version: String = _
-    var relativePath: Option[String] = _
+    var relativePath: String = _
   }
 
   object ParentPojo {
@@ -66,7 +66,10 @@ object Protocol {
       pojo.groupId = parent.groupId
       pojo.artifactId = parent.artifactId
       pojo.version = parent.version
-      pojo.relativePath = parent.relativePath
+      pojo.relativePath = parent.relativePath match {
+        case None => ""
+        case Some(x) => x
+      }
       pojo
     }
   }
@@ -76,14 +79,14 @@ object Protocol {
     var groupId: String = _
     var artifactId: String = _
     var version: String = _
-    var parent: Option[ParentPojo] = _
-    var dependencies: Option[List[DependencyPojo]] = _
-    var licenses: Option[List[LicensePojo]] = _
-    var repositories: Option[List[RepositoryPojo]] = _
-    var organization: Option[OrganizationPojo] = _
-    var packaging: Option[String] = _
-    var issueManagement: Option[IssueManagementPojo] = _
-    var scm: Option[SCMPojo] = _
+    var parent: ParentPojo = _
+    var dependencies: List[DependencyPojo] = _
+    var licenses: List[LicensePojo] = _
+    var repositories: List[RepositoryPojo] = _
+    var organization: OrganizationPojo = _
+    var packaging: String = _
+    var issueManagement: IssueManagementPojo = _
+    var scm: SCMPojo = _
     var xml: String = _
   }
 
@@ -94,36 +97,54 @@ object Protocol {
       pojo.groupId = mavenProject.groupId
       pojo.artifactId = mavenProject.artifactId
       pojo.version = mavenProject.version
-      pojo.packaging = mavenProject.packaging
       pojo.xml = mavenProject.xml
 
       // Set the parent
-      if (mavenProject.parent.isEmpty) pojo.parent = None
-      else pojo.parent = Some(ParentPojo.fromParent(mavenProject.parent.get))
+      if (mavenProject.parent.isDefined) {
+        pojo.parent = ParentPojo.fromParent(mavenProject.parent.get)
+      }
 
       // Map the dependencies
-      if (mavenProject.dependencies.isEmpty) pojo.dependencies = None
-      else pojo.dependencies = Some(mavenProject.dependencies.get.map(x => {DependencyPojo.fromDependency(x)}))
+      if (mavenProject.dependencies.isDefined) {
+        pojo.dependencies = mavenProject.dependencies.get.map(x => {
+          DependencyPojo.fromDependency(x)
+        })
+      }
 
       // Map the licenses
-      if (mavenProject.licenses.isEmpty) pojo.licenses = None
-      else pojo.licenses = Some(mavenProject.licenses.get.map(x => {LicensePojo.fromLicense(x)}))
+      if (mavenProject.licenses.isDefined) {
+        pojo.licenses = mavenProject.licenses.get.map(x => {
+          LicensePojo.fromLicense(x)
+        })
+      }
 
       // Map the repositories
-      if (mavenProject.repositories.isEmpty) pojo.repositories = None
-      else pojo.repositories = Some(mavenProject.repositories.get.map(x => {RepositoryPojo.fromRepository(x)}))
+      if (mavenProject.repositories.isDefined) {
+        pojo.repositories = mavenProject.repositories.get.map(x => {
+          RepositoryPojo.fromRepository(x)
+        })
+      }
 
       // Set the organization
-      if (mavenProject.organization.isEmpty) pojo.organization = None
-      else pojo.organization = Some(OrganizationPojo.fromOrganization(mavenProject.organization.get))
+      if (mavenProject.organization.isDefined) {
+        pojo.organization = OrganizationPojo.fromOrganization(mavenProject.organization.get)
+      }
+
+      // Set the packaging
+      pojo.packaging = mavenProject.packaging match {
+        case None => ""
+        case Some(x) => x
+      }
 
       // Set the issueManagement
-      if (mavenProject.issueManagement.isEmpty) pojo.issueManagement = None
-      else pojo.issueManagement = Some(IssueManagementPojo.fromIssueManagement(mavenProject.issueManagement.get))
+      if (mavenProject.issueManagement.isDefined) {
+        pojo.issueManagement = IssueManagementPojo.fromIssueManagement(mavenProject.issueManagement.get)
+      }
 
       // Set the SCM
-      if (mavenProject.scm.isEmpty) pojo.scm = None
-      else pojo.scm = Some(SCMPojo.fromSCM(mavenProject.scm.get))
+      if (mavenProject.scm.isDefined) {
+        pojo.scm = SCMPojo.fromSCM(mavenProject.scm.get)
+      }
 
       pojo
     }
@@ -132,10 +153,20 @@ object Protocol {
   class DependencyPojo extends Serializable {
     var groupId: String = _
     var artifactId: String = _
-    var version: Option[String] = _
-    var `type`: Option[String] = _
-    var scope: Option[String] = _
-    var optional: Option[Boolean] = _
+    var version: String = _
+    var `type`: String = _
+    var scope: String = _
+    var optional: Boolean = _
+  }
+
+  class DependencyPojoExt extends Serializable {
+    var projectId: String = _
+    var groupId: String = _
+    var artifactId: String = _
+    var version: String = _
+    var `type`: String = _
+    var scope: String = _
+    var optional: Boolean = _
   }
 
   object DependencyPojo {
@@ -143,10 +174,21 @@ object Protocol {
       val pojo = new DependencyPojo
       pojo.groupId = dependency.groupId
       pojo.artifactId = dependency.artifactId
-      pojo.version = dependency.version
-      pojo.`type` = dependency.`type`
-      pojo.scope = dependency.scope
-      pojo.optional = dependency.optional
+      pojo.version = dependency.version match {
+        case None => ""
+        case Some(x) => x
+      }
+      pojo.`type` = dependency.`type` match {
+        case None => ""
+        case Some(x) => x
+      }
+      pojo.scope = dependency.scope match {
+        case None => ""
+        case Some(x) => x
+      }
+      if(dependency.optional.isDefined) {
+        pojo.optional = dependency.optional.get
+      }
       pojo
     }
   }
@@ -155,7 +197,15 @@ object Protocol {
     var name: String = _
     var url: String = _
     var distribution: String = _
-    var comments: Option[String] = _
+    var comments: String = _
+  }
+
+  class LicensePojoExt extends Serializable {
+    var projectId: String = _
+    var name: String = _
+    var url: String = _
+    var distribution: String = _
+    var comments: String = _
   }
 
   object LicensePojo {
@@ -164,12 +214,22 @@ object Protocol {
       pojo.name = license.name
       pojo.url = license.url
       pojo.distribution = license.distribution
-      pojo.comments = license.comments
+      pojo.comments = license.comments match {
+        case None => ""
+        case Some(x) => x
+      }
       pojo
     }
   }
 
   class RepositoryPojo extends Serializable {
+    var id: String = _
+    var name: String = _
+    var url: String = _
+  }
+
+  class RepositoryPojoExt extends Serializable {
+    var projectId: String = _
     var id: String = _
     var name: String = _
     var url: String = _
@@ -215,8 +275,8 @@ object Protocol {
 
   class SCMPojo extends Serializable {
     var connection: String = _
-    var developerConnection: Option[String] = _
-    var tag: Option[String] = _
+    var developerConnection: String = _
+    var tag: String = _
     var url: String = _
   }
 
@@ -224,8 +284,14 @@ object Protocol {
     def fromSCM(scm: SCM): SCMPojo = {
       val pojo = new SCMPojo
       pojo.connection = scm.connection
-      pojo.developerConnection = scm.developerConnection
-      pojo.tag = scm.tag
+      pojo.developerConnection = scm.developerConnection match {
+        case None => ""
+        case Some(x) => x
+      }
+      pojo.tag = scm.tag match {
+        case None => ""
+        case Some(x) => x
+      }
       pojo.url = scm.url
       pojo
     }
