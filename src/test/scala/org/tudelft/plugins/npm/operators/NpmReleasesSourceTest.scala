@@ -21,7 +21,7 @@ class NpmReleasesSourceTest extends FunSuite {
     // Act
     val jsonString = npmReleasesSource.retrieveUpdateStringFrom(npmReleasesSource.url_updatestream)
     // Assert
-    assert(jsonString.get.inInstaceOf[String])
+    assert(jsonString.get.isInstanceOf[String])
   }
 
 // time consuming
