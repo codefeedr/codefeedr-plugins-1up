@@ -96,6 +96,8 @@ object Protocol {
       pojo.groupId = mavenProject.groupId
       pojo.artifactId = mavenProject.artifactId
       pojo.version = mavenProject.version
+      pojo.packaging = mavenProject.packaging
+      pojo.xml = mavenProject.xml
 
       // Set the parent
       if (mavenProject.parent.isDefined) {
@@ -143,7 +145,6 @@ object Protocol {
         pojo.scm = SCMPojo.fromSCM(mavenProject.scm.get)
       }
 
-      pojo.xml = mavenProject.xml
       pojo
     }
   }
