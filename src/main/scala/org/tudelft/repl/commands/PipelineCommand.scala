@@ -4,11 +4,12 @@ import java.util.concurrent.Executors
 import java.util.regex.Pattern
 
 import org.codefeedr.pipeline.{Pipeline, PipelineBuilder}
+import org.tudelft.plugins.SQLStage
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
 import org.tudelft.plugins.json.JsonExitStage
 import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
+import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 import org.tudelft.repl.{Command, Parser, ReplEnv}
 
