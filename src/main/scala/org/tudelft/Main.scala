@@ -68,6 +68,7 @@ object Main {
   def main(args: Array[String]): Unit = {
 
     val releaseSource = new MavenReleasesStage()
+    val jsonStage = new JsonExitStage[MavenRelease]
     val enrichReleases = new MavenReleasesExtStage()
     val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("SELECT * FROM MavenProjectDependencies")
 
@@ -82,8 +83,10 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(releaseSource, enrichReleases)
-      .edge(enrichReleases, sqlStage)
+      .append(releaseSource)
+      .append(jsonStage)
+//      .edge(releaseSource, enrichReleases)
+//      .edge(enrichReleases, sqlStage)
       //      .edge(releaseSource, sqlStage)
       .build()
       .startMock()

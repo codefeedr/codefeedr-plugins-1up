@@ -8,16 +8,16 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
-  * A stage which prints a Jsonable object to json representation of the objects in the incoming datastream
+  * A stage which prints an object to json representation of the objects in the incoming datastream
   *
   * @param classTag$T The classTag of the input stream
   * @param typeTag$T  The typeTag of the input stream
   * @tparam T The type of input stream
   */
-class JsonExitStage[T <: Serializable with AnyRef with Jsonable : ClassTag : TypeTag] extends OutputStage[T] {
+class JsonExitStage[T <: Serializable with AnyRef : ClassTag : TypeTag] extends OutputStage[T] {
   override def main(source: DataStream[T]): Unit = {
     implicit val typeInfo: TypeInformation[Unit] = TypeInformation.of(classOf[Unit])
-    source.map((x: T) => println(x.toJson()))
+    source.map((x: T) => println(JsonService.toJson(x)))
   }
 
 }
