@@ -44,8 +44,6 @@ object Protocol {
                           email: Option[String],
                           url: Option[String])
 
-  //case class PersonSimple(nameAndOptEmailOptURL: String)
-
   case class Repository(`type`: String,
                         url: String,
                         directory: Option[String])
@@ -56,7 +54,7 @@ object Protocol {
   case class TimeObject(created: String,
                         modified: Option[String])
 
-  // underneath is a POJO representation of all case classes mentioned above (in a functional style ^_^ )
+  // underneath is a POJO representation of all case classes mentioned above
 
   class NpmReleasePojo(val name: String,
                        val retrieveDate: Long) extends Serializable {}
@@ -77,68 +75,65 @@ object Protocol {
 
   class NpmProjectPojo(
                         val _id: String,
-                        val _rev: Option[String],
+                        val _rev: String,
                         val name: String,
-                        //val author: Option[PersonSimplePojo],
-                        val author : Option[String],
-                        val authorObject: Option[PersonObjectPojo],
-                        val contributors: Option[List[PersonObjectPojo]],
-                        val description: Option[String],
-                        val homepage: Option[String],
-                        val keywords: Option[List[String]],
-                        val license: Option[String],
-                        val dependencies: Option[List[DependencyPojo]],
+                        val author : String,
+                        val authorObject: PersonObjectPojo,
+                        val contributors: List[PersonObjectPojo],
+                        val description: String,
+                        val homepage: String,
+                        val keywords: List[String],
+                        val license: String,
+                        val dependencies: List[DependencyPojo],
                         val maintainers: List[PersonObjectPojo],
                         val readme: String,
                         val readmeFilename: String,
-                        val bugs: Option[BugPojo],
-                        val bugString: Option[String],
-                        val repository: Option[RepositoryPojo],
+                        val bugs: BugPojo,
+                        val bugString: String,
+                        val repository: RepositoryPojo,
                         val time: TimePojo)
     extends Serializable {}
 
   object NpmProjectPojo {
     def fromNpmProject(project: NpmProject): NpmProjectPojo = {
-      // transform author
-      val author =
-        if (project.author.isEmpty) None
-        else Some(project.author.get)
 
       // transform the authorObject
-      val authorObject =
-        if (project.authorObject.isEmpty) None
-        else Some(PersonObjectPojo.fromPersonObject(project.authorObject.get))
+      val authorObject = if (project.authorObject.isDefined) {
+        PersonObjectPojo.fromPersonObject(project.authorObject.get)
+      } else null
 
       // map contributors
-      val contributors =
-        if (project.contributors.isEmpty) None
-        else Some(project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person)))
+      val contributors =  if (project.contributors.isDefined) {
+        project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
+      } else null
 
       // map the keywords
-      val keywords =
-        if (project.keywords.isEmpty) None
-        else Some(project.keywords.get)
+      val keywords = if (project.keywords.isDefined) {
+        project.keywords.get
+      } else null
 
       // map the dependencies
       val dependencies =
-        if (project.dependencies.isEmpty) None
-        else Some(project.dependencies.get.map(x => DependencyPojo.fromDependency(x)))
+        if (project.dependencies.isDefined) {
+          project.dependencies.get.map(x => DependencyPojo.fromDependency(x))
+        } else null
 
       // transform the bug
-      val bugs =
-        if (project.bugs.isEmpty) None
-        else Some(BugPojo.fromBug(project.bugs.get))
+      val bugs = if (project.bugs.isDefined) {
+        BugPojo.fromBug(project.bugs.get)
+      } else null
 
       // transform the repo
-      val repository =
-        if (project.repository.isEmpty) None
-        else Some(RepositoryPojo.fromRepository(project.repository.get))
+      val repository = RepositoryPojo.fromRepository(project.repository.getOrElse(null))
+      // could do if(isDefined) and .get and nothing otherwise, but compiler was nagging type of repository to be Any
+      // so either had to add "else null" or use this form
+
       val time = TimePojo.fromTime(project.time)
       // now create a new POJO with these vals
-      new NpmProjectPojo(project._id, project._rev, project.name, author, authorObject, contributors,
-        project.description, project.homepage, keywords, project.license, dependencies,
+      new NpmProjectPojo(project._id, project._rev.orNull, project.name, project.author.orNull, authorObject, contributors,
+        project.description.orNull, project.homepage.orNull, keywords, project.license.orNull, dependencies,
         project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
-        bugs, project.bugString, repository, time)
+        bugs, project.bugString.orNull, repository, time)
     }
   }
 
@@ -150,34 +145,34 @@ object Protocol {
   }
 
   class PersonObjectPojo(val name: String,
-                         val email: Option[String],
-                         val url: Option[String]) extends Serializable {}
+                         val email: String,
+                         val url: String) extends Serializable {}
 
   object PersonObjectPojo {
     def fromPersonObject(person: PersonObject): PersonObjectPojo =
-      new PersonObjectPojo(person.name, person.email, person.url)
+      new PersonObjectPojo(person.name, person.email.orNull, person.url.orNull)
   }
 
   class RepositoryPojo(val `type`: String,
                        val url: String,
-                       val directory: Option[String]) extends Serializable {}
+                       val directory: String) extends Serializable {}
 
   object RepositoryPojo {
-    def fromRepository(r: Repository): RepositoryPojo = new RepositoryPojo(r.`type`, r.url, r.directory)
+    def fromRepository(r: Repository): RepositoryPojo = new RepositoryPojo(r.`type`, r.url, r.directory.orNull)
   }
 
-  class BugPojo(val url: Option[String],
-                val email: Option[String]) extends Serializable {}
+  class BugPojo(val url: String,
+                val email: String) extends Serializable {}
 
   object BugPojo {
-    def fromBug(b: Bug): BugPojo = new BugPojo(b.url, b.email)
+    def fromBug(b: Bug): BugPojo = new BugPojo(b.url.orNull, b.email.orNull)
   }
 
   class TimePojo(val created: String,
-                 val modified: Option[String]) extends Serializable {}
+                 val modified: String) extends Serializable {}
 
   object TimePojo {
-    def fromTime(obj: TimeObject): TimePojo = new TimePojo(obj.created, obj.modified)
+    def fromTime(obj: TimeObject): TimePojo = new TimePojo(obj.created, obj.modified.orNull)
   }
 
   override def toString : String = "Protocol companion object"
