@@ -40,9 +40,9 @@ class ProtocolTests extends FunSuite {
 
     // Assert various normal members and None members
     assert(pojo.described.releaseDate.equals("releaseDate"))
-    assert(pojo.described.issueTracker.get.equals("issueTracker"))
+    assert(pojo.described.issueTracker.equals("issueTracker"))
     assert(pojo.licensed.score.spdx == 121)
-    assert(pojo.coordinates.namespace.get.equals("namespace"))
+    assert(pojo.coordinates.namespace.equals("namespace"))
     assert(pojo._meta.updated.equals("updated"))
     assert(pojo.scores.effective == 7)
   }
@@ -51,13 +51,13 @@ class ProtocolTests extends FunSuite {
     val pojo = ClearlyDefinedReleasePojo.fromClearlyDefinedRelease(cdReleaseEmpty)
 
     // Assert none fields
-    assert(pojo.described.issueTracker.isEmpty)
-    assert(pojo.described.projectWebsite.isEmpty)
-    assert(pojo.described.sourceLocation.isEmpty)
-    assert(pojo.described.hashes.gitSha.isEmpty)
-    assert(pojo.described.hashes.sha1.isEmpty)
-    assert(pojo.described.hashes.sha256.isEmpty)
-    assert(pojo.coordinates.namespace.isEmpty)
+    assert(pojo.described.issueTracker == null)
+    assert(pojo.described.projectWebsite == null)
+    assert(pojo.described.sourceLocation == null)
+    assert(pojo.described.hashes.gitSha == null)
+    assert(pojo.described.hashes.sha1 == null)
+    assert(pojo.described.hashes.sha256 == null)
+    assert(pojo.coordinates.namespace == null)
   }
 
   test("CDDescribed convert success") {
@@ -65,8 +65,8 @@ class ProtocolTests extends FunSuite {
 
     // Assert fields
     assert(pojo.releaseDate.equals("releaseDate"))
-    assert(pojo.projectWebsite.get.equals("projectWebsite"))
-    assert(pojo.issueTracker.get.equals("issueTracker"))
+    assert(pojo.projectWebsite.equals("projectWebsite"))
+    assert(pojo.issueTracker.equals("issueTracker"))
     assert(pojo.files == 1)
     assert(pojo.tools.head.equals("tools1"))
 
@@ -74,7 +74,7 @@ class ProtocolTests extends FunSuite {
     assert(pojo.urls.isInstanceOf[CDDescribedUrlsPojo])
     assert(pojo.hashes.isInstanceOf[CDDescribedHashesPojo])
     assert(pojo.toolScore.isInstanceOf[CDDescribedToolScorePojo])
-    assert(pojo.sourceLocation.get.isInstanceOf[CDDescribedSourceLocationPojo])
+    assert(pojo.sourceLocation.isInstanceOf[CDDescribedSourceLocationPojo])
     assert(pojo.score.isInstanceOf[CDDescribedScorePojo])
   }
 
@@ -83,11 +83,11 @@ class ProtocolTests extends FunSuite {
 
     // Assert fields + None's
     assert(pojo.releaseDate.equals("releaseDate"))
-    assert(pojo.projectWebsite.isEmpty)
-    assert(pojo.issueTracker.isEmpty)
+    assert(pojo.projectWebsite == null)
+    assert(pojo.issueTracker == null)
     assert(pojo.files == 1)
     assert(pojo.tools.head.equals("tools1"))
-    assert(pojo.sourceLocation.isEmpty)
+    assert(pojo.sourceLocation == null)
   }
 
   test("CDDescribedUrls convert success") {
@@ -103,18 +103,18 @@ class ProtocolTests extends FunSuite {
     val pojo = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribedHashes)
 
     // Assert fields
-    assert(pojo.gitSha.get.equals("gitSha"))
-    assert(pojo.sha1.get.equals("sha1"))
-    assert(pojo.sha256.get.equals("sha256"))
+    assert(pojo.gitSha.equals("gitSha"))
+    assert(pojo.sha1.equals("sha1"))
+    assert(pojo.sha256.equals("sha256"))
   }
 
   test("CDDescribedHashes convert with None fields success") {
     val pojo = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribedHashesEmpty)
 
     // Assert fields
-    assert(pojo.gitSha.isEmpty)
-    assert(pojo.sha1.isEmpty)
-    assert(pojo.sha256.isEmpty)
+    assert(pojo.gitSha == null)
+    assert(pojo.sha1 == null)
+    assert(pojo.sha256 == null)
   }
 
   test("CDDescribedToolScore convert success") {
@@ -220,7 +220,7 @@ class ProtocolTests extends FunSuite {
     assert(pojo.`type`.equals("type"))
     assert(pojo.provider.equals("provider"))
     assert(pojo.name.equals("name"))
-    assert(pojo.namespace.get.equals("namespace"))
+    assert(pojo.namespace.equals("namespace"))
     assert(pojo.revision.equals("revision"))
   }
 
@@ -231,7 +231,7 @@ class ProtocolTests extends FunSuite {
     assert(pojo.`type`.equals("type"))
     assert(pojo.provider.equals("provider"))
     assert(pojo.name.equals("name"))
-    assert(pojo.namespace.isEmpty)
+    assert(pojo.namespace == null)
     assert(pojo.revision.equals("revision"))
   }
 
