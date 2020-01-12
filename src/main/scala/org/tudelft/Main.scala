@@ -10,11 +10,11 @@ import org.apache.flink.streaming.api.scala._
 import org.codefeedr.buffer.KafkaBuffer
 import org.codefeedr.pipeline.PipelineBuilder
 import org.codefeedr.stages.OutputStage
+import org.tudelft.plugins.{SQLService, SQLStage}
 import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.maven.stages.SQLStage.SQLStage
-import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage, SQLStage}
-import org.tudelft.plugins.maven.util.SQLService
+import org.tudelft.plugins.SQLStage.SQLStage
+import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
 
 // Cargo
 /*

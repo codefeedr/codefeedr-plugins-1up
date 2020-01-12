@@ -1,11 +1,10 @@
-package org.tudelft.plugins.maven.stages
+package org.tudelft.plugins
 
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.stages.OutputStage
-import org.tudelft.plugins.maven.util.SQLService
+import scala.reflect.runtime.universe._
 
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
 /**
   * SQL object to enable the passing of a string
