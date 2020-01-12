@@ -11,6 +11,8 @@ import org.apache.flink.types.Row
 import org.tudelft.plugins.cargo.protocol.Protocol.{CrateRelease, CrateReleasePojo}
 import org.tudelft.plugins.cargo.util.CargoSQLService
 import org.tudelft.plugins.maven.util.MavenSQLService
+import org.tudelft.plugins.npm.protocol.Protocol.{NpmReleaseExt, NpmReleaseExtPojo}
+import org.tudelft.plugins.npm.util.NpmSQLService
 
 import scala.reflect.runtime.universe._
 
@@ -86,6 +88,15 @@ object SQLService {
         })
 
         CargoSQLService.registerTables(pojos, tEnv)
+      }
+
+      // Npm cases
+      case x if typeOf[T] <:< typeOf[NpmReleaseExt] => {
+        val in = x.asInstanceOf[DataStream[NpmReleaseExt]]
+        val pojos: DataStream[NpmReleaseExtPojo] = in.map(x => {
+          NpmReleaseExtPojo.fromNpmReleaseExt(x)
+        })
+        NpmSQLService.registerTables(pojos, tEnv)
       }
 
       //TODO add all other types here

@@ -143,10 +143,14 @@ object Protocol {
   object DependencyPojo {
     def fromDependency(dep: Dependency): DependencyPojo = new DependencyPojo(dep.packageName, dep.version)
   }
+  // added for SQL queries
+  class DependencyPojoExt(val id : String, val packageName : String, val version : String)
 
   class PersonObjectPojo(val name: String,
                          val email: String,
                          val url: String) extends Serializable {}
+  // added for SQL queries
+  class PersonObjectPojoExt(val id : String, val name: String, val email : String, val url : String)
 
   object PersonObjectPojo {
     def fromPersonObject(person: PersonObject): PersonObjectPojo =
@@ -161,6 +165,9 @@ object Protocol {
     def fromRepository(r: Repository): RepositoryPojo = new RepositoryPojo(r.`type`, r.url, r.directory.orNull)
   }
 
+  // added for SQL queries
+  class RepositoryPojoExt(val id: String, val `type` : String, val url : String, val directory : String)
+
   class BugPojo(val url: String,
                 val email: String) extends Serializable {}
 
@@ -168,12 +175,18 @@ object Protocol {
     def fromBug(b: Bug): BugPojo = new BugPojo(b.url.orNull, b.email.orNull)
   }
 
+  // added for SQL queries
+  class BugPojoExt(val id : String, val url : String, val email : String)
+
   class TimePojo(val created: String,
                  val modified: String) extends Serializable {}
 
   object TimePojo {
     def fromTime(obj: TimeObject): TimePojo = new TimePojo(obj.created, obj.modified.orNull)
   }
+
+  // added for SQL queries
+  class TimePojoExt(val id : String, val url : String, val email : String)
 
   override def toString : String = "Protocol companion object"
 }
