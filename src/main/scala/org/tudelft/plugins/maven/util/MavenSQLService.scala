@@ -3,9 +3,7 @@ package org.tudelft.plugins.maven.util
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.apache.flink.table.api.scala.StreamTableEnvironment
-import org.apache.flink.types.Row
-import org.tudelft.plugins.maven.protocol.Protocol
-import org.tudelft.plugins.maven.protocol.Protocol.{DependencyPojoExt, IssueManagementPojo, LicensePojoExt, MavenProjectPojo, MavenReleaseExtPojo, OrganizationPojo, RepositoryPojoExt, SCMPojo}
+import org.tudelft.plugins.maven.protocol.Protocol._
 
 import scala.reflect.runtime.universe._
 
