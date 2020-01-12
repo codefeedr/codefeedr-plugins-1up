@@ -66,8 +66,7 @@ object CargoSQLService {
     // Because the CrateVersion object already saves the Crate name as a given field, no need for an Ext version
     val crateVersionsStream: DataStream[CrateVersionPojo] = stream
       .filter(x => x.versions != null)
-      .map(x => x.versions)
-      .flatMap(x => x)
+      .flatMap(x => x.versions)
 
     tEnv.registerDataStream(crateVersionsTableName, crateVersionsStream)
   }
@@ -78,8 +77,7 @@ object CargoSQLService {
 
     val crateVersionFeaturesStream: DataStream[CrateVersionFeaturesPojoExt] = stream
       .filter(x => x.versions != null)
-      .map(x => x.versions)
-      .flatMap(x => x)
+      .flatMap(x => x.versions)
       .map(x => new CrateVersionFeaturesPojoExt() {
         versionId = x.id
         crate = x.crate
@@ -94,8 +92,7 @@ object CargoSQLService {
 
     val crateVersionLinksStream: DataStream[CrateVersionLinksPojoExt] = stream
       .filter(x => x.versions != null)
-      .map(x => x.versions)
-      .flatMap(x => x)
+      .flatMap(x => x.versions)
       .map(x => new CrateVersionLinksPojoExt() {
         versionId = x.id
         crate = x.crate
@@ -113,8 +110,7 @@ object CargoSQLService {
 
     val crateVersionPublishedByStream: DataStream[CrateVersionPublishedByPojoExt] = stream
       .filter(x => x.versions != null)
-      .map(x => x.versions)
-      .flatMap(x => x)
+      .flatMap(x => x.versions)
       .filter(x => x.published_by != null)
       .map(x => new CrateVersionPublishedByPojoExt() {
         versionId = x.id
@@ -136,7 +132,7 @@ object CargoSQLService {
       TypeInformation.of(classOf[List[CrateKeywordPojoExt]])
 
     val crateKeywordsStream: DataStream[CrateKeywordPojoExt] = stream
-      .map(x => x.keywords.map(y => {
+      .flatMap(x => x.keywords.map(y => {
         new CrateKeywordPojoExt() {
           crate = x.crate.id
           id = y.id
@@ -145,7 +141,6 @@ object CargoSQLService {
           crates_cnt = y.crates_cnt
         }
       }))
-      .flatMap(x => x)
 
     tEnv.registerDataStream(crateKeywordsTableName, crateKeywordsStream)
   }
@@ -157,7 +152,7 @@ object CargoSQLService {
       TypeInformation.of(classOf[List[CrateCategoryPojoExt]])
 
     val crateCategoriesStream: DataStream[CrateCategoryPojoExt] = stream
-      .map(x => x.categories.map(y => {
+      .flatMap(x => x.categories.map(y => {
         new CrateCategoryPojoExt() {
           crate = x.crate.id
           id = y.id
@@ -168,7 +163,6 @@ object CargoSQLService {
           crates_cnt = y.crates_cnt
         }
       }))
-      .flatMap(x => x)
 
     tEnv.registerDataStream(crateCategoriesTableName, crateCategoriesStream)
   }
