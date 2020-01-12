@@ -147,6 +147,39 @@ class ProtocolTest extends FunSuite {
     assert(result.time.modified == "2019-12-13T07:51:00.925Z")
   }
 
+  test("POJO Test - Npmproject Pojo creation - alternative paths") {
+    // Arrange
+    val alternativePathProject = Protocol.NpmProject("project_id", Some("_rev0.1"), "Harald", None, None, None, None, None, None, None, None,
+      List(PersonObject("Roald", Some("roaldheijden@nospam.com"), Some("https://github.com/roaldvanderheijden"))),
+      "readme: this is a short readme", "this is the link to the readme filename", None, None, None, TimeObject("2020-01-12T07:51:00.925Z", Some("2020-01-13T00:33:00.925Z")))
+    // Act
+    val result = NpmProjectPojo.fromNpmProject(alternativePathProject)
+    // assert
+    assert(result._id == "project_id")
+    assert(result._rev == "_rev0.1")
+    assert(result.name == "Harald")
+    assert(result.author == null)
+    assert(result.authorObject == null)
+    assert(result.contributors == null)
+    assert(result.description == null)
+    assert(result.homepage == null)
+    assert(result.keywords == null)
+    assert(result.license == null)
+    assert(result.dependencies == null)
+    assert(result.maintainers.size == 1)
+    assert(result.maintainers.head.name == "Roald")
+    assert(result.maintainers.head.email == "roaldheijden@nospam.com")
+    assert(result.maintainers.head.url == "https://github.com/roaldvanderheijden")
+    assert(result.readme == "readme: this is a short readme")
+    assert(result.readmeFilename == "this is the link to the readme filename")
+    assert(result.contributors == null)
+    assert(result.bugs == null)
+    assert(result.bugString == null)
+    assert(result.repository == null)
+    assert(result.time.created == "2020-01-12T07:51:00.925Z")
+    assert(result.time.modified == "2020-01-13T00:33:00.925Z")
+  }
+
   test("POJO Test - Dependency POJO creation") {
     val result = DependencyPojo.fromDependency(dependencyobj)
     // Assert

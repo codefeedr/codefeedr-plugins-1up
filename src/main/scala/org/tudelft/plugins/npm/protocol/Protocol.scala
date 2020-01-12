@@ -124,9 +124,7 @@ object Protocol {
       } else null
 
       // transform the repo
-      val repository = RepositoryPojo.fromRepository(project.repository.getOrElse(null))
-      // could do if(isDefined) and .get and nothing otherwise, but compiler was nagging type of repository to be Any
-      // so either had to add "else null" or use this form
+      val repository = if (project.repository.isDefined) RepositoryPojo.fromRepository(project.repository.get) else null
 
       val time = TimePojo.fromTime(project.time)
       // now create a new POJO with these vals
