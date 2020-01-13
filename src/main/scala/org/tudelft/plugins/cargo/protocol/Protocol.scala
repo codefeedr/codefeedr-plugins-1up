@@ -69,12 +69,12 @@ object Protocol extends Enumeration {
     var categories: List[String] = _
     //var created_at: Date = _
     var downloads: Int = _
-    var recent_downloads: Option[Int] = _
+    var recent_downloads: Int = _
     var max_version: String = _
     var description: String = _
-    var homepage: Option[String] = _
-    var documentation: Option[String] = _
-    var repository: Option[String] = _
+    var homepage: String = _
+    var documentation: String = _
+    var repository: String = _
     var links: CrateLinksPojo = _
     var exact_match: Boolean = _
   }
@@ -90,12 +90,14 @@ object Protocol extends Enumeration {
       pojo.categories = crate.categories
       //pojo.created_at =
       pojo.downloads = crate.downloads
-      pojo.recent_downloads = crate.recent_downloads
+      if(crate.recent_downloads.isDefined) {
+        pojo.recent_downloads = crate.recent_downloads.get
+      }
       pojo.max_version = crate.max_version
       pojo.description = crate.description
-      pojo.homepage = crate.homepage
-      pojo.documentation = crate.documentation
-      pojo.repository = crate.repository
+      pojo.homepage = crate.homepage.orNull
+      pojo.documentation = crate.documentation.orNull
+      pojo.repository = crate.repository.orNull
       pojo.links = CrateLinksPojo.fromCrateLinks(crate.links)
       pojo.exact_match = crate.exact_match
       pojo
@@ -111,18 +113,22 @@ object Protocol extends Enumeration {
 
   class CrateLinksPojo extends Serializable {
     var version_downloads: String = _
-    var versions: Option[String] = _
+    var versions: String = _
     var owners: String = _
     var owner_team: String = _
     var owner_user: String = _
     var reverse_dependencies: String = _
   }
 
+  class CrateLinksPojoExt extends CrateLinksPojo {
+    var crateId: String = _
+  }
+
   object CrateLinksPojo {
     def fromCrateLinks(crateLinks: CrateLinks): CrateLinksPojo = {
       val pojo = new CrateLinksPojo
       pojo.version_downloads = crateLinks.version_downloads
-      pojo.versions = crateLinks.versions
+      pojo.versions = crateLinks.versions.orNull
       pojo.owners = crateLinks.owners
       pojo.owner_team = crateLinks.owner_team
       pojo.owner_user = crateLinks.owner_user
@@ -160,8 +166,8 @@ object Protocol extends Enumeration {
     var yanked: Boolean = _
     var license: String = _
     var links: CrateVersionLinksPojo = _
-    var crate_size: Option[Int] = _
-    var published_by: Option[CrateVersionPublishedByPojo] = _
+    var crate_size: Int = _
+    var published_by: CrateVersionPublishedByPojo = _
   }
 
   object CrateVersionPojo {
@@ -177,12 +183,11 @@ object Protocol extends Enumeration {
       pojo.yanked = crateVersion.yanked
       pojo.license = crateVersion.license
       pojo.links = CrateVersionLinksPojo.fromCrateVersionLinks(crateVersion.links)
-      pojo.crate_size = crateVersion.crate_size
-      if(crateVersion.published_by.isEmpty) {
-        pojo.published_by = None
+      if(crateVersion.crate_size.isDefined) {
+        pojo.crate_size = crateVersion.crate_size.get
       }
-      else {
-        pojo.published_by = Some(CrateVersionPublishedByPojo.fromCrateVersionPublishedBy(crateVersion.published_by.get))
+      if(crateVersion.published_by.isDefined) {
+        pojo.published_by = CrateVersionPublishedByPojo.fromCrateVersionPublishedBy(crateVersion.published_by.get)
       }
       pojo
     }
@@ -192,6 +197,12 @@ object Protocol extends Enumeration {
   case class CrateVersionFeatures()
 
   class CrateVersionFeaturesPojo extends Serializable {
+  }
+
+  class CrateVersionFeaturesPojoExt extends CrateVersionFeaturesPojo {
+    // unique key = id + crate of parent object CrateVersionPojo
+    var versionId: Int = _
+    var crate: String = _
   }
 
   object CrateVersionFeaturesPojo {
@@ -208,6 +219,12 @@ object Protocol extends Enumeration {
     var dependencies: String = _
     var version_downloads: String = _
     var authors: String = _
+  }
+
+  class CrateVersionLinksPojoExt extends CrateVersionLinksPojo {
+    // unique key = id + crate of parent object CrateVersionPojo
+    var versionId: Int = _
+    var crate: String = _
   }
 
   object CrateVersionLinksPojo {
@@ -229,9 +246,14 @@ object Protocol extends Enumeration {
   class CrateVersionPublishedByPojo extends Serializable {
     var id: Int = _
     var login: String = _
-    var name: Option[String] = _
+    var name: String = _
     var avatar: String = _
     var url: String = _
+  }
+
+  class CrateVersionPublishedByPojoExt extends CrateVersionPublishedByPojo {
+    var versionId: Int = _
+    var crate: String = _
   }
 
   object CrateVersionPublishedByPojo {
@@ -239,7 +261,7 @@ object Protocol extends Enumeration {
       val pojo = new CrateVersionPublishedByPojo
       pojo.id = crateVersionPublishedBy.id
       pojo.login = crateVersionPublishedBy.login
-      pojo.name = crateVersionPublishedBy.name
+      pojo.name = crateVersionPublishedBy.name.orNull
       pojo.avatar = crateVersionPublishedBy.avatar
       pojo.url = crateVersionPublishedBy.url
       pojo
@@ -256,6 +278,10 @@ object Protocol extends Enumeration {
     var keyword: String = _
     var created_at: String = _
     var crates_cnt: Int = _
+  }
+
+  class CrateKeywordPojoExt extends CrateKeywordPojo {
+    var crate: String = _
   }
 
   object CrateKeywordPojo {
@@ -283,6 +309,10 @@ object Protocol extends Enumeration {
     var description: String = _
     var created_at: String = _
     var crates_cnt: Int = _
+  }
+
+  class CrateCategoryPojoExt extends CrateCategoryPojo {
+    var crate: String = _
   }
 
   object CrateCategoryPojo {

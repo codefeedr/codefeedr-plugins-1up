@@ -43,9 +43,9 @@ class ProtocolTests extends FunSuite {
     val pojo = CrateReleasePojo.fromCrateRelease(crateRelease)
 
     // Assert certain fields, e.g. Option[Int] crate.recent_downloads
-    assert(pojo.crate.recent_downloads.get == 4)
-    assert(pojo.crate.links.versions.get.equals("versions"))
-    assert(pojo.versions.head.published_by.get.login.equals("login"))
+    assert(pojo.crate.recent_downloads == 4)
+    assert(pojo.crate.links.versions.equals("versions"))
+    assert(pojo.versions.head.published_by.login.equals("login"))
     assert(pojo.keywords.head.keyword.equals("keyword"))
     assert(pojo.categories.head.category.equals("category"))
   }
@@ -54,9 +54,9 @@ class ProtocolTests extends FunSuite {
     val pojo = CrateReleasePojo.fromCrateRelease(crateReleaseEmpty)
 
     // Assert certain None fields
-    assert(pojo.crate.recent_downloads.isEmpty)
-    assert(pojo.crate.links.versions.isEmpty)
-    assert(pojo.versions.head.published_by.isEmpty)
+    assert(pojo.crate.recent_downloads == 0)
+    assert(pojo.crate.links.versions == null)
+    assert(pojo.versions.head.published_by == null)
     // Assert a regular field
     assert(pojo.crate.name.equals("name"))
   }
@@ -67,19 +67,19 @@ class ProtocolTests extends FunSuite {
     // Assert certain fields
     assert(pojo.id.equals("id"))
     assert(pojo.versions.head == 1)
-    assert(pojo.repository.get.equals("repository"))
+    assert(pojo.repository.equals("repository"))
   }
 
   test("CratePojo convert with None fields success") {
     val pojo = CratePojo.fromCrate(crateEmpty)
 
     // Assert certain None fields
-    assert(pojo.recent_downloads.isEmpty)
-    assert(pojo.homepage.isEmpty)
-    assert(pojo.documentation.isEmpty)
-    assert(pojo.repository.isEmpty)
+    assert(pojo.recent_downloads == 0)
+    assert(pojo.homepage == null)
+    assert(pojo.documentation == null)
+    assert(pojo.repository == null)
     // Assert a regular field
-    assert(pojo.exact_match == true)
+    assert(pojo.exact_match)
   }
 
   test("CrateLinks convert with all fields success") {
@@ -87,7 +87,7 @@ class ProtocolTests extends FunSuite {
 
     // Assert certain fields
     assert(pojo.version_downloads.equals("version_downloads"))
-    assert(pojo.versions.get.equals("versions"))
+    assert(pojo.versions.equals("versions"))
     assert(pojo.owner_user.equals("owner_user"))
   }
 
@@ -95,7 +95,7 @@ class ProtocolTests extends FunSuite {
     val pojo = CrateLinksPojo.fromCrateLinks(crateLinksEmpty)
 
     // Assert None field
-    assert(pojo.versions.isEmpty)
+    assert(pojo.versions == null)
     // Assert regular field
     assert(pojo.owner_team.equals("owner_team"))
   }
@@ -105,7 +105,7 @@ class ProtocolTests extends FunSuite {
 
     // Assert certain fields
     assert(pojo.id == 1)
-    assert(pojo.yanked == true)
+    assert(pojo.yanked)
     assert(pojo.license.equals("license"))
   }
 
@@ -131,7 +131,7 @@ class ProtocolTests extends FunSuite {
     // Assert certain fields
     assert(pojo.id == 1)
     assert(pojo.login.equals("login"))
-    assert(pojo.name.get.equals("name"))
+    assert(pojo.name.equals("name"))
     assert(pojo.avatar.equals("avatar"))
     assert(pojo.url.equals("url"))
   }
@@ -140,7 +140,7 @@ class ProtocolTests extends FunSuite {
     val pojo = CrateVersionPublishedByPojo.fromCrateVersionPublishedBy(crateVersionPublishedByEmpty)
 
     // Assert None field
-    assert(pojo.name.isEmpty)
+    assert(pojo.name == null)
   }
 
   test("CrateKeyword with all fields success") {
