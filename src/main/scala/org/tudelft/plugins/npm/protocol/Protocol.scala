@@ -56,21 +56,34 @@ object Protocol {
 
   // underneath is a POJO representation of all case classes mentioned above
 
-  class NpmReleasePojo(val name: String,
-                       val retrieveDate: Long) extends Serializable {}
-
-  object NpmReleasePojo {
-    def fromNpmRelease(release: NpmRelease): NpmReleasePojo =
-      new NpmReleasePojo(release.name, release.retrieveDate.getTime)
+  class NpmReleasePojo extends Serializable {
+    var name: String = _
+    var retrieveDate: Long = _
   }
 
-  class NpmReleaseExtPojo(val name: String,
-                          val retrieveDate: Long,
-                          val project: NpmProjectPojo) extends Serializable {}
+  object NpmReleasePojo {
+    def fromNpmRelease(release: NpmRelease): NpmReleasePojo = {
+      val pojo = new NpmReleasePojo
+      pojo.name = release.name
+      pojo.retrieveDate = release.retrieveDate.getTime
+      pojo
+    }
+  }
+
+  class NpmReleaseExtPojo extends Serializable {
+    var name: String = _
+    var retrieveDate: Long = _
+    var project: NpmProjectPojo = _
+  }
 
   object NpmReleaseExtPojo {
-    def fromNpmReleaseExt(release: NpmReleaseExt): NpmReleaseExtPojo =
-      new NpmReleaseExtPojo(release.name, release.retrieveDate.getTime, NpmProjectPojo.fromNpmProject(release.project))
+    def fromNpmReleaseExt(release: NpmReleaseExt): NpmReleaseExtPojo = {
+      val pojo = new NpmReleaseExtPojo
+      pojo.name = release.name
+      pojo.retrieveDate = release.retrieveDate.getTime
+      pojo.project = NpmProjectPojo.fromNpmProject(release.project)
+      pojo
+    }
   }
 
   class NpmProjectPojo(

@@ -34,7 +34,7 @@ object Main {
 
     val npmReleaseSource = new NpmReleasesStage()
     val npmExtendedReleases = new NpmReleasesExtStage()
-    val npmSQlstage = SQLStage.createSQLStage[NpmReleaseExt]("Select * FROM Npm")
+    val npmSQlstage = SQLStage.createSQLStage[NpmReleaseExt]("Select * FROM NpmTime")
 
     new PipelineBuilder()
       .setPipelineName("Npm plugin")
