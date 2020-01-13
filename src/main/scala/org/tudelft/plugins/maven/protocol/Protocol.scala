@@ -249,6 +249,10 @@ object Protocol {
     var url: String = _
   }
 
+  class OrganizationPojoExt extends OrganizationPojo {
+    var root_id : String = _
+  }
+
   object OrganizationPojo {
     def fromOrganization(organization: Organization): OrganizationPojo = {
       val pojo = new OrganizationPojo
@@ -261,6 +265,10 @@ object Protocol {
   class IssueManagementPojo extends Serializable {
     var system: String = _
     var url: String = _
+  }
+
+  class IssueManagementPojoExt extends IssueManagementPojo {
+    var root_id : String = _
   }
 
   object IssueManagementPojo {
@@ -277,6 +285,10 @@ object Protocol {
     var developerConnection: String = _
     var tag: String = _
     var url: String = _
+  }
+
+  class SCMPojoExt extends SCMPojo {
+    var root_id : String = _
   }
 
   object SCMPojo {

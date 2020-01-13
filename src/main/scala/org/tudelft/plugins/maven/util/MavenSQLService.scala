@@ -42,26 +42,26 @@ object MavenSQLService {
   }
 
   def registerOrganizationTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[OrganizationPojo])
+    implicit val typeInfo = TypeInformation.of(classOf[OrganizationPojoExt])
     val organizationPojoStream: DataStream[OrganizationPojo] = stream
       .filter(x => x.project.organization != null)
-      .map(x => x.project.organization)
+      .map(x => new OrganizationPojoExt(x.project.artifactId, x.project.organization.name, x.project.organization.url))
     tEnv.registerDataStream(projectOrganizationTableName, organizationPojoStream)
   }
 
   def registerIssueManagementTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[IssueManagementPojo])
+    implicit val typeInfo = TypeInformation.of(classOf[IssueManagementPojoExt])
     val issueManagementPojoStream: DataStream[IssueManagementPojo] = stream
       .filter(x => x.project.issueManagement != null)
-      .map(x => x.project.issueManagement)
+      .map(x => new IssueManagementPojoExt(x.project.artifactId, x.project.issueManagement.system, x.project.issueManagement.url))
     tEnv.registerDataStream(projectIssueManagementTableName, issueManagementPojoStream)
   }
 
   def registerSCMTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[SCMPojo])
+    implicit val typeInfo = TypeInformation.of(classOf[SCMPojoExt])
     val scmPojoStream: DataStream[SCMPojo] = stream
       .filter(x => x.project.scm != null)
-      .map(x => x.project.scm)
+      .map(x => new SCMPojoExt(x.project.artifactId, x.project.scm.connection, x.project.scm.developerConnection, x.project.scm.tag, x.project.scm.url))
     tEnv.registerDataStream(projectSCMTableName, scmPojoStream)
   }
 
@@ -71,7 +71,7 @@ object MavenSQLService {
 
     val dependenciesPojoStream: DataStream[DependencyPojoExt] = stream
       .filter(x => x.project.dependencies != null)
-      .map(x => {
+      .flatMap(x => {
         x.project.dependencies.map(y => {
           new DependencyPojoExt() {
             projectId = x.project.artifactId
@@ -84,7 +84,6 @@ object MavenSQLService {
           }
         })
       })
-      .flatMap(x => x)
     tEnv.registerDataStream(projectDependenciesTableName, dependenciesPojoStream)
   }
 
@@ -94,7 +93,7 @@ object MavenSQLService {
 
     val licensesPojoStream: DataStream[LicensePojoExt] = stream
       .filter(x => x.project.licenses != null)
-      .map(x => {
+      .flatMap(x => {
         x.project.licenses.map(y => {
           new LicensePojoExt() {
             projectId = x.project.artifactId
@@ -105,7 +104,6 @@ object MavenSQLService {
           }
         })
       })
-      .flatMap(x => x)
     tEnv.registerDataStream(projectLicensesTableName, licensesPojoStream)
   }
 
@@ -115,7 +113,7 @@ object MavenSQLService {
 
     val repositoryPojoStream: DataStream[RepositoryPojoExt] = stream
       .filter(x => x.project.repositories != null)
-      .map(x => {
+      .flatMap(x => {
         x.project.repositories.map(y => {
           new RepositoryPojoExt() {
             projectId = x.project.artifactId
@@ -125,7 +123,6 @@ object MavenSQLService {
           }
         })
       })
-      .flatMap(x => x)
     tEnv.registerDataStream(projectRepositoriesTableName, repositoryPojoStream)
   }
 }
