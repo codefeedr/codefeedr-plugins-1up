@@ -14,26 +14,75 @@ import org.tudelft.plugins.{SQLService, SQLStage}
 import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.SQLStage.SQLStage
-import org.tudelft.plugins.cargo.operators.CargoReleasesSource
-import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
-import org.tudelft.plugins.cargo.stages.CargoReleasesStage
-import org.tudelft.plugins.cargo.util.CargoSQLService
+import org.tudelft.plugins.clearlydefined.operators.ClearlyDefinedReleasesSource
+import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
+import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
 
+// Cargo
+/*
+object Main {
+  def main(args: Array[String]): Unit = {
+    new PipelineBuilder()
+      .append(new CargoReleasesStage())
+      .append (new CrateDownloadsOutput)
+      .build()
+      .startMock()
+  }
+}
+
+class CrateDownloadsOutput extends OutputStage[CrateRelease] {
+  override def main(source: DataStream[CrateRelease]): Unit = {
+    source
+      .map { item => (item.crate.name,
+        " " + item.crate.downloads,
+        " Nr. of versions: " + item.crate.versions.size) }
+      .print()
+  }
+}
+*/
+
+
+// ClearlyDefined
+/*
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val mavenReleaseSource = new MavenReleasesStage()
-    val mavenEnrichReleases = new MavenReleasesExtStage()
-    val mavenSqlStage = SQLStage.createSQLStage[MavenReleaseExt](
-      """
-        | SELECT MavenProject.artifactId, MavenProjectParent.artifactId
-        | FROM MavenProjectParent
-        | INNER JOIN MavenProject ON MavenProjectParent.childId=MavenProject.artifactId
-        |""".stripMargin)
+    new PipelineBuilder()
+      .append(new MavenReleasesStage())
+      .append(new MavenReleasesExtStage())
+//      .append(SQLStage.createSQLStage[MavenReleaseExt]("Select * from Maven"))
+      .append(new JsonExitStage[MavenReleaseExt]())
+//      .append (new CrateDownloadsOutput)
+      .build()
+      .startMock()
+  }
+}
 
-    val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = SQLStage.createSQLStage[CrateRelease]("SELECT * FROM CargoCrateCategories")
+class CrateDownloadsOutput extends OutputStage[StringWrapper] {
+  override def main(source: DataStream[StringWrapper]): Unit = {
+    source.map(x => println(x.s))
+  }
+}
+*/
+
+// Maven
+object Main {
+  def main(args: Array[String]): Unit = {
+
+    val query: String =
+      """
+        | SELECT *
+        | FROM CDLFCoreDiscovered
+        | WHERE expression LIKE '%%'
+        |""".stripMargin
+
+    val releaseSource = new MavenReleasesStage()
+    val enrichReleases = new MavenReleasesExtStage()
+    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+
+    val cdSource = new ClearlyDefinedReleasesStage()
+    val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     new PipelineBuilder()
       .setPipelineName("Maven plugin")
@@ -46,8 +95,7 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(mavenReleaseSource, mavenEnrichReleases)
-      .edge(mavenEnrichReleases, mavenSqlStage)
+      .edge(cdSource, cdSQLStage)
       //      .edge(releaseSource, sqlStage)
       .build()
       .startMock()
