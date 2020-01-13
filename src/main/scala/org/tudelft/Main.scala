@@ -19,6 +19,8 @@ import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.cargo.util.CargoSQLService
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
+import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
+import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -30,8 +32,12 @@ object Main {
     val cargoSource = new CargoReleasesStage()
     val cargoSqlStage = SQLStage.createSQLStage[CrateRelease]("SELECT * FROM CargoCrateCategories")
 
+    val npmReleaseSource = new NpmReleasesStage()
+    val npmExtendedReleases = new NpmReleasesExtStage()
+    val npmSQlstage = SQLStage.createSQLStage[NpmReleaseExt]("Select * FROM Npm")
+
     new PipelineBuilder()
-      .setPipelineName("Maven plugin")
+      .setPipelineName("Npm plugin")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
         3,
         Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
@@ -41,8 +47,10 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(cargoSource, cargoSqlStage)
+      //.edge(cargoSource, cargoSqlStage)
       //      .edge(releaseSource, sqlStage)
+      .edge(npmReleaseSource, npmExtendedReleases)
+      .edge(npmExtendedReleases, npmSQlstage)
       .build()
       .startMock()
   }
