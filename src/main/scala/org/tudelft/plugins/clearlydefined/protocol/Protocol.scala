@@ -277,6 +277,12 @@ object Protocol {
     var parties: List[String] = _
   }
 
+  class CDLFCoreAttributionPojoExt extends Serializable {
+    var id: String = _
+    var unknown: Int = _
+    var party: String = _
+  }
+
   object CDLFCoreAttributionPojo {
     def fromCDLFCoreAttribution(cdlfCoreAttribution: CDLFCoreAttribution): CDLFCoreAttributionPojo = {
       val pojo = new CDLFCoreAttributionPojo
@@ -292,6 +298,12 @@ object Protocol {
   class CDLFCoreDiscoveredPojo extends Serializable {
     var unknown: Int = _
     var expressions: List[String] = _
+  }
+
+  class CDLFCoreDiscoveredPojoExt extends Serializable {
+    var id: String = _
+    var unknown: Int = _
+    var expression: String = _
   }
 
   object CDLFCoreDiscoveredPojo {

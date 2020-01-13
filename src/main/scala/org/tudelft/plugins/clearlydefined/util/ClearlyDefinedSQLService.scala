@@ -20,9 +20,9 @@ object ClearlyDefinedSQLService {
   val licensedTableName: String = "ClearlyDefinedLicensed"
   val licensedToolScoreTableName: String = "ClearlyDefinedLicensedToolScore"
   val licensedFacetsTableName: String = "ClearlyDefinedLicensedFacets"
-  val licensedFacetsCDLFCoreTableName: String = "ClearlyDefinedFacetsCDLFCore"
-  val licensedFacetsCDLFCoreAttributionTableName: String = "ClearlyDefinedFacetsCDLFCoreAttribution"
-  val licensedFacetsCDLFCoreDiscoveredTableName: String = "ClearlyDefinedFacetsCDLFCoreDiscovered"
+  val licensedFacetsCoreTableName: String = "CDLFCore"
+  val licensedFacetsCoreAttributionTableName: String = "CDLFCoreAttribution"
+  val licensedFacetsCoreDiscoveredTableName: String = "CDLFCoreDiscovered"
   val licensedScoreTableName: String = "ClearlyDefinedLicensedScore"
 
   val coordinatesTableName: String = "ClearlyDefinedCoordinates"
@@ -81,7 +81,9 @@ object ClearlyDefinedSQLService {
 
   def registerDescribedSourceLocationTable(stream: DataStream[ClearlyDefinedReleasePojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[CDDescribedSourceLocationPojo])
-    val describedSourceLocationStream = stream.map(x => x.described.sourceLocation)
+    val describedSourceLocationStream = stream
+      .filter(x => x.described.sourceLocation != null)
+      .map(x => x.described.sourceLocation)
     tEnv.registerDataStream(describedSourceLocationTableName, describedSourceLocationStream)
   }
 
@@ -112,19 +114,35 @@ object ClearlyDefinedSQLService {
   def registerLicensedFacetsCDLFCoreTable(stream: DataStream[ClearlyDefinedReleasePojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[CDLFCorePojo])
     val licensedFacetsCDLFCoreStream = stream.map(x => x.licensed.facets.core)
-    tEnv.registerDataStream(licensedFacetsCDLFCoreTableName, licensedFacetsCDLFCoreStream)
+    tEnv.registerDataStream(licensedFacetsCoreTableName, licensedFacetsCDLFCoreStream)
   }
 
   def registerLicensedCDLFCoreAttributionTable(stream: DataStream[ClearlyDefinedReleasePojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[CDLFCoreAttributionPojo])
-    val licensedCDLFCoreAttributionStream = stream.map(x => x.licensed.facets.core.attribution)
-    tEnv.registerDataStream(licensedFacetsCDLFCoreAttributionTableName, licensedCDLFCoreAttributionStream)
+    implicit val typeInfo = TypeInformation.of(classOf[CDLFCoreAttributionPojoExt])
+    implicit val typeInfoList = TypeInformation.of(classOf[List[CDLFCoreAttributionPojoExt]])
+    val licensedCDLFCoreAttributionStream = stream
+      .flatMap(x => x.licensed.facets.core.attribution.parties.map(y => {
+        new CDLFCoreAttributionPojoExt() {
+          id = x.coordinates.name
+          unknown = x.licensed.facets.core.attribution.unknown
+          party = y
+        }
+      }))
+    tEnv.registerDataStream(licensedFacetsCoreAttributionTableName, licensedCDLFCoreAttributionStream)
   }
 
   def registerLicensedCDLFCoreDiscoveredTable(stream: DataStream[ClearlyDefinedReleasePojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[CDLFCoreDiscoveredPojo])
-    val licensedCDLFCoreDiscoveredStream = stream.map(x => x.licensed.facets.core.discovered)
-    tEnv.registerDataStream(licensedFacetsCDLFCoreDiscoveredTableName, licensedCDLFCoreDiscoveredStream)
+    implicit val typeInfo = TypeInformation.of(classOf[CDLFCoreDiscoveredPojoExt])
+    implicit val typeInfoList = TypeInformation.of(classOf[List[CDLFCoreDiscoveredPojoExt]])
+    val licensedCDLFCoreDiscoveredStream = stream
+      .flatMap(x => x.licensed.facets.core.discovered.expressions.map(y => {
+        new CDLFCoreDiscoveredPojoExt() {
+          id = x.coordinates.name
+          unknown = x.licensed.facets.core.discovered.unknown
+          expression = y
+        }
+      }))
+    tEnv.registerDataStream(licensedFacetsCoreDiscoveredTableName, licensedCDLFCoreDiscoveredStream)
   }
 
   def registerLicensedScoreTable(stream: DataStream[ClearlyDefinedReleasePojo], tEnv: StreamTableEnvironment): Unit = {
@@ -150,5 +168,4 @@ object ClearlyDefinedSQLService {
     val scoresStream = stream.map(x => x.scores)
     tEnv.registerDataStream(scoresTableName, scoresStream)
   }
-
 }
