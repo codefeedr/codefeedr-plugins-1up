@@ -158,4 +158,5 @@ class ProtocolTest extends FunSuite{
     assert(pojo.issueManagement == null)
     assert(pojo.scm == null)
   }
+
 }
