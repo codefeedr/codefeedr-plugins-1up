@@ -32,11 +32,15 @@ class NpmReleasesExtStage(stageId: String = "npm_releases") extends TransformSta
       5,
       TimeUnit.SECONDS,
       100)
+/*
+  for testing purposes this is commmented out, but until we merge into master at the end of the project
+  please leave these lines commented!!
+ */
 
-    implicit val typeInfo = TypeInformation.of(classOf[NpmReleaseExt])
-    new org.apache.flink.streaming.api.scala.DataStream(async)
-          .map(x => NpmReleaseExt(x.name, x.retrieveDate, x.project))
-          .print()
+//    implicit val typeInfo = TypeInformation.of(classOf[NpmReleaseExt])
+//    new org.apache.flink.streaming.api.scala.DataStream(async)
+//          .map(x => NpmReleaseExt(x.name, x.retrieveDate, x.project))
+//          .print()
 
     new org.apache.flink.streaming.api.scala.DataStream(async)
   }
