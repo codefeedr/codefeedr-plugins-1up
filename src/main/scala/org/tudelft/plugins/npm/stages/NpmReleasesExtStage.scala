@@ -45,7 +45,7 @@ class NpmReleasesExtStage(stageId: String = "npm_releases") extends TransformSta
 /*
 Notes - for testing purposes - debug by printf :)
     //    new org.apache.flink.streaming.api.scala.DataStream(async)
-    //      .map(x => (x.name, x.retrieveDate, x.project))
+    //      .map(x => NpmReleaseExt(x.name, x.retrieveDate, x.project))
     //      .print()
 
  */

@@ -10,48 +10,49 @@ import java.util.Date
  */
 object Protocol {
 
-  case class NpmRelease(name          : String,
-                        retrieveDate  : Date) // using ingestion time
+  case class NpmRelease(name: String,
+                        retrieveDate: Date) // using ingestion time
 
-  case class NpmReleaseExt(name         : String,
-                           retrieveDate : Date,
-                           project      : NpmProject)
+  case class NpmReleaseExt(name: String,
+                           retrieveDate: Date,
+                           project: NpmProject)
 
-  case class NpmProject(_id             : String,
-                        _rev            : Option[String],
-                        name            : String,
-                        author          : Option[String],
-                        authorObject    : Option[PersonObject],
-                        contributors    : Option[List[PersonObject]],
-                        description     : Option[String],
-                        homepage        : Option[String],
-                        keywords        : Option[List[String]],
-                        license         : Option[String],
-                        dependencies    : Option[List[Dependency]],
-                        maintainers     : List[PersonObject],
-                        readme          : String,
-                        readmeFilename  : String,
-                        bugs            : Option[Bug],
-                        bugString       : Option[String],
-                        repository      : Option[Repository],
-                        time            : TimeObject)
+  case class NpmProject(_id: String,
+                        _rev: Option[String],
+                        name: String,
+                        author:Option[String],
+                        authorObject: Option[PersonObject],
+                        contributors: Option[List[PersonObject]],
+                        description: Option[String],
+                        homepage: Option[String],
+                        keywords: Option[List[String]],
+                        license: Option[String],
+                        dependencies: Option[List[Dependency]],
+                        maintainers: List[PersonObject],
+                        readme: String,
+                        readmeFilename: String,
+                        bugs: Option[Bug],
+                        bugString: Option[String],
+                        repository: Option[Repository],
+                        time: TimeObject
+                       )
 
-  case class Dependency(packageName : String,
-                        version     : String)
+  case class Dependency(packageName: String,
+                        version: String)
 
-  case class PersonObject(name  : String,
-                          email : Option[String],
-                          url   : Option[String])
+  case class PersonObject(name: String,
+                          email: Option[String],
+                          url: Option[String])
 
-  case class Repository(`type`    : String,
-                        url       : String,
-                        directory : Option[String])
+  case class Repository(`type`: String,
+                        url: String,
+                        directory: Option[String])
 
-  case class Bug(url   : Option[String],
-                 email : Option[String])
+  case class Bug(url: Option[String],
+                 email: Option[String])
 
-  case class TimeObject(created  : String,
-                        modified : Option[String])
+  case class TimeObject(created: String,
+                        modified: Option[String])
 
   // underneath is a POJO representation of all case classes mentioned above
 
@@ -85,37 +86,30 @@ object Protocol {
     }
   }
 
-  class NpmProjectPojo extends Serializable {
-    var _id: String = _
-    var _rev: String = _
-    var name: String = _
-    var author : String = _
-    var authorObject: PersonObjectPojo = _
-    var contributors: List[PersonObjectPojo] = _
-    var description: String = _
-    var homepage: String = _
-    var keywords: List[String] = _
-    var license: String = _
-    var dependencies: List[DependencyPojo] = _
-    var maintainers: List[PersonObjectPojo] = _
-    var readme: String = _
-    var readmeFilename: String = _
-    var bugs: BugPojo = _
-    var bugString: String = _
-    var repository: RepositoryPojo = _
-    var time: TimePojo = _
-  }
+  class NpmProjectPojo(
+                        val _id: String,
+                        val _rev: String,
+                        val name: String,
+                        val author : String,
+                        val authorObject: PersonObjectPojo,
+                        val contributors: List[PersonObjectPojo],
+                        val description: String,
+                        val homepage: String,
+                        val keywords: List[String],
+                        val license: String,
+                        val dependencies: List[DependencyPojo],
+                        val maintainers: List[PersonObjectPojo],
+                        val readme: String,
+                        val readmeFilename: String,
+                        val bugs: BugPojo,
+                        val bugString: String,
+                        val repository: RepositoryPojo,
+                        val time: TimePojo)
+    extends Serializable {}
 
   object NpmProjectPojo {
     def fromNpmProject(project: NpmProject): NpmProjectPojo = {
-      val pojo = new NpmProjectPojo
-      /*
-         new NpmProjectPojo(project._id, project._rev.orNull, project.name, project.author.orNull, authorObject, contributors,
-        project.description.orNull, project.homepage.orNull, keywords, project.license.orNull, dependencies,
-        project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
-        bugs, project.bugString.orNull, repository, time)
-       */
-      pojo._id = project._id
+
       // transform the authorObject
       val authorObject = if (project.authorObject.isDefined) {
         PersonObjectPojo.fromPersonObject(project.authorObject.get)
@@ -147,7 +141,10 @@ object Protocol {
 
       val time = TimePojo.fromTime(project.time)
       // now create a new POJO with these vals
-      pojo
+      new NpmProjectPojo(project._id, project._rev.orNull, project.name, project.author.orNull, authorObject, contributors,
+        project.description.orNull, project.homepage.orNull, keywords, project.license.orNull, dependencies,
+        project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
+        bugs, project.bugString.orNull, repository, time)
     }
   }
 
