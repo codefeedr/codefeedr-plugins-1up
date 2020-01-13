@@ -1,6 +1,8 @@
 package org.tudelft.plugins.npm.stages
 
 import java.util.concurrent.TimeUnit
+
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.apache.flink.streaming.api.datastream.{AsyncDataStream => JavaAsyncDataStream}
 import org.codefeedr.stages.TransformStage
@@ -30,6 +32,11 @@ class NpmReleasesExtStage(stageId: String = "npm_releases") extends TransformSta
       5,
       TimeUnit.SECONDS,
       100)
+
+    implicit val typeInfo = TypeInformation.of(classOf[NpmReleaseExt])
+    new org.apache.flink.streaming.api.scala.DataStream(async)
+          .map(x => NpmReleaseExt(x.name, x.retrieveDate, x.project))
+          .print()
 
     new org.apache.flink.streaming.api.scala.DataStream(async)
   }

@@ -49,8 +49,8 @@ object Main {
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
       //.edge(cargoSource, cargoSqlStage)
       //      .edge(releaseSource, sqlStage)
-      .edge(npmReleaseSource, npmExtendedReleases)
-      .edge(npmExtendedReleases, npmSQlstage)
+      .edge(npmReleaseSource, npmExtendedReleases) // startMock gives me 1 hit + 1 http-request situation
+      //.edge(npmExtendedReleases, npmSQlstage)
       .build()
       .startMock()
   }
