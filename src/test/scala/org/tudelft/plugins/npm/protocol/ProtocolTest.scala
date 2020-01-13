@@ -1,8 +1,9 @@
 package org.tudelft.plugins.npm.protocol
 
 import java.util.Date
+
 import org.scalatest.FunSuite
-import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, Repository, RepositoryPojo, TimeObject, TimePojo}
+import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, DependencyPojoExt, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonObjectPojoExt, Repository, RepositoryPojo, RepositoryPojoExt, TimeObject, TimePojo, TimePojoExt}
 
 /**
  * Class to test the creation of POJO for our SQL Service (since the Datastream[NPM Case Class] will not work
@@ -256,6 +257,36 @@ class ProtocolTest extends FunSuite {
     // Assert
     assert(result.created == "2019-02-19T06:00:04.974Z")
     assert(result.modified == null)
+  }
+
+  test("POJO Test - PersonObjectPojoExt creation") {
+    val result = new PersonObjectPojoExt("ts2php", "Roald", "roaldheijden@nospam.com", "https://github.com")
+    assert(result.id == "ts2php")
+    assert(result.name == "Roald")
+    assert(result.email == "roaldheijden@nospam.com")
+    assert(result.url == "https://github.com")
+  }
+
+  test("POJO TEST - TimePojoExt creation") {
+    val result = new TimePojoExt("bslet", "2020-01-12", "2020-01-13")
+    assert(result.id == "bslet")
+    assert(result.created == "2020-01-12")
+    assert(result.modified == "2020-01-13")
+  }
+
+  test("POJO Test - DependencyPojoExt creation") {
+    val dependencyPojoExt = new DependencyPojoExt("upload.js", "semver", "6.0.3")
+    assert(dependencyPojoExt.id == "upload.js")
+    assert(dependencyPojoExt.packageName == "semver")
+    assert(dependencyPojoExt.version == "6.0.3")
+  }
+
+  test("POJO Test - RepositoryPojoExt creation") {
+    val repopojo = new RepositoryPojoExt("root", "git", "https://github.com/", "roaldvanderheijden")
+    assert(repopojo.id == "root")
+    assert(repopojo.`type` == "git")
+    assert(repopojo.url == "https://github.com/")
+    assert(repopojo.directory == "roaldvanderheijden")
   }
 
   // Boilerplate tests (?) in an attempt to reach 100% coverage

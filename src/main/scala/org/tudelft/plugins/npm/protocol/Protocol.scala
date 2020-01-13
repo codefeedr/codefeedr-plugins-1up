@@ -184,7 +184,7 @@ object Protocol {
   }
 
   // added for SQL queries
-  class TimePojoExt(val id : String, val url : String, val email : String)
+  class TimePojoExt(val id : String, val created : String, val modified : String)
 
   override def toString : String = "Protocol companion object"
 }
