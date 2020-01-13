@@ -24,6 +24,7 @@ object MavenSQLService {
       tEnv.registerDataStream(rootTableName, releasesStream)
 
       this.registerProjectTable(releasesStream, tEnv)
+      this.registerParentTable(releasesStream, tEnv)
       this.registerOrganizationTable(releasesStream, tEnv)
       this.registerIssueManagementTable(releasesStream, tEnv)
       this.registerSCMTable(releasesStream, tEnv)
@@ -35,33 +36,66 @@ object MavenSQLService {
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }
 
+  implicit val projectTypeInfo = TypeInformation.of(classOf[MavenProjectPojo])
+
   def registerProjectTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
-    implicit val typeInfo = TypeInformation.of(classOf[MavenProjectPojo])
     val projectStream: DataStream[MavenProjectPojo] = stream.map(x => x.project)
     tEnv.registerDataStream(projectTableName, projectStream)
   }
 
+  def registerParentTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
+    implicit val typeInfo = TypeInformation.of(classOf[ParentPojoExt])
+    val parentPojoStream: DataStream[ParentPojoExt] = stream
+      .map(x => x.project)
+      .filter(x => x.parent != null)
+      .map(x => new ParentPojoExt() {
+        childId = x.artifactId
+        groupId = x.parent.groupId
+        artifactId = x.parent.artifactId
+        version = x.parent.version
+        relativePath = x.parent.relativePath
+      })
+    tEnv.registerDataStream(projectParentTableName, parentPojoStream)
+  }
+
   def registerOrganizationTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[OrganizationPojoExt])
-    val organizationPojoStream: DataStream[OrganizationPojo] = stream
-      .filter(x => x.project.organization != null)
-      .map(x => new OrganizationPojoExt(x.project.artifactId, x.project.organization.name, x.project.organization.url))
+    val organizationPojoStream: DataStream[OrganizationPojoExt] = stream
+      .map(x => x.project)
+      .filter(x => x.organization != null)
+      .map(x => new OrganizationPojoExt() {
+        root_id = x.artifactId
+        name = x.organization.name
+        url = x.organization.url
+      })
     tEnv.registerDataStream(projectOrganizationTableName, organizationPojoStream)
   }
 
   def registerIssueManagementTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[IssueManagementPojoExt])
-    val issueManagementPojoStream: DataStream[IssueManagementPojo] = stream
-      .filter(x => x.project.issueManagement != null)
-      .map(x => new IssueManagementPojoExt(x.project.artifactId, x.project.issueManagement.system, x.project.issueManagement.url))
+    val issueManagementPojoStream: DataStream[IssueManagementPojoExt] = stream
+      .map(x => x.project)
+      .filter(x => x.issueManagement != null)
+      .map(x => new IssueManagementPojoExt() {
+        root_id = x.artifactId
+        url = x.issueManagement.url
+        system = x.issueManagement.system
+      })
     tEnv.registerDataStream(projectIssueManagementTableName, issueManagementPojoStream)
   }
 
   def registerSCMTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[SCMPojoExt])
-    val scmPojoStream: DataStream[SCMPojo] = stream
-      .filter(x => x.project.scm != null)
-      .map(x => new SCMPojoExt(x.project.artifactId, x.project.scm.connection, x.project.scm.developerConnection, x.project.scm.tag, x.project.scm.url))
+    val scmPojoStream: DataStream[SCMPojoExt] = stream
+      .map(x => x.project)
+      .filter(x => x.scm != null)
+      .map(x => new SCMPojoExt() {
+        root_id = x.artifactId
+        connection = x.scm.connection
+        developerConnection = x.scm.developerConnection
+        tag = x.scm.tag
+        url = x.scm.url
+      })
     tEnv.registerDataStream(projectSCMTableName, scmPojoStream)
   }
 

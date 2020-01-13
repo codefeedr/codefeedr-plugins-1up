@@ -25,7 +25,12 @@ object Main {
 
     val mavenReleaseSource = new MavenReleasesStage()
     val mavenEnrichReleases = new MavenReleasesExtStage()
-    val mavenSqlStage = SQLStage.createSQLStage[MavenReleaseExt]("SELECT * FROM MavenProjectDependencies")
+    val mavenSqlStage = SQLStage.createSQLStage[MavenReleaseExt](
+      """
+        | SELECT MavenProject.artifactId, MavenProjectParent.artifactId
+        | FROM MavenProjectParent
+        | INNER JOIN MavenProject ON MavenProjectParent.childId=MavenProject.artifactId
+        |""".stripMargin)
 
     val cargoSource = new CargoReleasesStage()
     val cargoSqlStage = SQLStage.createSQLStage[CrateRelease]("SELECT * FROM CargoCrateCategories")
@@ -41,7 +46,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(cargoSource, cargoSqlStage)
+      .edge(mavenReleaseSource, mavenEnrichReleases)
+      .edge(mavenEnrichReleases, mavenSqlStage)
       //      .edge(releaseSource, sqlStage)
       .build()
       .startMock()
