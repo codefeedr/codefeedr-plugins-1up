@@ -99,6 +99,7 @@ object SQLService {
           NpmReleaseExtPojo.fromNpmReleaseExt(x)
         })
         NpmSQLService.registerTables(pojos, tEnv)
+      }
 
       // ClearlyDefined
       case x if typeOf[T] <:< typeOf[ClearlyDefinedRelease] => {
