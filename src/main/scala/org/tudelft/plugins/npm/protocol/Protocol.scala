@@ -1,6 +1,7 @@
 package org.tudelft.plugins.npm.protocol
 
 import java.util.Date
+import org.tudelft.plugins.npm.protocol.Protocol._
 
 /**
  * Contains all the case classes and POJO equivalent classes to represent a NPM package release
@@ -62,7 +63,7 @@ object Protocol {
 
   object NpmReleasePojo {
     def fromNpmRelease(release: NpmRelease): NpmReleasePojo = {
-      val pojo = new NpmReleasePojo
+      val pojo = new NpmReleasePojo()
       pojo.name = release.name
       pojo.retrieveDate = release.retrieveDate.getTime
       pojo
@@ -109,98 +110,140 @@ object Protocol {
   object NpmProjectPojo {
     def fromNpmProject(project: NpmProject): NpmProjectPojo = {
       val pojo = new NpmProjectPojo
-      /*
-         new NpmProjectPojo(project._id, project._rev.orNull, project.name, project.author.orNull, authorObject, contributors,
-        project.description.orNull, project.homepage.orNull, keywords, project.license.orNull, dependencies,
-        project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
-        bugs, project.bugString.orNull, repository, time)
-       */
+
       pojo._id = project._id
-      // transform the authorObject
-      val authorObject = if (project.authorObject.isDefined) {
-        PersonObjectPojo.fromPersonObject(project.authorObject.get)
-      } else null
+      pojo._rev = project._rev.orNull
+      pojo.name = project.name
+      pojo.author = project.author.orNull
+      if (project.authorObject.isDefined) {
+          pojo.authorObject = PersonObjectPojo.fromPersonObject(project.authorObject.get)
+      }
+      if (project.contributors.isDefined) {
+        pojo.contributors = project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
+      }
+      pojo.description = project.description.orNull
+      pojo.homepage = project.homepage.orNull
+      if (project.keywords.isDefined) {
+        pojo.keywords = project.keywords.get
+      }
+      pojo.license = project.license.orNull
+      if (project.dependencies.isDefined) {
+        pojo.dependencies = project.dependencies.get.map(x => DependencyPojo.fromDependency(x))
+      }
+      pojo.maintainers = project.maintainers.map(person => PersonObjectPojo.fromPersonObject(person))
+      pojo.readme = project.readme
+      pojo.readmeFilename = project.readmeFilename
+      if (project.bugs.isDefined) {
+        pojo.bugs = BugPojo.fromBug(project.bugs.get)
+      }
+      pojo.bugString = project.bugString.orNull
+      if (project.repository.isDefined) {
+        pojo.repository = RepositoryPojo.fromRepository(project.repository.get)
+      }
+      pojo.time = TimePojo.fromTime(project.time)
 
-      // map contributors
-      val contributors =  if (project.contributors.isDefined) {
-        project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
-      } else null
-
-      // map the keywords
-      val keywords = if (project.keywords.isDefined) {
-        project.keywords.get
-      } else null
-
-      // map the dependencies
-      val dependencies =
-        if (project.dependencies.isDefined) {
-          project.dependencies.get.map(x => DependencyPojo.fromDependency(x))
-        } else null
-
-      // transform the bug
-      val bugs = if (project.bugs.isDefined) {
-        BugPojo.fromBug(project.bugs.get)
-      } else null
-
-      // transform the repo
-      val repository = if (project.repository.isDefined) RepositoryPojo.fromRepository(project.repository.get) else null
-
-      val time = TimePojo.fromTime(project.time)
-      // now create a new POJO with these vals
       pojo
     }
   }
 
-  class DependencyPojo(val packageName: String,
-                       val version: String) extends Serializable {}
+  class DependencyPojo extends Serializable {
+    var packageName: String = _
+    var version: String = _
+  }
+
+  // added for the ability to register DependencyPojo as a streaming SQL table
+  class DependencyPojoExt extends DependencyPojo {
+    var id : String = _
+  }
 
   object DependencyPojo {
-    def fromDependency(dep: Dependency): DependencyPojo = new DependencyPojo(dep.packageName, dep.version)
+    def fromDependency(dep: Dependency): DependencyPojo = {
+      val pojo = new DependencyPojo()
+      pojo.packageName = dep.packageName
+      pojo.version = dep.version
+      pojo
+    }
   }
-  // added for SQL queries
-  class DependencyPojoExt(val id : String, val packageName : String, val version : String)
 
-  class PersonObjectPojo(val name: String,
-                         val email: String,
-                         val url: String) extends Serializable {}
-  // added for SQL queries
-  class PersonObjectPojoExt(val id : String, val name: String, val email : String, val url : String)
+  class PersonObjectPojo extends Serializable {
+    var name: String = _
+    var email: String = _
+    var url: String = _
+  }
+
+  // added for the ability to register PersonObjectPojo as a streaming SQL table
+  class PersonObjectPojoExt extends PersonObjectPojo {
+    var id : String = _
+  }
 
   object PersonObjectPojo {
-    def fromPersonObject(person: PersonObject): PersonObjectPojo =
-      new PersonObjectPojo(person.name, person.email.orNull, person.url.orNull)
+    def fromPersonObject(person: PersonObject): PersonObjectPojo = {
+      val pojo = new PersonObjectPojo()
+      pojo.name = person.name
+      pojo.email = person.email.orNull
+      pojo.url = person.url.orNull
+      pojo
+    }
   }
 
-  class RepositoryPojo(val `type`: String,
-                       val url: String,
-                       val directory: String) extends Serializable {}
+  class RepositoryPojo extends Serializable {
+    var `type`: String = _
+    var url: String = _
+    var directory: String = _
+  }
+
+  // added for the ability to register RepositoryPojo as a streaming SQL table
+  class RepositoryPojoExt extends RepositoryPojo {
+    var id: String = _
+  }
 
   object RepositoryPojo {
-    def fromRepository(r: Repository): RepositoryPojo = new RepositoryPojo(r.`type`, r.url, r.directory.orNull)
+    def fromRepository(r: Repository): RepositoryPojo = {
+      val pojo = new RepositoryPojo()
+      pojo.`type` = r.`type`
+      pojo.url = r.url
+      pojo.directory = r.directory.orNull
+      pojo
+    }
   }
 
-  // added for SQL queries
-  class RepositoryPojoExt(val id: String, val `type` : String, val url : String, val directory : String)
+  class BugPojo extends Serializable {
+    var url: String = _
+    var email: String = _
+  }
 
-  class BugPojo(val url: String,
-                val email: String) extends Serializable {}
+  // added for the ability to register BugPojo as a streaming SQL table
+  class BugPojoExt extends BugPojo {
+    var id : String = _
+  }
 
   object BugPojo {
-    def fromBug(b: Bug): BugPojo = new BugPojo(b.url.orNull, b.email.orNull)
+    def fromBug(b: Bug): BugPojo = {
+      val pojo = new BugPojo()
+      pojo.url = b.url.orNull
+      pojo.email = b.email.orNull
+      pojo
+    }
   }
 
-  // added for SQL queries
-  class BugPojoExt(val id : String, val url : String, val email : String)
+  class TimePojo extends Serializable {
+    var created: String = _
+    var modified: String = _
+  }
 
-  class TimePojo(val created: String,
-                 val modified: String) extends Serializable {}
+  // added for the ability to register TimePojo as a streaming SQL table
+  class TimePojoExt extends TimePojo {
+    var id : String = _
+  }
 
   object TimePojo {
-    def fromTime(obj: TimeObject): TimePojo = new TimePojo(obj.created, obj.modified.orNull)
+    def fromTime(obj: TimeObject): TimePojo = {
+      val pojo = new TimePojo()
+      pojo.created = obj.created
+      pojo.modified = obj.modified.orNull
+      pojo
+    }
   }
-
-  // added for SQL queries
-  class TimePojoExt(val id : String, val created : String, val modified : String)
 
   override def toString : String = "Protocol companion object"
 }

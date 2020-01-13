@@ -50,7 +50,7 @@ object Main {
       //.edge(cargoSource, cargoSqlStage)
       //      .edge(releaseSource, sqlStage)
       .edge(npmReleaseSource, npmExtendedReleases) // startMock gives me 1 hit + 1 http-request situation
-      //.edge(npmExtendedReleases, npmSQlstage)
+      .edge(npmExtendedReleases, npmSQlstage)
       .build()
       .startMock()
   }

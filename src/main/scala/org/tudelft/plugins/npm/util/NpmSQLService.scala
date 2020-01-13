@@ -22,9 +22,11 @@ object NpmSQLService {
   // author and contributors need separate tables
   val npm_person_authorTableName = "NpmAuthor"
   val npm_person_contributorsTableName = "NpmContributors"
+  val npm_person_maintainersTableName = "NpmMaintainers"
   val npm_repositoryTableName = "NpmRepository"
   val npm_bugTableName = "NpmBug"
   val npm_timeTableName = "NpmTime"
+  val npm_keywordsTableName = "NpmKeywords"
 
   /**
    * Registers the npm case classes as datastream with the Flink Table Environment
@@ -45,6 +47,9 @@ object NpmSQLService {
       this.registerNpmRepositoryTable(releasesStream, tEnv)
       this.registerNpmBugTable(releasesStream, tEnv)
       this.registerNpmTimeTable(releasesStream, tEnv)
+      // maintainers & keywords have to be registered as table as well!!
+      this.registerNpmMaintainersTable(releasesStream, tEnv)
+      this.registerNpmKeywordsTable(releasesStream, tEnv)
     }
       // TODO check how useful is this? I think I saw SBT warn about thus due to type erasure in Java at runtime... so dead code?
    case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
@@ -72,7 +77,11 @@ object NpmSQLService {
       .filter(x => x.project.dependencies != null) // x is a NpmProject with a possible list of dependencies
       .flatMap(x => {
         x.project.dependencies.map(y => { // map the dependencies into a separate DependencyTable with FK to project.id
-          new DependencyPojoExt(x.project._id, y.packageName, y.version)
+          val pojo_ext = new DependencyPojoExt()
+          pojo_ext.id = x.project._id
+          pojo_ext.packageName = y.packageName
+          pojo_ext.version = y.version
+          pojo_ext
         })
       })
     tEnv.registerDataStream(npm_dependencyTableName, dependencyPojoStream)
@@ -89,7 +98,14 @@ object NpmSQLService {
     implicit val typeInfo = TypeInformation.of(classOf[PersonObjectPojoExt])
     val person_authorPojoStream : DataStream[PersonObjectPojoExt] = stream
       .filter(x => x.project.authorObject != null)
-      .map(x => new PersonObjectPojoExt(x.project._id, x.project.authorObject.name, x.project.authorObject.email, x.project.authorObject.url))
+      .map(x => {
+        val pojo_ext = new PersonObjectPojoExt()
+        pojo_ext.id = x.project._id
+        pojo_ext.name = x.project.authorObject.name
+        pojo_ext.email = x.project.authorObject.email
+        pojo_ext.url = x.project.authorObject.url
+        pojo_ext
+      })
     tEnv.registerDataStream(npm_person_authorTableName, person_authorPojoStream)
   }
 
@@ -104,7 +120,12 @@ object NpmSQLService {
       .filter(x => x.project.contributors != null)
       .flatMap(x => {
         x.project.contributors.map(y => {
-          new PersonObjectPojoExt(x.project._id, y.name, y.email, y.url)
+          val pojo_ext = new PersonObjectPojoExt()
+          pojo_ext.id = x.project._id
+          pojo_ext.name = y.name
+          pojo_ext.email = y.email
+          pojo_ext.url = y.url
+          pojo_ext
         })
       })
     tEnv.registerDataStream(npm_person_contributorsTableName, person_contributorsPojoStream)
@@ -119,7 +140,14 @@ object NpmSQLService {
     implicit val typeInfo = TypeInformation.of(classOf[RepositoryPojoExt])
     val repositoryPojoStream : DataStream[RepositoryPojoExt] = stream
       .filter(x => x.project.repository != null)
-      .map(x => new RepositoryPojoExt(x.project._id, x.project.repository.`type`, x.project.repository.url, x.project.repository.directory))
+      .map(x => {
+        val pojo_ext = new RepositoryPojoExt()
+        pojo_ext.id = x.project._id
+        pojo_ext.`type` = x.project.repository.`type`
+        pojo_ext.url = x.project.repository.url
+        pojo_ext.directory = x.project.repository.directory
+        pojo_ext
+      })
     tEnv.registerDataStream(npm_repositoryTableName, repositoryPojoStream)
   }
 
@@ -132,7 +160,13 @@ object NpmSQLService {
     implicit val typeInfo = TypeInformation.of(classOf[BugPojoExt])
     val bugPojoStream : DataStream[BugPojoExt] = stream
       .filter(x => x.project.bugs != null)
-      .map(x => new BugPojoExt(x.project._id, x.project.bugs.email, x.project.bugs.url))
+      .map(x => {
+        val pojo_ext = new BugPojoExt()
+        pojo_ext.id = x.project._id
+        pojo_ext.email = x.project.bugs.email
+        pojo_ext.url = x.project.bugs.url
+        pojo_ext
+      })
     tEnv.registerDataStream(npm_bugTableName, bugPojoStream)
   }
 
@@ -144,8 +178,47 @@ object NpmSQLService {
   def registerNpmTimeTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[TimePojoExt])
     val timePojoStream : DataStream[TimePojoExt] = stream
-      .map(x=> new TimePojoExt(x.project._id, x.project.time.created, x.project.time.modified))
+      .map(x => {
+        val pojo_ext = new TimePojoExt()
+        pojo_ext.id =  x.project._id
+        pojo_ext.created = x.project.time.created
+        pojo_ext.modified = x.project.time.modified
+        pojo_ext
+      })
     tEnv.registerDataStream(npm_timeTableName, timePojoStream)
   }
 
+  /**
+   * Register the Npm Maintainers Person Object case class as a streaming table in Flink
+   * @param stream the stream of NpmReleaseExt used as base to glean the maintainers as Person Object from
+   * @param tEnv the Flink table environment used for registration
+   */
+  def registerNpmMaintainersTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {
+    implicit val typeInfo = TypeInformation.of(classOf[PersonObjectPojoExt])
+    val person_maintainersPojoStream : DataStream[PersonObjectPojoExt] = stream
+      .flatMap(x => {
+        x.project.contributors.map(y => {
+          val pojo_ext = new PersonObjectPojoExt()
+          pojo_ext.id = x.project._id
+          pojo_ext.name = y.name
+          pojo_ext.email = y.email
+          pojo_ext.url = y.url
+          pojo_ext
+        })
+      })
+    tEnv.registerDataStream(npm_person_maintainersTableName, person_maintainersPojoStream)
+  }
+
+  /**
+   * Register the Npm keywords of a project as a streaming table in Flink
+   * @param stream the stream of NpmReleaseExt used as base to glean the keywords from
+   * @param tEnv the Flink table environment used for registration
+   */
+  def registerNpmKeywordsTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {
+    implicit val typeInfo = TypeInformation.of(classOf[String])
+    val keywords_pojostream : DataStream[String] = stream
+      .flatMap(x => x.project.keywords) // takes an NpmReleaseExtPojo, takes out keywords/thus returns List[String]
+                                        // then flatMaps the result to become DataStream[String]
+      tEnv.registerDataStream(npm_keywordsTableName, keywords_pojostream)
+  }
 }

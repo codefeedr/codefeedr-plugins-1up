@@ -259,35 +259,35 @@ class ProtocolTest extends FunSuite {
     assert(result.modified == null)
   }
 
-  test("POJO Test - PersonObjectPojoExt creation") {
-    val result = new PersonObjectPojoExt("ts2php", "Roald", "roaldheijden@nospam.com", "https://github.com")
-    assert(result.id == "ts2php")
-    assert(result.name == "Roald")
-    assert(result.email == "roaldheijden@nospam.com")
-    assert(result.url == "https://github.com")
-  }
+//  test("POJO Test - PersonObjectPojoExt creation") {
+//    val result = new PersonObjectPojoExt("ts2php", "Roald", "roaldheijden@nospam.com", "https://github.com")
+//    assert(result.id == "ts2php")
+//    assert(result.name == "Roald")
+//    assert(result.email == "roaldheijden@nospam.com")
+//    assert(result.url == "https://github.com")
+//  }
 
-  test("POJO TEST - TimePojoExt creation") {
-    val result = new TimePojoExt("bslet", "2020-01-12", "2020-01-13")
-    assert(result.id == "bslet")
-    assert(result.created == "2020-01-12")
-    assert(result.modified == "2020-01-13")
-  }
+//  test("POJO TEST - TimePojoExt creation") {
+//    val result = new TimePojoExt("bslet", "2020-01-12", "2020-01-13")
+//    assert(result.id == "bslet")
+//    assert(result.created == "2020-01-12")
+//    assert(result.modified == "2020-01-13")
+//  }
 
-  test("POJO Test - DependencyPojoExt creation") {
-    val dependencyPojoExt = new DependencyPojoExt("upload.js", "semver", "6.0.3")
-    assert(dependencyPojoExt.id == "upload.js")
-    assert(dependencyPojoExt.packageName == "semver")
-    assert(dependencyPojoExt.version == "6.0.3")
-  }
+//  test("POJO Test - DependencyPojoExt creation") {
+//    val dependencyPojoExt = new DependencyPojoExt("upload.js", "semver", "6.0.3")
+//    assert(dependencyPojoExt.id == "upload.js")
+//    assert(dependencyPojoExt.packageName == "semver")
+//    assert(dependencyPojoExt.version == "6.0.3")
+//  }
 
-  test("POJO Test - RepositoryPojoExt creation") {
-    val repopojo = new RepositoryPojoExt("root", "git", "https://github.com/", "roaldvanderheijden")
-    assert(repopojo.id == "root")
-    assert(repopojo.`type` == "git")
-    assert(repopojo.url == "https://github.com/")
-    assert(repopojo.directory == "roaldvanderheijden")
-  }
+//  test("POJO Test - RepositoryPojoExt creation") {
+//    val repopojo = new RepositoryPojoExt("root", "git", "https://github.com/", "roaldvanderheijden")
+//    assert(repopojo.id == "root")
+//    assert(repopojo.`type` == "git")
+//    assert(repopojo.url == "https://github.com/")
+//    assert(repopojo.directory == "roaldvanderheijden")
+//  }
 
   // Boilerplate tests (?) in an attempt to reach 100% coverage
 
