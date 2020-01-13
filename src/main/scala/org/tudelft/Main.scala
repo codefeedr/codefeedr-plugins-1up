@@ -78,6 +78,7 @@ object Main {
         |""".stripMargin
 
     val releaseSource = new MavenReleasesStage()
+    val jsonStage = new JsonExitStage[MavenRelease]
     val enrichReleases = new MavenReleasesExtStage()
     val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 

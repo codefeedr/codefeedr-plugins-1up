@@ -168,7 +168,7 @@ object PipelineCommand extends Parser with Command {
   def buildJsonStage(s: String, builder: PipelineBuilder): Option[PipelineBuilder] = s match {
     case "MavenRelease" => Some(builder.append(new JsonExitStage[MavenRelease]()))
     case "MavenReleaseExt" => Some(builder.append(new JsonExitStage[MavenReleaseExt]()))
-    //TODO all the other stuff, but they first need to implement Jsonable
+    //TODO all the other stuff, but doesnt have priority now
     case _ => None
   }
 
