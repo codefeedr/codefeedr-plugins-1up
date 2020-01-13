@@ -14,6 +14,9 @@ import org.tudelft.plugins.{SQLService, SQLStage}
 import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.SQLStage.SQLStage
+import org.tudelft.plugins.clearlydefined.operators.ClearlyDefinedReleasesSource
+import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
+import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
 
 // Cargo
@@ -67,10 +70,20 @@ class CrateDownloadsOutput extends OutputStage[StringWrapper] {
 object Main {
   def main(args: Array[String]): Unit = {
 
+    val query: String =
+      """
+        | SELECT *
+        | FROM CDLFCoreDiscovered
+        | WHERE expression LIKE '%%'
+        |""".stripMargin
+
     val releaseSource = new MavenReleasesStage()
     val jsonStage = new JsonExitStage[MavenRelease]
     val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("SELECT * FROM MavenProjectDependencies")
+    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+
+    val cdSource = new ClearlyDefinedReleasesStage()
+    val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     new PipelineBuilder()
       .setPipelineName("Maven plugin")
@@ -83,10 +96,7 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .append(releaseSource)
-      .append(jsonStage)
-//      .edge(releaseSource, enrichReleases)
-//      .edge(enrichReleases, sqlStage)
+      .edge(cdSource, cdSQLStage)
       //      .edge(releaseSource, sqlStage)
       .build()
       .startMock()

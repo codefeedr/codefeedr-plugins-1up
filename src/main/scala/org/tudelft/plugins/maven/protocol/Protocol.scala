@@ -58,6 +58,10 @@ object Protocol {
     var relativePath: String = _
   }
 
+  class ParentPojoExt extends ParentPojo {
+    var childId: String = _
+  }
+
   object ParentPojo {
     def fromParent(parent: Parent): ParentPojo = {
       val pojo = new ParentPojo
@@ -156,14 +160,8 @@ object Protocol {
     var optional: Boolean = _
   }
 
-  class DependencyPojoExt extends Serializable {
+  class DependencyPojoExt extends DependencyPojo {
     var projectId: String = _
-    var groupId: String = _
-    var artifactId: String = _
-    var version: String = _
-    var `type`: String = _
-    var scope: String = _
-    var optional: Boolean = _
   }
 
   object DependencyPojo {
@@ -197,12 +195,8 @@ object Protocol {
     var comments: String = _
   }
 
-  class LicensePojoExt extends Serializable {
+  class LicensePojoExt extends LicensePojo {
     var projectId: String = _
-    var name: String = _
-    var url: String = _
-    var distribution: String = _
-    var comments: String = _
   }
 
   object LicensePojo {
@@ -225,11 +219,8 @@ object Protocol {
     var url: String = _
   }
 
-  class RepositoryPojoExt extends Serializable {
+  class RepositoryPojoExt extends RepositoryPojo {
     var projectId: String = _
-    var id: String = _
-    var name: String = _
-    var url: String = _
   }
 
   object RepositoryPojo {
@@ -247,6 +238,10 @@ object Protocol {
     var url: String = _
   }
 
+  class OrganizationPojoExt extends OrganizationPojo {
+    var root_id : String = _
+  }
+
   object OrganizationPojo {
     def fromOrganization(organization: Organization): OrganizationPojo = {
       val pojo = new OrganizationPojo
@@ -259,6 +254,10 @@ object Protocol {
   class IssueManagementPojo extends Serializable {
     var system: String = _
     var url: String = _
+  }
+
+  class IssueManagementPojoExt extends IssueManagementPojo {
+    var root_id : String = _
   }
 
   object IssueManagementPojo {
@@ -275,6 +274,10 @@ object Protocol {
     var developerConnection: String = _
     var tag: String = _
     var url: String = _
+  }
+
+  class SCMPojoExt extends SCMPojo {
+    var root_id : String = _
   }
 
   object SCMPojo {

@@ -42,13 +42,13 @@ object Protocol {
   class CDDescribedPojo extends Serializable {
     var releaseDate: String = _
     var urls: CDDescribedUrlsPojo = _
-    var projectWebsite: Option[String] = _
-    var issueTracker: Option[String] = _
+    var projectWebsite: String = _
+    var issueTracker: String = _
     var hashes: CDDescribedHashesPojo = _
     var files: Int = _
     var tools: List[String] = _
     var toolScore: CDDescribedToolScorePojo = _
-    var sourceLocation: Option[CDDescribedSourceLocationPojo] = _
+    var sourceLocation: CDDescribedSourceLocationPojo = _
     var score: CDDescribedScorePojo = _
   }
 
@@ -57,19 +57,16 @@ object Protocol {
       val pojo = new CDDescribedPojo
       pojo.releaseDate = cdDescribed.releaseDate
       pojo.urls = CDDescribedUrlsPojo.fromCDDescribedUrls(cdDescribed.urls)
-      pojo.projectWebsite = cdDescribed.projectWebsite
-      pojo.issueTracker = cdDescribed.issueTracker
+      pojo.projectWebsite = cdDescribed.projectWebsite.orNull
+      pojo.issueTracker = cdDescribed.issueTracker.orNull
       pojo.hashes = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribed.hashes)
       pojo.files = cdDescribed.files
       pojo.tools = cdDescribed.tools
       pojo.toolScore = CDDescribedToolScorePojo.fromCDDescribedToolScore(cdDescribed.toolScore)
 
       // Set the source location
-      if (cdDescribed.sourceLocation.isEmpty) {
-        pojo.sourceLocation = None
-      } else {
-        pojo.sourceLocation =
-          Some(CDDescribedSourceLocationPojo.fromCDDescribedSourceLocation(cdDescribed.sourceLocation.get))
+      if (cdDescribed.sourceLocation.isDefined) {
+        pojo.sourceLocation = CDDescribedSourceLocationPojo.fromCDDescribedSourceLocation(cdDescribed.sourceLocation.get)
       }
 
       pojo.score = CDDescribedScorePojo.fromCDDescribedScore(cdDescribed.score)
@@ -102,17 +99,17 @@ object Protocol {
                                sha256: Option[String])
 
   class CDDescribedHashesPojo extends Serializable {
-    var gitSha: Option[String] = _
-    var sha1: Option[String] = _
-    var sha256: Option[String] = _
+    var gitSha: String = _
+    var sha1: String = _
+    var sha256: String = _
   }
 
   object CDDescribedHashesPojo {
     def fromCDDescribedHashes(cdDescribedHashes: CDDescribedHashes): CDDescribedHashesPojo = {
       val pojo = new CDDescribedHashesPojo
-      pojo.gitSha = cdDescribedHashes.gitSha
-      pojo.sha1 = cdDescribedHashes.sha1
-      pojo.sha256 = cdDescribedHashes.sha256
+      pojo.gitSha = cdDescribedHashes.gitSha.orNull
+      pojo.sha1 = cdDescribedHashes.sha1.orNull
+      pojo.sha256 = cdDescribedHashes.sha256.orNull
       pojo
     }
   }
@@ -280,6 +277,12 @@ object Protocol {
     var parties: List[String] = _
   }
 
+  class CDLFCoreAttributionPojoExt extends Serializable {
+    var id: String = _
+    var unknown: Int = _
+    var party: String = _
+  }
+
   object CDLFCoreAttributionPojo {
     def fromCDLFCoreAttribution(cdlfCoreAttribution: CDLFCoreAttribution): CDLFCoreAttributionPojo = {
       val pojo = new CDLFCoreAttributionPojo
@@ -295,6 +298,12 @@ object Protocol {
   class CDLFCoreDiscoveredPojo extends Serializable {
     var unknown: Int = _
     var expressions: List[String] = _
+  }
+
+  class CDLFCoreDiscoveredPojoExt extends Serializable {
+    var id: String = _
+    var unknown: Int = _
+    var expression: String = _
   }
 
   object CDLFCoreDiscoveredPojo {
@@ -345,7 +354,7 @@ object Protocol {
     var `type`: String = _
     var provider: String = _
     var name: String = _
-    var namespace: Option[String] = _
+    var namespace: String = _
     var revision: String = _
   }
 
@@ -355,7 +364,7 @@ object Protocol {
       pojo.`type` = cdCoordinates.`type`
       pojo.provider = cdCoordinates.provider
       pojo.name = cdCoordinates.name
-      pojo.namespace = cdCoordinates.namespace
+      pojo.namespace = cdCoordinates.namespace.orNull
       pojo.revision = cdCoordinates.revision
       pojo
     }
