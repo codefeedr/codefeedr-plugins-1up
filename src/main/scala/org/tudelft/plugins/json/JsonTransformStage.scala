@@ -15,16 +15,16 @@ import scala.reflect.runtime.universe._
 case class StringWrapper(s: String)
 
 /**
-  * This stage transforms any Jsonable stream to a stream of StringWrapper with the json representation
+  * This stage transforms a stream to a stream of StringWrapper with the json representation
   * of the incoming stream
   *
   * @param classTag$T The classTag of the input stream
   * @param typeTag$T The typeTag of the input stream
   * @tparam T Type of the input stream
   */
-class JsonTransformStage[T <: Serializable with AnyRef with Jsonable : ClassTag : TypeTag] extends TransformStage[T, StringWrapper] {
+class JsonTransformStage[T <: Serializable with AnyRef : ClassTag : TypeTag] extends TransformStage[T, StringWrapper] {
   override def transform(source: DataStream[T]): DataStream[StringWrapper] = {
     implicit val typeInfo: TypeInformation[StringWrapper] = TypeInformation.of(classOf[StringWrapper])
-    source.map((x: T) => StringWrapper(x.toJson()))(typeInfo)
+    source.map((x: T) => StringWrapper(JsonService.toJson(x)))(typeInfo)
   }
 }
