@@ -262,31 +262,15 @@ class NpmServiceTest extends FunSuite {
 
   // tests for author
 
-  // what happens goes from root level to children to grab author, not one lower in versions..
-  // Steps to determine author
-  // what happens if you have a string and parse it as author CO?
-
-  // algorithm...
-  // 1. check if root child has author field, try to parse CO
-  // 2. check latest for author object, try to parse CO
-  // 3. else unknown
-
-  // bslet: no author field at all => unknown
-  // tiny: co-only author => only name, None, None or name, null, null in case of pojo
-  // mocked String coAuthor only name, string mentions name, email => then coAuthor is leading, only CO with name
-  // mocked String with no author in root child, but author as co with name, email, and string contains, name, email, url, => co name, email
-
-  // react : only previous versions mention author, Jeff Barczewski, jeff.barczewski@gmail.com => in this situation author will stay UNKNOWN
-
   test("debug test author") {
-    val file = new File("src/test/resources/npm/test-data/nrk-authortest.json")
+    val file = new File("src/test/resources/npm/test-data/ts2php")
     val json  = parse(file)
     // Act
     val author = NpmService.extractAuthorFrom(json)
     // Assert
-    assert(author.get.name == "NRK")
-    assert(author.get.email.get == "opensource@nrk.no")
-    assert(author.get.url.get == "https://www.nrk.no/")
+    assert(author.get.name == "meixuguang")
+    assert(author.get.email.isEmpty)
+    assert(author.get.url.isEmpty)
 
   }
 
