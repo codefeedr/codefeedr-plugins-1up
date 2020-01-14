@@ -20,8 +20,7 @@ object Protocol {
   case class NpmProject(_id: String,
                         _rev: Option[String],
                         name: String,
-                        author:Option[String],
-                        authorObject: Option[PersonObject],
+                        author: Option[PersonObject],
                         contributors: Option[List[PersonObject]],
                         description: Option[String],
                         homepage: Option[String],
@@ -44,8 +43,6 @@ object Protocol {
                           email: Option[String],
                           url: Option[String])
 
-  //case class PersonSimple(nameAndOptEmailOptURL: String)
-
   case class Repository(`type`: String,
                         url: String,
                         directory: Option[String])
@@ -56,7 +53,7 @@ object Protocol {
   case class TimeObject(created: String,
                         modified: Option[String])
 
-  // underneath is a POJO representation of all case classes mentioned above (in a functional style ^_^ )
+  // underneath is a POJO representation of all case classes mentioned above
 
   class NpmReleasePojo(val name: String,
                        val retrieveDate: Long) extends Serializable {}
@@ -80,8 +77,8 @@ object Protocol {
                         val _rev: Option[String],
                         val name: String,
                         //val author: Option[PersonSimplePojo],
-                        val author : Option[String],
-                        val authorObject: Option[PersonObjectPojo],
+                        //val author : Option[String],
+                        val author: Option[PersonObjectPojo],
                         val contributors: Option[List[PersonObjectPojo]],
                         val description: Option[String],
                         val homepage: Option[String],
@@ -102,12 +99,7 @@ object Protocol {
       // transform author
       val author =
         if (project.author.isEmpty) None
-        else Some(project.author.get)
-
-      // transform the authorObject
-      val authorObject =
-        if (project.authorObject.isEmpty) None
-        else Some(PersonObjectPojo.fromPersonObject(project.authorObject.get))
+        else Some(PersonObjectPojo.fromPersonObject(project.author.get))
 
       // map contributors
       val contributors =
@@ -135,7 +127,7 @@ object Protocol {
         else Some(RepositoryPojo.fromRepository(project.repository.get))
       val time = TimePojo.fromTime(project.time)
       // now create a new POJO with these vals
-      new NpmProjectPojo(project._id, project._rev, project.name, author, authorObject, contributors,
+      new NpmProjectPojo(project._id, project._rev, project.name, author, contributors,
         project.description, project.homepage, keywords, project.license, dependencies,
         project.maintainers.map(arg => PersonObjectPojo.fromPersonObject(arg)), project.readme, project.readmeFilename,
         bugs, project.bugString, repository, time)
