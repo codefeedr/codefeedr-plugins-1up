@@ -89,7 +89,16 @@ object Main {
 
     val npmReleaseSource = new NpmReleasesStage()
     val npmExtendedReleases = new NpmReleasesExtStage()
-    val npmSQlstage = SQLStage.createSQLStage[NpmReleaseExt]("Select * FROM Npm")
+    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
+    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
+    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
+    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
+    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
+    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
+    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
+    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
+    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
+    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
 
     new PipelineBuilder()
       .setPipelineName("Npm plugin")
@@ -103,10 +112,19 @@ object Main {
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
       
-      .edge(npmReleaseSource, npmExtendedReleases) 
-      .edge(npmExtendedReleases, npmSQlstage)
+      .edge(npmReleaseSource, npmExtendedReleases)
+      //.edge(npmExtendedReleases, npmSQlstage0)
+      //.edge(npmExtendedReleases, npmSQlstage1)
+      //.edge(npmExtendedReleases, npmSQlstage2)
+      //.edge(npmExtendedReleases, npmSQlstage3)
+      //.edge(npmExtendedReleases, npmSQlstage4)
+      //.edge(npmExtendedReleases, npmSQlstage5)
+      //.edge(npmExtendedReleases, npmSQlstage6)
+      //.edge(npmExtendedReleases, npmSQlstage7)
+      //.edge(npmExtendedReleases, npmSQlstage8)
+      //.edge(npmExtendedReleases, npmSQlstage9) // deze werkte 1x en had daarna moeite, troubles met Kafka maybe?
       .build()
-      .startMock()
+      .startLocal()
   }
 }
 

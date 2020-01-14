@@ -30,7 +30,7 @@ object Protocol {
                         license         : Option[String],
                         dependencies    : Option[List[Dependency]],
                         maintainers     : List[PersonObject],
-                        readme          : String,
+                        //readme          : String,
                         readmeFilename  : String,
                         bugs            : Option[Bug],
                         bugString       : Option[String],
@@ -99,7 +99,7 @@ object Protocol {
     var license: String = _
     var dependencies: List[DependencyPojo] = _
     var maintainers: List[PersonObjectPojo] = _
-    var readme: String = _
+    //var readme: String = _
     var readmeFilename: String = _
     var bugs: BugPojo = _
     var bugString: String = _
@@ -131,7 +131,7 @@ object Protocol {
         pojo.dependencies = project.dependencies.get.map(x => DependencyPojo.fromDependency(x))
       }
       pojo.maintainers = project.maintainers.map(person => PersonObjectPojo.fromPersonObject(person))
-      pojo.readme = project.readme
+      //pojo.readme = project.readme
       pojo.readmeFilename = project.readmeFilename
       if (project.bugs.isDefined) {
         pojo.bugs = BugPojo.fromBug(project.bugs.get)
