@@ -263,7 +263,7 @@ class NpmServiceTest extends FunSuite {
   // tests for author
 
   test("debug test author") {
-    val file = new File("src/test/resources/npm/test-data/ts2php")
+    val file = new File("src/test/resources/npm/test-data/ts2php.json")
     val json  = parse(file)
     // Act
     val author = NpmService.extractAuthorFrom(json)
