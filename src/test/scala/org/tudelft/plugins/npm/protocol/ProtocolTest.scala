@@ -3,7 +3,7 @@ package org.tudelft.plugins.npm.protocol
 import java.util.Date
 
 import org.scalatest.FunSuite
-import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, DependencyPojoExt, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonObjectPojoExt, Repository, RepositoryPojo, RepositoryPojoExt, TimeObject, TimePojo, TimePojoExt}
+import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, DependencyPojoExt, NpmKeyWord, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonObjectPojoExt, Repository, RepositoryPojo, RepositoryPojoExt, TimeObject, TimePojo, TimePojoExt}
 
 /**
  * Class to test the creation of POJO for our SQL Service (since the Datastream[NPM Case Class] will not work
@@ -43,7 +43,10 @@ class ProtocolTest extends FunSuite {
   val npmrele = NpmReleaseExt("ts2php", now, bigProject)
 
   val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some("nonEmptyAuthorForTs2php"), Some(personobj), // cxtom version
-    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"), Some(List("testing", "fullcoverage")), Some("MIT"),
+    Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"),
+    //Some(List(NpmKeyWord("testing"), NpmKeyWord("fullcoverage"))),
+    Some(List("testing", "fullcoverage")),
+      Some("MIT"),
     Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
     //"some story on how this project came to be",
     "indication where to find the above line", Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
@@ -116,8 +119,8 @@ class ProtocolTest extends FunSuite {
     assert(result.project.description == "TypeScript to PHP Transpiler")
     assert(result.project.homepage == "https://github.com/searchfe/ts2php#readme")
     assert(result.project.keywords.size == 2)
-    assert(result.project.keywords.head == "testing")
-    assert(result.project.keywords.last == "fullcoverage")
+    assert(result.project.keywords.head.keyword == "testing")
+    assert(result.project.keywords.last.keyword == "fullcoverage")
     assert(result.project.bugs.url == "https://github.com/searchfe/ts2php/issues")
     assert(result.project.bugString == null)
     assert(result.project.repository.url == "git+https://github.com/searchfe/ts2php.git")
@@ -315,11 +318,12 @@ class ProtocolTest extends FunSuite {
         Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))),
         Some("TypeScript to PHP Transpiler"),
         Some("https://github.com/searchfe/ts2php#readme"),
+        //Some(List(NpmKeyWord("testing"), NpmKeyWord("fullcoverage"))),
         Some(List("testing", "fullcoverage")),
         Some("MIT"),
         Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))),
         List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
-        "some story on how this project came to be",
+        //"some story on how this project came to be",
         "indication where to find the above line",
         Some(Bug(Some("https://github.com/searchfe/ts2php/issues"), None)),
         None,

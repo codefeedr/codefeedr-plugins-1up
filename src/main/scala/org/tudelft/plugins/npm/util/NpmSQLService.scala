@@ -131,6 +131,26 @@ object NpmSQLService {
     tEnv.registerDataStream(npm_person_contributorsTableName, person_contributorsPojoStream)
   }
 
+    /**
+     * Register the Npm keywords of a project as a streaming table in Flink
+     * @param stream the stream of NpmReleaseExt used as base to glean the keywords from
+     * @param tEnv the Flink table environment used for registration
+     */
+    def registerNpmKeywordsTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {
+      implicit val typeInfo = TypeInformation.of(classOf[NpmKeyWordPojoExt])
+      val keywords_pojostream : DataStream[NpmKeyWordPojoExt] = stream
+        .filter(x => x.project.keywords != null)
+        .flatMap(x => {
+          x.project.keywords.map(y => {
+          val pojo_ext = new NpmKeyWordPojoExt()
+          pojo_ext.id = x.project._id
+          pojo_ext.keyword = y.keyword
+          pojo_ext
+          })
+        })
+        tEnv.registerDataStream(npm_keywordsTableName, keywords_pojostream)
+    }
+
   /**
    * Register the Npm Repository case class as a streaming table in Flink
    * @param stream the stream of NpmReleaseExt used as base to glean the Repository from
@@ -209,16 +229,4 @@ object NpmSQLService {
     tEnv.registerDataStream(npm_person_maintainersTableName, person_maintainersPojoStream)
   }
 
-  /**
-   * Register the Npm keywords of a project as a streaming table in Flink
-   * @param stream the stream of NpmReleaseExt used as base to glean the keywords from
-   * @param tEnv the Flink table environment used for registration
-   */
-  def registerNpmKeywordsTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {
-    implicit val typeInfo = TypeInformation.of(classOf[String])
-    val keywords_pojostream : DataStream[String] = stream
-      .flatMap(x => x.project.keywords) // takes an NpmReleaseExtPojo, takes out keywords/thus returns List[String]
-                                        // then flatMaps the result to become DataStream[String]
-      tEnv.registerDataStream(npm_keywordsTableName, keywords_pojostream)
-  }
 }

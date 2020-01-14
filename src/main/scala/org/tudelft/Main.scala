@@ -121,7 +121,7 @@ object Main {
       //.edge(npmExtendedReleases, npmSQlstage5)
       //.edge(npmExtendedReleases, npmSQlstage6)
       //.edge(npmExtendedReleases, npmSQlstage7)
-      //.edge(npmExtendedReleases, npmSQlstage8)
+      .edge(npmExtendedReleases, npmSQlstage8)
       //.edge(npmExtendedReleases, npmSQlstage9) // deze werkte 1x en had daarna moeite, troubles met Kafka maybe?
       .build()
       .startLocal()

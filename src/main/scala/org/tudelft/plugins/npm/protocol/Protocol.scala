@@ -27,6 +27,7 @@ object Protocol {
                         description     : Option[String],
                         homepage        : Option[String],
                         keywords        : Option[List[String]],
+                        //keywords        : Option[List[NpmKeyWord]],
                         license         : Option[String],
                         dependencies    : Option[List[Dependency]],
                         maintainers     : List[PersonObject],
@@ -36,6 +37,8 @@ object Protocol {
                         bugString       : Option[String],
                         repository      : Option[Repository],
                         time            : TimeObject)
+
+  case class NpmKeyWord(word : String)
 
   case class Dependency(packageName : String,
                         version     : String)
@@ -95,7 +98,8 @@ object Protocol {
     var contributors: List[PersonObjectPojo] = _
     var description: String = _
     var homepage: String = _
-    var keywords: List[String] = _
+    //var keywords: List[String] = _
+    var keywords: List[NpmKeyWordPojo] = _
     var license: String = _
     var dependencies: List[DependencyPojo] = _
     var maintainers: List[PersonObjectPojo] = _
@@ -124,7 +128,8 @@ object Protocol {
       pojo.description = project.description.orNull
       pojo.homepage = project.homepage.orNull
       if (project.keywords.isDefined) {
-        pojo.keywords = project.keywords.get
+        // project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
+        pojo.keywords = project.keywords.get.map(keyword => NpmKeyWordPojo.fromKeywordAsString(keyword))
       }
       pojo.license = project.license.orNull
       if (project.dependencies.isDefined) {
@@ -145,6 +150,28 @@ object Protocol {
       pojo
     }
   }
+  class NpmKeyWordPojo extends Serializable {
+    var keyword : String = _
+  }
+
+  class NpmKeyWordPojoExt extends NpmKeyWordPojo {
+    var id : String = _
+  }
+  object NpmKeyWordPojo {
+    def fromKeywordAsString(keyword : String) : NpmKeyWordPojo = {
+      val pojo = new NpmKeyWordPojo()
+      pojo.keyword = keyword
+      pojo
+    }
+  }
+//
+//  object NpmKeyWordPojo {
+//    def fromNpmKeyWord(elem: NpmKeyWord): NpmKeyWordPojo = {
+//      val pojo = new NpmKeyWordPojo()
+//      pojo.keyword = elem.word
+//      pojo
+//    }
+//  }
 
   class DependencyPojo extends Serializable {
     var packageName: String = _
