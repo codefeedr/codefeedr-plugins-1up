@@ -9,6 +9,7 @@ import org.json4s.jackson.Serialization.read
 import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.FunSuite
 import org.tudelft.plugins.npm.protocol.Protocol
+import org.tudelft.plugins.npm.protocol.Protocol.PersonObject
 
 import scala.io.Source
 
@@ -42,6 +43,10 @@ class NpmServiceTest extends FunSuite {
   val jsonTimeNoModified = """{"time": {"created": "2001-07-22T11:41:29.226Z","1.0.0": "2001-07-22T11:41:29.631Z","2.0.0": "2001-07-24T12:04:52.956Z"}}"""
   val jsonTimeBothFieldsMissing = """{"time": {"1.0.0": "1980-07-22T11:41:29.631Z","2.0.0": "1980-07-24T12:04:52.956Z"}}"""
 
+  // variable simulating conditions in JSON for testing author extraction method
+  val jsonAuthorString = """{
+	"author": "Barney Rubble < b @rubble.com > (http: //barnyrubble.tumblr.com/)"
+}"""
 
   // test for withConfiguredHeaders
 
@@ -254,6 +259,36 @@ class NpmServiceTest extends FunSuite {
     assert(projectWithoutDependencies.last.packageName=="yargs")
   }
 
+
+  // tests for author
+
+  // what happens goes from root level to children to grab author, not one lower in versions..
+  // Steps to determine author
+  // what happens if you have a string and parse it as author CO?
+
+  // algorithm...
+  // 1. check if root child has author field, try to parse CO or else String
+  // 2. check latest for author object, try to parse CO else String
+  // 3. else unknown
+
+  // bslet: no author field at all => unknown
+  // tiny: co-only author => only name, None, None or name, null, null in case of pojo
+  // mocked String coAuthor only name, string mentions name, email => then coAuthor is leading, only CO with name
+  // mocked String with no author in root child, but author as co with name, email, and string contains, name, email, url, => co name, email
+
+  // react : only previous versions mention author, Jeff Barczewski, jeff.barczewski@gmail.com => in this situation author will stay UNKNOWN
+
+  test("debug test author") {
+    val file = new File("src/test/resources/npm/test-data/nrk-authortest.json")
+    val json  = parse(file)
+    // Act
+    val author = NpmService.extractAuthorFrom(json)
+    // Assert
+    assert(author.get.name == "NRK")
+    assert(author.get.email.get == "opensource@nrk.no")
+    assert(author.get.url.get == "https://www.nrk.no/")
+
+  }
 
   // test for buildrelextusing
 
