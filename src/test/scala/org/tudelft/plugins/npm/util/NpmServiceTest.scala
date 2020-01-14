@@ -267,8 +267,8 @@ class NpmServiceTest extends FunSuite {
   // what happens if you have a string and parse it as author CO?
 
   // algorithm...
-  // 1. check if root child has author field, try to parse CO or else String
-  // 2. check latest for author object, try to parse CO else String
+  // 1. check if root child has author field, try to parse CO
+  // 2. check latest for author object, try to parse CO
   // 3. else unknown
 
   // bslet: no author field at all => unknown

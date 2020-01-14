@@ -84,8 +84,10 @@ object NpmService extends Logging with Serializable {
     val myTime = extractTimeFrom(json)
     // STEP 2 : Now lookup the dependencies
     val myDependencies = extractDependenciesFrom(json)
-    // STEP 3: Update the Case Class with the results of time & dependencies
-    NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, dependencies = Some(myDependencies)))
+    // STEP 3:
+    val myAuthor = extractAuthorFrom(json)
+    // STEP 4: Update the Case Class with the results of time & dependencies
+    NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, author = myAuthor, dependencies = Some(myDependencies)))
   }
 
   /**
@@ -107,6 +109,11 @@ object NpmService extends Logging with Serializable {
     TimeObject(createdField, modifiedField)
   }
 
+  /**
+   * Finds the latest version string of a NPM Project
+   * @param json the JSON object to look for the latest version in
+   * @return a String denoting the latest version on success or "-1" on failure
+   */
   def findLatestVersionNr(json : JValue) : String = {
     (json \ "dist-tags") \ "latest" match {
       case JString(x) => x
@@ -121,10 +128,6 @@ object NpmService extends Logging with Serializable {
    */
   def extractDependenciesFrom(json : JValue): List[Dependency] = {
     // first look up the latest version number
-//    val latestVersionNr = (json \ "dist-tags") \ "latest" match {
-//      case JString(x) => x
-//      case _          => "-1"
-//    }
     val latestVersionNr = findLatestVersionNr(json)
     // then get me that version object and look up the dependencies field
     val dependenciesList = ((json \ "versions") \ latestVersionNr) \ "dependencies" match {
@@ -145,41 +148,21 @@ object NpmService extends Logging with Serializable {
    * @return Some[PersonObject] on success, None on failure
    */
   def extractAuthorFrom(json: JValue) : Option[PersonObject] = {
-    /*
-      subtle difference between \ and \\ ->
-      -> \ gets root.children field if it's there,
-      -> \\ gets all fields author (also not BFS, but FCFS in file)
-     */
     val authorField1 = (json \ "author")
-//    val result1 = authorField1 match {
-//      case JObject(_) => {
-//        implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
-//        authorField1.extractOpt[PersonObject]
-//      }
-//      case _ => None // if this field also doesn't exist return None, case JString? -> tough luck for now :)
-//    }
     val result1 = convertAuthorFrom(authorField1)
     if (result1.isDefined) result1
     else {
-//      val latestVersionNr = (json \ "dist-tags") \ "latest" match {
-//          case JString(x) => x
-//          case _          => "-1"
-//      }
       val latestVersionNr = findLatestVersionNr(json)
-
       val authorField2 = ((json \ "versions") \ latestVersionNr) \ "author"
-//      val result2 = authorField2 match {
-//        case JObject(_) => {
-//          implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
-//          authorField2.extractOpt[PersonObject]
-//        }
-//        case _ => None
-//      }
-//      result2
       convertAuthorFrom(authorField2)
     }
   }
 
+  /**
+   * converts given JSON into Option[PersonObject]
+   * @param jsonAuthorField the JSON to convert
+   * @return Some(...) on success, None on failure
+   */
    def convertAuthorFrom(jsonAuthorField : JValue) : Option[PersonObject] = {
      jsonAuthorField match {
        case JObject(_) => {
@@ -188,17 +171,8 @@ object NpmService extends Logging with Serializable {
        }
        case _ => None
    }
-
   }
 
-  private def convertJsonIntoAuthor(json : String) : Option[PersonObject] = {
-    implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
-    try {
-      Some(read[Protocol.PersonObject](json))
-    } catch {
-      case _ : Throwable => None
-    }
-  }
   /**
    * Returns a project as a raw string.
    *
@@ -225,3 +199,7 @@ object NpmService extends Logging with Serializable {
 
   override def toString() = "NpmService Companion Object"
 }
+/* NOTES: subtle difference between \ and \\ ->
+    -> \ gets root.children field if it's there,
+    -> \\ gets all fields author (also not BFS, but FCFS in file)
+ */
