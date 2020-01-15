@@ -110,7 +110,7 @@ class NpmServiceTest extends FunSuite {
   test("createjsonString - working ok") {
     // Act 1
     val jsonString = NpmService.createJsonStringFor(correct_base_url , existingProject)
-    println(jsonString)
+    
     // Assert 1
     assert(jsonString.isInstanceOf[Option[String]])
     // Act 2
