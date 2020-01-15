@@ -21,7 +21,7 @@ import scala.collection.JavaConverters._
  * @author Roald van der Heijden
  * Date: 2019 - 12 - 03
  */
-case class NpmSourceConfig(pollingInterval: Int = 1000, maxNumberOfRuns: Int = -1)
+case class NpmSourceConfig(pollingInterval: Int = 300000, maxNumberOfRuns: Int = -1) // 5 min polling interval
 
 /**
  * Class to represent a source in CodeFeedr to query NPM package releases
