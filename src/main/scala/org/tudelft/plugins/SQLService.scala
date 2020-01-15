@@ -16,25 +16,42 @@ import org.tudelft.plugins.maven.util.MavenSQLService
 
 import scala.reflect.runtime.universe._
 
+/**
+  * This object handles all operations needed to perform a query on a Datastream
+  */
 object SQLService {
 
+  var env: StreamExecutionEnvironment = _
 
-  def performQuery[T: TypeTag](in: DataStream[T], query: String): Unit = {
-
+  /**
+    * Setup a new StreamTableEnvironment
+    * For now the env (StreamExecutionEnvironment) stays inside this class,
+    * but this may be subject to change later on
+    *
+    * @return The newly created StreamTableEnvironment
+    */
+  def setupEnv(): StreamTableEnvironment = {
     //Get the required environments
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    env = StreamExecutionEnvironment.getExecutionEnvironment
     val settings = EnvironmentSettings.newInstance()
       .useOldPlanner()
       .inStreamingMode()
       .build()
 
-    val tEnv = StreamTableEnvironment.create(env)
-
     //Maybe needed later
     //    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    registerTableFromStream[T](in, tEnv)
+    val tEnv = StreamTableEnvironment.create(env)
+    tEnv
+  }
 
+  /**
+    * Perform a given query in a given StreamTableEnvironment
+    *
+    * @param query The query to be performed
+    * @param tEnv The StreamTableEnvironment in which to perform the query (tEnv holds all the registered tables)
+    */
+  def performQuery(query: String, tEnv: StreamTableEnvironment): Unit = {
     //Perform query
     val queryTable: Table = tEnv.sqlQuery(query)
     tEnv.explain(queryTable)
@@ -48,12 +65,12 @@ object SQLService {
   }
 
   /**
-   * Registers a table from a DataStream
-   *
-   * @param stream the incoming stream
-   * @param tEnv   the current table environment
-   * @tparam T the type of the incoming datastream
-   */
+    * Registers a table from a DataStream
+    *
+    * @param stream the incoming stream
+    * @param tEnv   the current table environment
+    * @tparam T the type of the incoming datastream
+    */
   def registerTableFromStream[T: TypeTag](stream: DataStream[T], tEnv: StreamTableEnvironment): Unit = {
     stream match {
       // For testing

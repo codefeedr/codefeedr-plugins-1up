@@ -70,17 +70,12 @@ class CrateDownloadsOutput extends OutputStage[StringWrapper] {
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val query: String =
-      """
-        | SELECT *
-        | FROM CDLFCoreDiscovered
-        | WHERE expression LIKE '%%'
-        |""".stripMargin
+    val query: String = "Select tool, title from ClearlyDefinedDescribedScore, Maven"
 
     val releaseSource = new MavenReleasesStage()
-    val jsonStage = new JsonExitStage[MavenRelease]
     val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+    val sqlStage2 = SQLStage.createSQLStage2[ClearlyDefinedRelease, MavenReleaseExt](query)
+    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("Select title from Maven")
 
     val cdSource = new ClearlyDefinedReleasesStage()
     val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
@@ -96,7 +91,9 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(cdSource, cdSQLStage)
+      //      .edge(cdSource, cdSQLStage)
+      .edge(releaseSource, enrichReleases)
+      .edge(enrichReleases, sqlStage)
       //      .edge(releaseSource, sqlStage)
       .build()
       .startMock()
