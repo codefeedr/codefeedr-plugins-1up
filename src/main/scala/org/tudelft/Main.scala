@@ -1,11 +1,14 @@
 package org.tudelft
 
 import java.util.concurrent.TimeUnit
+
 import org.apache.flink.api.common.restartstrategy.RestartStrategies
 import org.apache.flink.api.common.time.Time
 import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
 import org.tudelft.plugins.SQLStage
+import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
+import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
 import org.tudelft.plugins.json.JsonExitStage
@@ -67,9 +70,8 @@ object Main {
 
     val query: String =
       """
-        | SELECT *
-        | FROM CDLFCoreDiscovered
-        | WHERE expression LIKE '%%'
+        | SELECT id
+        | FROM CargoCrateVersions
         |""".stripMargin
 
     val releaseSource = new MavenReleasesStage()
@@ -79,6 +81,9 @@ object Main {
 
     val cdSource = new ClearlyDefinedReleasesStage()
     val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
+
+    val cargoSource = new CargoReleasesStage()
+    val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
 
     val npmReleaseSource = new NpmReleasesStage()
     val npmExtendedReleases = new NpmReleasesExtStage()
@@ -104,8 +109,7 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(npmReleaseSource, npmExtendedReleases)
-      .edge(npmExtendedReleases, npmSQlstage0)
+      .edge(cargoSource, cargoSqlStage)
       .build()
       .startMock()
   }
