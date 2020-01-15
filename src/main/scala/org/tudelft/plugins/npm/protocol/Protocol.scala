@@ -27,11 +27,10 @@ object Protocol {
                         description     : Option[String],
                         homepage        : Option[String],
                         keywords        : Option[List[String]],
-                        //keywords        : Option[List[NpmKeyWord]],
                         license         : Option[String],
                         dependencies    : Option[List[Dependency]],
                         maintainers     : List[PersonObject],
-                        //readme          : String,
+                        readme          : String,
                         readmeFilename  : String,
                         bugs            : Option[Bug],
                         bugString       : Option[String],
@@ -98,12 +97,11 @@ object Protocol {
     var contributors: List[PersonObjectPojo] = _
     var description: String = _
     var homepage: String = _
-    //var keywords: List[String] = _
     var keywords: List[NpmKeyWordPojo] = _
     var license: String = _
     var dependencies: List[DependencyPojo] = _
     var maintainers: List[PersonObjectPojo] = _
-    //var readme: String = _
+    var readme: String = _
     var readmeFilename: String = _
     var bugs: BugPojo = _
     var bugString: String = _
@@ -128,7 +126,6 @@ object Protocol {
       pojo.description = project.description.orNull
       pojo.homepage = project.homepage.orNull
       if (project.keywords.isDefined) {
-        // project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
         pojo.keywords = project.keywords.get.map(keyword => NpmKeyWordPojo.fromKeywordAsString(keyword))
       }
       pojo.license = project.license.orNull
@@ -136,7 +133,7 @@ object Protocol {
         pojo.dependencies = project.dependencies.get.map(x => DependencyPojo.fromDependency(x))
       }
       pojo.maintainers = project.maintainers.map(person => PersonObjectPojo.fromPersonObject(person))
-      //pojo.readme = project.readme
+      pojo.readme = project.readme
       pojo.readmeFilename = project.readmeFilename
       if (project.bugs.isDefined) {
         pojo.bugs = BugPojo.fromBug(project.bugs.get)
@@ -164,14 +161,6 @@ object Protocol {
       pojo
     }
   }
-//
-//  object NpmKeyWordPojo {
-//    def fromNpmKeyWord(elem: NpmKeyWord): NpmKeyWordPojo = {
-//      val pojo = new NpmKeyWordPojo()
-//      pojo.keyword = elem.word
-//      pojo
-//    }
-//  }
 
   class DependencyPojo extends Serializable {
     var packageName: String = _

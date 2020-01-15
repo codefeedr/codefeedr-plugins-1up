@@ -66,10 +66,10 @@ class NpmSQLServiceTest extends FunSuite {
     assert(tEnv.listTables().contains(NpmSQLService.npm_person_maintainersTableName))
   }
 
-//  test("registerNpmKeywordsTableTest"){
-//    NpmSQLService.registerNpmKeywordsTable(stream, tEnv)
-//    assert(tEnv.listTables().contains(NpmSQLService.npm_keywordsTableName))
-//  }
+  test("registerNpmKeywordsTableTest"){
+    NpmSQLService.registerNpmKeywordsTable(stream, tEnv)
+    assert(tEnv.listTables().contains(NpmSQLService.npm_keywordsTableName))
+  }
 
   test("registerTablesTest"){
     val tEnv = StreamTableEnvironment.create(env)

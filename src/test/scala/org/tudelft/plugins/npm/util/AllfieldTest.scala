@@ -64,9 +64,8 @@ class AllfieldTest extends FunSuite {
     assert(result.contributors.isEmpty)
     assert(result.description == Some("This library allows you to easily display text with custom fonts."))
     assert(result.homepage == Some("https://github.com/gregoiresage/fitfont#readme"))
-    //assert(result.keywords.get.size == 1) // BUG
-    //assert(result.keywords)
-    //   assert(result.keywords.get.head == "fitbitdev")
+    assert(result.keywords.get.size == 1) // BUG
+    assert(result.keywords.get.head == "fitbitdev")
     assert(result.license == Some("MIT"))
     assert(result.dependencies.isEmpty) // is intended, since this will be built up in buildExtendedReleaseUsing
     assert(result.maintainers.size == 1)
