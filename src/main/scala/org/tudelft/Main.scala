@@ -1,23 +1,18 @@
 package org.tudelft
 
-import java.lang.reflect.Constructor
-import java.util.Date
 import java.util.concurrent.TimeUnit
-
 import org.apache.flink.api.common.restartstrategy.RestartStrategies
 import org.apache.flink.api.common.time.Time
-import org.apache.flink.streaming.api.scala._
-import org.codefeedr.buffer.KafkaBuffer
+import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
-import org.codefeedr.stages.OutputStage
-import org.tudelft.plugins.{SQLService, SQLStage}
-import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
-import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.SQLStage.SQLStage
-import org.tudelft.plugins.clearlydefined.operators.ClearlyDefinedReleasesSource
+import org.tudelft.plugins.SQLStage
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
+import org.tudelft.plugins.json.JsonExitStage
+import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
+import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
+import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
 // Cargo
 /*
@@ -85,8 +80,21 @@ object Main {
     val cdSource = new ClearlyDefinedReleasesStage()
     val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
+    val npmReleaseSource = new NpmReleasesStage()
+    val npmExtendedReleases = new NpmReleasesExtStage()
+    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
+    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
+    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
+    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
+    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
+    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
+    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
+    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
+    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
+    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
+
     new PipelineBuilder()
-      .setPipelineName("Maven plugin")
+      .setPipelineName("Npm plugin")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
         3,
         Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
@@ -96,8 +104,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      .edge(cdSource, cdSQLStage)
-      //      .edge(releaseSource, sqlStage)
+      .edge(npmReleaseSource, npmExtendedReleases)
+      .edge(npmExtendedReleases, npmSQlstage0)
       .build()
       .startMock()
   }
