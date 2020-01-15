@@ -64,7 +64,7 @@ class NpmReleasesSourceTest extends FunSuite {
 
   test("default values for the source config should be set") {
     val config = NpmSourceConfig()
-    assert(config.pollingInterval == 1000)
+    assert(config.pollingInterval == 300000)
     assert(config.maxNumberOfRuns == -1)
   }
 
