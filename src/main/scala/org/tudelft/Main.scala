@@ -1,22 +1,15 @@
 package org.tudelft
 
-import java.lang.reflect.Constructor
-import java.util.Date
 import java.util.concurrent.TimeUnit
-
 import org.apache.flink.api.common.restartstrategy.RestartStrategies
 import org.apache.flink.api.common.time.Time
-import org.apache.flink.streaming.api.scala._
-import org.codefeedr.buffer.KafkaBuffer
+import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
-import org.codefeedr.stages.OutputStage
-import org.tudelft.plugins.{SQLService, SQLStage}
-import org.tudelft.plugins.json.{JsonExitStage, JsonTransformStage, StringWrapper}
-import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenProject, MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.SQLStage.SQLStage
-import org.tudelft.plugins.clearlydefined.operators.ClearlyDefinedReleasesSource
+import org.tudelft.plugins.SQLStage
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
+import org.tudelft.plugins.json.JsonExitStage
+import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
 import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
 import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
@@ -111,18 +104,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      
       .edge(npmReleaseSource, npmExtendedReleases)
-      //.edge(npmExtendedReleases, npmSQlstage0)
-      //.edge(npmExtendedReleases, npmSQlstage1)
-      //.edge(npmExtendedReleases, npmSQlstage2)
-      //.edge(npmExtendedReleases, npmSQlstage3)
-      //.edge(npmExtendedReleases, npmSQlstage4)
-      //.edge(npmExtendedReleases, npmSQlstage5)
-      //.edge(npmExtendedReleases, npmSQlstage6)
-      //.edge(npmExtendedReleases, npmSQlstage7)
       .edge(npmExtendedReleases, npmSQlstage0)
-      //.edge(npmExtendedReleases, npmSQlstage9) // deze werkte 1x en had daarna moeite, troubles met Kafka maybe?
       .build()
       .startMock()
   }

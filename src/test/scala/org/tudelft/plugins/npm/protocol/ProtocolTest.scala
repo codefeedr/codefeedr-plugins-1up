@@ -3,7 +3,7 @@ package org.tudelft.plugins.npm.protocol
 import java.util.Date
 
 import org.scalatest.FunSuite
-import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, DependencyPojoExt, NpmKeyWord, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonObjectPojoExt, Repository, RepositoryPojo, RepositoryPojoExt, TimeObject, TimePojo, TimePojoExt}
+import org.tudelft.plugins.npm.protocol.Protocol.{Bug, BugPojo, Dependency, DependencyPojo, DependencyPojoExt, NpmProject, NpmProjectPojo, NpmRelease, NpmReleaseExt, NpmReleaseExtPojo, NpmReleasePojo, PersonObject, PersonObjectPojo, PersonObjectPojoExt, Repository, RepositoryPojo, RepositoryPojoExt, TimeObject, TimePojo, TimePojoExt}
 
 /**
  * Class to test the creation of POJO for our SQL Service (since the Datastream[NPM Case Class] will not work
@@ -26,7 +26,6 @@ class ProtocolTest extends FunSuite {
   val emptybugobj = Bug(None, None)
   val repoobj = Repository("git", "git+https://github.com/searchfe/ts2php.git", None)
   val emptyrepoobj = Repository("", "", None)
-  //val simplepersonobj = PersonSimple("Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
   val simplepersonobj = Some("Barney Rubble <b@rubble.com> (http://barnyrubble.tumblr.com/)")
   val personobj = PersonObject("cxtom", Some("cxtom2010@gmail.com"), None)
   val emptypersonobj = PersonObject("", None, None)
@@ -42,9 +41,8 @@ class ProtocolTest extends FunSuite {
   val npmrel = NpmRelease("ts2php", now)
   val npmrele = NpmReleaseExt("ts2php", now, bigProject)
 
-  val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some("nonEmptyAuthorForTs2php"), Some(personobj), // cxtom version
+  val bigProject2 = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", Some(personobj), // cxtom version
     Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"),
-    //Some(List(NpmKeyWord("testing"), NpmKeyWord("fullcoverage"))),
     Some(List("testing", "fullcoverage")),
       Some("MIT"),
     Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
@@ -74,7 +72,6 @@ class ProtocolTest extends FunSuite {
     assert(result.project._rev == "82-79c18b748261d1370bd45e0efa753721")
     assert(result.project.name == "ts2php")
     assert(result.project.author == null)
-    assert(result.project.authorObject == null)
     assert(result.project.bugString == null)
     assert(result.project.readme == "some story on how this project came to be")
     assert(result.project.readmeFilename == "indication where to find the above line")
@@ -103,10 +100,9 @@ class ProtocolTest extends FunSuite {
     assert(result.project._id == "ts2php")
     assert(result.project._rev == "82-79c18b748261d1370bd45e0efa753721")
     assert(result.project.name == "ts2php")
-    assert(result.project.author == "nonEmptyAuthorForTs2php")
-    assert(result.project.authorObject.name == "cxtom")
-    assert(result.project.authorObject.email == "cxtom2010@gmail.com")
-    assert(result.project.authorObject.url == null)
+    assert(result.project.author.name == "cxtom")
+    assert(result.project.author.email == "cxtom2010@gmail.com")
+    assert(result.project.author.url == null)
     assert(result.project.bugString == null)
     assert(result.project.readme == "some story on how this project came to be")
     assert(result.project.readmeFilename == "indication where to find the above line")
@@ -134,7 +130,7 @@ class ProtocolTest extends FunSuite {
     assert(result._rev == "82-79c18b748261d1370bd45e0efa753721")
     assert(result.name == "ts2php")
     assert(result.author == null)
-    assert(result.authorObject == null)
+    assert(result.author == null)
     assert(result.bugString == null)
     assert(result.readme == "some story on how this project came to be")
     assert(result.readmeFilename == "indication where to find the above line")
@@ -155,7 +151,7 @@ class ProtocolTest extends FunSuite {
 
   test("POJO Test - Npmproject Pojo creation - alternative paths") {
     // Arrange
-    val alternativePathProject = Protocol.NpmProject("project_id", Some("_rev0.1"), "Harald", None, None, None, None, None, None, None, None,
+    val alternativePathProject = Protocol.NpmProject("project_id", Some("_rev0.1"), "Harald", None, None, None, None, None, None, None,
       List(PersonObject("Roald", Some("roaldheijden@nospam.com"), Some("https://github.com/roaldvanderheijden"))),
       "readme: this is a short readme",
     "this is the link to the readme filename", None, None, None, TimeObject("2020-01-12T07:51:00.925Z", Some("2020-01-13T00:33:00.925Z")))
@@ -166,7 +162,6 @@ class ProtocolTest extends FunSuite {
     assert(result._rev == "_rev0.1")
     assert(result.name == "Harald")
     assert(result.author == null)
-    assert(result.authorObject == null)
     assert(result.contributors == null)
     assert(result.description == null)
     assert(result.homepage == null)

@@ -51,7 +51,6 @@ object NpmSQLService {
       this.registerNpmMaintainersTable(releasesStream, tEnv)
       this.registerNpmKeywordsTable(releasesStream, tEnv)
     }
-      // TODO check how useful is this? I think I saw SBT warn about thus due to type erasure in Java at runtime... so dead code?
    case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }
 
@@ -97,13 +96,13 @@ object NpmSQLService {
   def registerNpmPerson_AuthorTable(stream : DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {
     implicit val typeInfo = TypeInformation.of(classOf[PersonObjectPojoExt])
     val person_authorPojoStream : DataStream[PersonObjectPojoExt] = stream
-      .filter(x => x.project.authorObject != null)
+      .filter(x => x.project.author != null)
       .map(x => {
         val pojo_ext = new PersonObjectPojoExt()
         pojo_ext.id = x.project._id
-        pojo_ext.name = x.project.authorObject.name
-        pojo_ext.email = x.project.authorObject.email
-        pojo_ext.url = x.project.authorObject.url
+        pojo_ext.name = x.project.author.name
+        pojo_ext.email = x.project.author.email
+        pojo_ext.url = x.project.author.url
         pojo_ext
       })
     tEnv.registerDataStream(npm_person_authorTableName, person_authorPojoStream)

@@ -122,16 +122,11 @@ class NpmServiceTest extends FunSuite {
     assert(result.contributors.get.size==1)
   }
 
-  test("createjsonString - unpublished npm package results in Some(...)") {
+  test("createjsonString - unpublished npm package results in None") {
     // Act 1
     val jsonString = NpmService.createJsonStringFor(correct_base_url, unPublishedProject)
     // Assert 1
-    assert(jsonString.isInstanceOf[Option[String]])
-    assert(jsonString.get != "")
-    // Act 2
-    val id = parse(jsonString.get) \ "_id"
-    // Assert 2
-    assert(id.values == "@lizheng11/t1")
+    assert(jsonString.isEmpty)
   }
 
   test("createJsonString - incorrectly specified npm package url results in None") {

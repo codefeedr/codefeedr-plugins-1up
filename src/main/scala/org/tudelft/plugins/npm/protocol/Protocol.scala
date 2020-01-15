@@ -1,7 +1,6 @@
 package org.tudelft.plugins.npm.protocol
 
 import java.util.Date
-import org.tudelft.plugins.npm.protocol.Protocol._
 
 /**
  * Contains all the case classes and POJO equivalent classes to represent a NPM package release
@@ -21,8 +20,7 @@ object Protocol {
   case class NpmProject(_id             : String,
                         _rev            : Option[String],
                         name            : String,
-                        author          : Option[String],
-                        authorObject    : Option[PersonObject],
+                        author          : Option[PersonObject],
                         contributors    : Option[List[PersonObject]],
                         description     : Option[String],
                         homepage        : Option[String],
@@ -36,8 +34,6 @@ object Protocol {
                         bugString       : Option[String],
                         repository      : Option[Repository],
                         time            : TimeObject)
-
-  case class NpmKeyWord(word : String)
 
   case class Dependency(packageName : String,
                         version     : String)
@@ -92,8 +88,7 @@ object Protocol {
     var _id: String = _
     var _rev: String = _
     var name: String = _
-    var author : String = _
-    var authorObject: PersonObjectPojo = _
+    var author: PersonObjectPojo = _
     var contributors: List[PersonObjectPojo] = _
     var description: String = _
     var homepage: String = _
@@ -116,9 +111,8 @@ object Protocol {
       pojo._id = project._id
       pojo._rev = project._rev.orNull
       pojo.name = project.name
-      pojo.author = project.author.orNull
-      if (project.authorObject.isDefined) {
-          pojo.authorObject = PersonObjectPojo.fromPersonObject(project.authorObject.get)
+      if (project.author.isDefined) {
+          pojo.author = PersonObjectPojo.fromPersonObject(project.author.get)
       }
       if (project.contributors.isDefined) {
         pojo.contributors = project.contributors.get.map(person => PersonObjectPojo.fromPersonObject(person))
@@ -151,9 +145,11 @@ object Protocol {
     var keyword : String = _
   }
 
+  // added for the ability to register KeywordPojo as a streaming SQL table
   class NpmKeyWordPojoExt extends NpmKeyWordPojo {
     var id : String = _
   }
+
   object NpmKeyWordPojo {
     def fromKeywordAsString(keyword : String) : NpmKeyWordPojo = {
       val pojo = new NpmKeyWordPojo()

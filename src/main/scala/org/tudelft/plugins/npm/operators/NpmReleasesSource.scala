@@ -223,4 +223,4 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
       case _ =>     packageList.map(arg => NpmRelease(arg, time))
     }
   }
-   }
+}
