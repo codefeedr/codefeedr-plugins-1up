@@ -1,12 +1,7 @@
 package org.tudelft.plugins.npm.util
 
-import org.json4s.{DefaultFormats, Formats}
-import org.json4s.ext.JavaTimeSerializers
 import org.scalatest.FunSuite
 import org.tudelft.plugins.npm.protocol.Protocol.{Bug, PersonObject, Repository, TimeObject}
-import org.json4s.jackson.JsonMethods.parse
-import org.tudelft.plugins.npm.protocol.Protocol
-
 import scala.io.Source
 
 class AllfieldTest extends FunSuite {
@@ -19,8 +14,9 @@ class AllfieldTest extends FunSuite {
     assert(result._id == "ts2php")
     assert(result._rev == Some("84-a99a3e14f1d576d910aafb083cba8673"))
     assert(result.name == "ts2php")
-    assert(result.author.isEmpty)
-    assert(result.authorObject.isEmpty)                                 // BUG
+    assert(result.author.get.name == "meixuguang")
+    assert(result.author.get.email.isEmpty)
+    assert(result.author.get.url.isEmpty)
     assert(result.contributors.get.size == 1)
     assert(result.contributors.get.head.name == "cxtom")
     assert(result.contributors.get.head.email == Some("cxtom2008@gmail.com"))
@@ -59,8 +55,9 @@ class AllfieldTest extends FunSuite {
     assert(result._id == "fitfont")
     assert(result._rev == Some("9-8893e3db2492f122c3bf2293ec25d2e0"))
     assert(result.name == "fitfont")
-    assert(result.author.isEmpty)                                       // yes
-    assert(result.authorObject.isEmpty)                                 // BUG
+    assert(result.author.get.name == "Grégoire Sage")
+    assert(result.author.get.email.isEmpty)
+    assert(result.author.get.url.isEmpty)
     assert(result.contributors.isEmpty)
     assert(result.description == Some("This library allows you to easily display text with custom fonts."))
     assert(result.homepage == Some("https://github.com/gregoiresage/fitfont#readme"))

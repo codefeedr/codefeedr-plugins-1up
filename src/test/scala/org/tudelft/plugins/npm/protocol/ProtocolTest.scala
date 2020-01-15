@@ -31,7 +31,7 @@ class ProtocolTest extends FunSuite {
   val personobj = PersonObject("cxtom", Some("cxtom2010@gmail.com"), None)
   val emptypersonobj = PersonObject("", None, None)
   val dependencyobj = Dependency("semver", "^6.2.0")
-  val bigProject = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", None, None,
+  val bigProject = NpmProject("ts2php", Some("82-79c18b748261d1370bd45e0efa753721"), "ts2php", None,
     Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))), Some("TypeScript to PHP Transpiler"), Some("https://github.com/searchfe/ts2php#readme"), None, Some("MIT"),
     Some(List(Dependency("fs-extra", "^7.0.1"), Dependency("lodash", "^4.17.14"), Dependency("semver", "^6.2.0"))), List(PersonObject("cxtom", Some("cxtom2010@gmail.com"), None), PersonObject("meixg", Some("meixg@foxmail.com"), None)),
     "some story on how this project came to be",
@@ -327,7 +327,6 @@ class ProtocolTest extends FunSuite {
         "ts2php",
         Some("82-79c18b748261d1370bd45e0efa753721"),
         "ts2php",
-        Some("nonEmptyAuthorForTs2php"),
         Some(personobj), // cxtom version
         Some(List(PersonObject("cxtom", Some("cxtom2008@gmail.com"), None))),
         Some("TypeScript to PHP Transpiler"),

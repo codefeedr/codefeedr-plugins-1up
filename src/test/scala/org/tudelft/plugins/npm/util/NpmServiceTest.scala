@@ -9,6 +9,7 @@ import org.json4s.jackson.Serialization.read
 import org.json4s.{DefaultFormats, Formats}
 import org.scalatest.FunSuite
 import org.tudelft.plugins.npm.protocol.Protocol
+import org.tudelft.plugins.npm.protocol.Protocol.PersonObject
 
 import scala.io.Source
 
@@ -42,6 +43,10 @@ class NpmServiceTest extends FunSuite {
   val jsonTimeNoModified = """{"time": {"created": "2001-07-22T11:41:29.226Z","1.0.0": "2001-07-22T11:41:29.631Z","2.0.0": "2001-07-24T12:04:52.956Z"}}"""
   val jsonTimeBothFieldsMissing = """{"time": {"1.0.0": "1980-07-22T11:41:29.631Z","2.0.0": "1980-07-24T12:04:52.956Z"}}"""
 
+  // variable simulating conditions in JSON for testing author extraction method
+  val jsonAuthorString = """{
+	"author": "Barney Rubble < b @rubble.com > (http: //barnyrubble.tumblr.com/)"
+}"""
 
   // test for withConfiguredHeaders
 
@@ -254,6 +259,20 @@ class NpmServiceTest extends FunSuite {
     assert(projectWithoutDependencies.last.packageName=="yargs")
   }
 
+
+  // tests for author
+
+  test("debug test author") {
+    val file = new File("src/test/resources/npm/test-data/ts2php.json")
+    val json  = parse(file)
+    // Act
+    val author = NpmService.extractAuthorFrom(json)
+    // Assert
+    assert(author.get.name == "meixuguang")
+    assert(author.get.email.isEmpty)
+    assert(author.get.url.isEmpty)
+
+  }
 
   // test for buildrelextusing
 

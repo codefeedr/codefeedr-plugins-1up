@@ -1,16 +1,17 @@
 package org.tudelft.plugins.npm.util
 
 import java.util.Date
+
 import org.apache.logging.log4j.scala.Logging
 import org.codefeedr.stages.utilities.HttpRequester
-import org.json4s.JsonAST.{JObject, JString}
+import org.json4s.JsonAST.{JNothing, JObject, JString}
 import org.json4s.ext.JavaTimeSerializers
 import org.json4s.jackson.JsonMethods.parse
 import org.json4s.jackson.Serialization.read
 import org.json4s.{DefaultFormats, Formats, JValue}
 import org.jsoup.Jsoup
 import org.tudelft.plugins.npm.protocol.Protocol
-import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, TimeObject}
+import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, PersonObject, TimeObject}
 import scalaj.http.Http
 
 /**
@@ -83,8 +84,10 @@ object NpmService extends Logging with Serializable {
     val myTime = extractTimeFrom(json)
     // STEP 2 : Now lookup the dependencies
     val myDependencies = extractDependenciesFrom(json)
-    // STEP 3: Update the Case Class with the results of time & dependencies
-    NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, dependencies = Some(myDependencies)))
+    // STEP 3:
+    val myAuthor = extractAuthorFrom(json)
+    // STEP 4: Update the Case Class with the results of time & dependencies
+    NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, author = myAuthor, dependencies = Some(myDependencies)))
   }
 
   /**
@@ -107,16 +110,25 @@ object NpmService extends Logging with Serializable {
   }
 
   /**
+   * Finds the latest version string of a NPM Project
+   * @param json the JSON object to look for the latest version in
+   * @return a String denoting the latest version on success or "-1" on failure
+   */
+  def findLatestVersionNr(json : JValue) : String = {
+    (json \ "dist-tags") \ "latest" match {
+      case JString(x) => x
+      case _ => "-1"
+    }
+  }
+
+  /**
    * Parses the dependencies for the latest version of a given project, if the field "latest" exists within the JSON
    * @param json the JValue from which we glean the List[DependencyObject]
    * @return the list with Dependencies or Nil if something went wrong
    */
   def extractDependenciesFrom(json : JValue): List[Dependency] = {
     // first look up the latest version number
-    val latestVersionNr = (json \ "dist-tags") \ "latest" match {
-      case JString(x) => x
-      case _          => "-1"
-    }
+    val latestVersionNr = findLatestVersionNr(json)
     // then get me that version object and look up the dependencies field
     val dependenciesList = ((json \ "versions") \ latestVersionNr) \ "dependencies" match {
       case JObject(lijstje) => lijstje
@@ -127,6 +139,38 @@ object NpmService extends Logging with Serializable {
       case (name, JString(version)) => Some(Dependency(name, version))
       case _                        => None
     })
+  }
+
+  /**
+   * Tries to parse an author for a given project. Will look in the root children for a complex author object,
+   * or in the field of the latest version if the author cannot be parsed from there.
+   * @param json the JValue from which we glean complex PersonObject
+   * @return Some[PersonObject] on success, None on failure
+   */
+  def extractAuthorFrom(json: JValue) : Option[PersonObject] = {
+    val authorField1 = (json \ "author")
+    val result1 = convertAuthorFrom(authorField1)
+    if (result1.isDefined) result1
+    else {
+      val latestVersionNr = findLatestVersionNr(json)
+      val authorField2 = ((json \ "versions") \ latestVersionNr) \ "author"
+      convertAuthorFrom(authorField2)
+    }
+  }
+
+  /**
+   * converts given JSON into Option[PersonObject]
+   * @param jsonAuthorField the JSON to convert
+   * @return Some(...) on success, None on failure
+   */
+   def convertAuthorFrom(jsonAuthorField : JValue) : Option[PersonObject] = {
+     jsonAuthorField match {
+       case JObject(_) => {
+         implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
+         jsonAuthorField.extractOpt[PersonObject]
+       }
+       case _ => None
+   }
   }
 
   /**
@@ -155,8 +199,7 @@ object NpmService extends Logging with Serializable {
 
   override def toString() = "NpmService Companion Object"
 }
-
-/*
-    // TODO determine which time we want to use for NPMReleaseExt as 2nd field
-    // TODO wait for point by client on whether author is really important
-*/
+/* NOTES: subtle difference between \ and \\ ->
+    -> \ gets root.children field if it's there,
+    -> \\ gets all fields author (also not BFS, but FCFS in file)
+ */
