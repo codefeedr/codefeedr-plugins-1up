@@ -3,6 +3,8 @@ package org.tudelft.plugins.json
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.stages.OutputStage
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization.write
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -17,7 +19,8 @@ import scala.reflect.runtime.universe._
 class JsonExitStage[T <: Serializable with AnyRef : ClassTag : TypeTag] extends OutputStage[T] {
   override def main(source: DataStream[T]): Unit = {
     implicit val typeInfo: TypeInformation[Unit] = TypeInformation.of(classOf[Unit])
-    source.map((x: T) => println(JsonService.toJson(x)))
+    implicit lazy val formats = DefaultFormats
+    source.map((x: T) => println(write(x)))
   }
 
 }
