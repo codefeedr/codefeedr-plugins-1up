@@ -9,7 +9,6 @@ import org.json4s.ext.JavaTimeSerializers
 import org.json4s.jackson.JsonMethods.parse
 import org.json4s.jackson.Serialization.read
 import org.json4s.{DefaultFormats, Formats, JValue}
-import org.jsoup.Jsoup
 import org.tudelft.plugins.npm.protocol.Protocol
 import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, PersonObject, TimeObject}
 import scalaj.http.Http
