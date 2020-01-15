@@ -3,6 +3,7 @@ Table names are always between quotation marks. Or Ctrl+f on '--'.
 Keys are marked after the type annotation with either PK or FK.
 
 ************************** CARGO **************************
+
 -- "Cargo"
 - crate:                        Crate
     -- "CargoCrate"
