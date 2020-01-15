@@ -89,7 +89,6 @@ object Protocol {
     var packaging: String = _
     var issueManagement: IssueManagementPojo = _
     var scm: SCMPojo = _
-    var xml: String = _
   }
 
   object MavenProjectPojo {
@@ -99,7 +98,6 @@ object Protocol {
       pojo.groupId = mavenProject.groupId
       pojo.artifactId = mavenProject.artifactId
       pojo.version = mavenProject.version
-      pojo.xml = mavenProject.xml
 
       // Set the parent
       if (mavenProject.parent.isDefined) {
@@ -326,8 +324,7 @@ object Protocol {
                            organization: Option[Organization],
                            packaging: Option[String],
                            issueManagement: Option[IssueManagement],
-                           scm: Option[SCM],
-                           xml: String)
+                           scm: Option[SCM])
 
   case class SCM(connection: String,
                  developerConnection: Option[String],
