@@ -63,11 +63,11 @@ object Protocol extends Enumeration {
   class CratePojo extends Serializable {
     var id: String = _
     var name: String = _
-    //var updated_at: Date = _
+    var updated_at: Long = _
     var versions: List[Int] = _
     var keywords: List[String] = _
     var categories: List[String] = _
-    //var created_at: Date = _
+    var created_at: Long = _
     var downloads: Int = _
     var recent_downloads: Int = _
     var max_version: String = _
@@ -84,11 +84,11 @@ object Protocol extends Enumeration {
       val pojo = new CratePojo
       pojo.id = crate.id
       pojo.name = crate.name
-      //pojo.updated_at =
+      pojo.updated_at = crate.updated_at.getTime
       pojo.versions = crate.versions
       pojo.keywords = crate.keywords
       pojo.categories = crate.categories
-      //pojo.created_at =
+      pojo.created_at = crate.created_at.getTime
       pojo.downloads = crate.downloads
       if(crate.recent_downloads.isDefined) {
         pojo.recent_downloads = crate.recent_downloads.get
@@ -159,8 +159,8 @@ object Protocol extends Enumeration {
     var num: String = _
     var dl_path: String = _
     var readme_path: String = _
-    //var updated_at: Date = _
-    //var created_at: Date = _
+    var updated_at: Long = _
+    var created_at: Long = _
     var downloads: Int = _
     var features: CrateVersionFeaturesPojo = _
     var yanked: Boolean = _
@@ -178,6 +178,8 @@ object Protocol extends Enumeration {
       pojo.num = crateVersion.num
       pojo.dl_path = crateVersion.dl_path
       pojo.readme_path = crateVersion.readme_path
+      pojo.updated_at = crateVersion.updated_at.getTime
+      pojo.created_at = crateVersion.created_at.getTime
       pojo.downloads = crateVersion.downloads
       pojo.features = CrateVersionFeaturesPojo.fromCrateVersionFeatures(crateVersion.features)
       pojo.yanked = crateVersion.yanked
