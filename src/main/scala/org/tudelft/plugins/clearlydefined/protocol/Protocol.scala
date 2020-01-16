@@ -183,7 +183,7 @@ object Protocol {
     }
   }
 
-  case class CDLicensed(declared: String,
+  case class CDLicensed(declared: Option[String],
                         toolScore: CDLicensedToolScore,
                         facets: CDLicensedFacets,
                         score: CDLicensedScore)
@@ -198,7 +198,9 @@ object Protocol {
   object CDLicensedPojo {
     def fromCDLicensed(cdLicensed: CDLicensed): CDLicensedPojo = {
       val pojo = new CDLicensedPojo
-      pojo.declared = cdLicensed.declared
+      if(cdLicensed.declared.isDefined) {
+        pojo.declared = cdLicensed.declared.get
+      }
       pojo.toolScore = CDLicensedToolScorePojo.fromCDLicensedToolScore(cdLicensed.toolScore)
       pojo.facets = CDLicensedFacetsPojo.fromCDLicensedFacets(cdLicensed.facets)
       pojo.score = CDLicensedScorePojo.fromCDLicensedScore(cdLicensed.score)
@@ -270,7 +272,7 @@ object Protocol {
   }
 
   case class CDLFCoreAttribution(unknown: Int,
-                                 parties: List[String])
+                                 parties: Option[List[String]])
 
   class CDLFCoreAttributionPojo extends Serializable {
     var unknown: Int = _
@@ -287,7 +289,9 @@ object Protocol {
     def fromCDLFCoreAttribution(cdlfCoreAttribution: CDLFCoreAttribution): CDLFCoreAttributionPojo = {
       val pojo = new CDLFCoreAttributionPojo
       pojo.unknown = cdlfCoreAttribution.unknown
-      pojo.parties = cdlfCoreAttribution.parties
+      if(cdlfCoreAttribution.parties.isDefined) {
+        pojo.parties = cdlfCoreAttribution.parties.get
+      }
       pojo
     }
   }

@@ -70,48 +70,50 @@ object Main {
 
     val query: String =
       """
-        | SELECT id
-        | FROM CargoCrateVersions
+        | SELECT *
+        | FROM Cargo
         |""".stripMargin
 
-    val releaseSource = new MavenReleasesStage()
-    val jsonStage = new JsonExitStage[MavenRelease]
-    val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+//    val releaseSource = new MavenReleasesStage()
+//    val jsonStage = new JsonExitStage[MavenRelease]
+//    val enrichReleases = new MavenReleasesExtStage()
+//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 
-    val cdSource = new ClearlyDefinedReleasesStage()
-    val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
+    //val cdSource = new ClearlyDefinedReleasesStage()
+    //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     val cargoSource = new CargoReleasesStage()
     val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
 
-    val npmReleaseSource = new NpmReleasesStage()
-    val npmExtendedReleases = new NpmReleasesExtStage()
-    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
-    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
-    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
-    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
-    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
-    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
-    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
-    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
-    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
-    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
+//    val npmReleaseSource = new NpmReleasesStage()
+//    val npmExtendedReleases = new NpmReleasesExtStage()
+//    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
+//    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
+//    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
+//    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
+//    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
+//    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
+//    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
+//    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
+//    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
+//    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
 
     new PipelineBuilder()
-      .setPipelineName("Npm plugin")
+      .setPipelineName("Cargo plugin")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
         3,
         Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
       .enableCheckpointing(1000) // checkpointing every 1000ms
+      .setBufferProperty(KafkaBuffer.AMOUNT_OF_PARTITIONS, "8")
+      .setBufferProperty(KafkaBuffer.AMOUNT_OF_REPLICAS, "2")
       .setBufferProperty(KafkaBuffer.COMPRESSION_TYPE, "gzip")
-      .setBufferProperty(KafkaBuffer.BROKER, "localhost:9092")
-      .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
-      .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
-      .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
+      .setBufferProperty(KafkaBuffer.BROKER, "kafka-0.kafka-headless.codefeedr:9092,kafka-1.kafka-headless.codefeedr:9092,kafka-2.kafka-headless.codefeedr:9092")
+      .setBufferProperty(KafkaBuffer.ZOOKEEPER, "zookeeper-0.zookeeper-headless.codefeedr:2181,zookeeper-1.zookeeper-headless.codefeedr:2181,zookeeper-2.zookeeper-headless.codefeedr:2181")
+      .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
+      .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
       .edge(cargoSource, cargoSqlStage)
       .build()
-      .startMock()
+      .start(args)
   }
 }
 
