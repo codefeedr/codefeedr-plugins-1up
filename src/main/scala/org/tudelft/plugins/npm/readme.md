@@ -14,10 +14,10 @@ Using CodeFeedr's pipeline abstraction, you add an edge to the pipeline by:
 - finally, based on your needs, you either add an exit Stage which writes output to JSON, or 
 an SQLStage, which enables to query the datastream[NPMRelease] using streaming SQL.
 
-The NPM plugin for CodeFeedr is keeping track of the following data:
 
 **What Data is being tracked?**
 -------------------------------
+The NPM plugin for CodeFeedr is keeping track of the following data:
 
 *NPMRELEASE*
 
