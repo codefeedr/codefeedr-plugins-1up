@@ -21,7 +21,7 @@ import scala.collection.JavaConverters._
  * @author Roald van der Heijden
  * Date: 2019 - 12 - 03
  */
-case class NpmSourceConfig(pollingInterval: Int = 300000, maxNumberOfRuns: Int = -1) // 5 min polling interval
+case class NpmSourceConfig(pollingInterval: Int = 10000, maxNumberOfRuns: Int = -1) // 10 sec polling interval
 
 /**
  * Class to represent a source in CodeFeedr to query NPM package releases
@@ -55,9 +55,9 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   private var runsLeft = 0
 
   /**
-   * The last item that got processed from the update stream
-   */
-  private var lastItem: Option[NpmRelease] = None
+    * The latest poll
+    */
+  private var lastPoll: Option[Seq[NpmRelease]] = None
 
   /**
    * Keeps track of a checkpointed state of NpmReleases
@@ -105,7 +105,6 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
         try {
           // Polls the update stream
           val resultString = retrieveUpdateStringFrom(url_updatestream)
-
           val now = Calendar.getInstance().getTime()
           // convert string with updated packages into list of updated packages
           val items: Seq[NpmRelease] = createListOfUpdatedNpmIdsFrom(resultString.get, now)
@@ -113,13 +112,17 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
           // Decrease the amount of runs left.
           decreaseRunsLeft()
 
+          var newItems: Seq[NpmRelease] = null
           // Collect right items and update last item
-          val validSortedItems = sortAndDropDuplicates(items)
-          validSortedItems.foreach(x => ctx.collectWithTimestamp(x, x.retrieveDate.getTime))
-          releasesProcessed.add(validSortedItems.size)
-          if (validSortedItems.nonEmpty) {
-            lastItem = Some(validSortedItems.last)
+          if (lastPoll.isDefined){
+            newItems = items.map(x => x.name).diff(lastPoll.get.map(x => x.name)).map(x => NpmRelease(x, now))
           }
+          else newItems = items
+
+          newItems.foreach(x => ctx.collectWithTimestamp(x, x.retrieveDate.getTime))
+          releasesProcessed.add(newItems.size)
+
+          if (items.nonEmpty) lastPoll = Some(items)
 
           // Wait until the next poll
           waitPollingInterval()
@@ -140,22 +143,6 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   }
 
   /**
-   * Drops items that already have been collected and sorts them based on times
-   * @param items Potential items to be collected
-   * @return Valid sorted items
-   */
-  def sortAndDropDuplicates(items: Seq[NpmRelease]): Seq[NpmRelease] = {
-    items
-      .filter((x: NpmRelease) => {
-        if (lastItem.isDefined)
-          lastItem.get.retrieveDate.before(x.retrieveDate)
-        else
-          true
-      })
-      .sortWith((x: NpmRelease, y: NpmRelease) => x.retrieveDate.before(y.retrieveDate))
-  }
-
-  /**
    * Wait a certain amount of times the polling interval
    *
    * @param times Times the polling interval should be waited
@@ -168,9 +155,9 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
    * Make a snapshot of the current state.
    */
   override def snapshotState(context: FunctionSnapshotContext): Unit = {
-    if (lastItem.isDefined) {
+    if (lastPoll.isDefined) {
       checkpointedState.clear()
-      checkpointedState.add(lastItem.get)
+      checkpointedState.add(lastPoll.get.head)
     }
   }
 
@@ -184,9 +171,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
     checkpointedState = context.getOperatorStateStore.getListState(descriptor)
 
     if (context.isRestored) {
-      checkpointedState.get().asScala.foreach { x =>
-        lastItem = Some(x)
-      }
+      lastPoll = Some(checkpointedState.get().asScala.to[collection.immutable.Seq])
     }
   }
 
