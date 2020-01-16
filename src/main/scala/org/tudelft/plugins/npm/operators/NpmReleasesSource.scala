@@ -55,11 +55,6 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   private var runsLeft = 0
 
   /**
-   * The last item that got processed from the update stream
-   */
-  private var lastItem: Option[NpmRelease] = None
-
-  /**
     * The latest poll
     */
   private var lastPoll: Option[Seq[NpmRelease]] = None
