@@ -110,7 +110,7 @@ object MavenService extends Logging with Serializable {
     val scm = parseSCM(getInnerNode(node, "scm"))
 
     Some(MavenProject(modelVersion, groupId, artifactId, version, parent, dependencies, licenses, repositories,
-      organization, packaging, issueManagement, scm, node.toString()))
+      organization, packaging, issueManagement, scm))
   }
 
   /**

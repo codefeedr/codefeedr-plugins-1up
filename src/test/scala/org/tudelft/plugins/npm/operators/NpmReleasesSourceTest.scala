@@ -26,12 +26,10 @@ class NpmReleasesSourceTest extends FunSuite {
 
 // time consuming
   test("retrieve from incorrect url will fail") {
-
     // Arrange
     val jsonString = npmReleasesSource.retrieveUpdateStringFrom("http://www.idontexisturl.com")
     // Assert
     assert(jsonString == None)
-
   }
 
   // now for other test I'll use the mockedString
@@ -66,7 +64,7 @@ class NpmReleasesSourceTest extends FunSuite {
 
   test("default values for the source config should be set") {
     val config = NpmSourceConfig()
-    assert(config.pollingInterval == 1000)
+    assert(config.pollingInterval == 10000)
     assert(config.maxNumberOfRuns == -1)
   }
 

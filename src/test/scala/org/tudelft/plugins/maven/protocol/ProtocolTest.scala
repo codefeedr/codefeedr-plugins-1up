@@ -17,8 +17,8 @@ class ProtocolTest extends FunSuite{
   val licenseEmpty = Some(List(License("name", "url", "distribution", None)))
   val repository = Some(List(Repository("id", "name","url")))
 
-  val projectFull = MavenProject("modelVersion", "groupId", "artifactId", "version", parent, deps, license, repository, organization, Some("packaging"), issueManagement, scm, "xml")
-  val projectEmpty = MavenProject("modelVersion", "groupId", "artifactId", "version", None, None, None, None, None, None, None, None, "xml")
+  val projectFull = MavenProject("modelVersion", "groupId", "artifactId", "version", parent, deps, license, repository, organization, Some("packaging"), issueManagement, scm)
+  val projectEmpty = MavenProject("modelVersion", "groupId", "artifactId", "version", None, None, None, None, None, None, None, None)
 
   test("mavenReleasePojoTest"){
     val release = MavenRelease("title", "link", "description", new Date(0), Guid("tag"))
@@ -131,7 +131,6 @@ class ProtocolTest extends FunSuite{
     assert(pojo.artifactId == "artifactId")
     assert(pojo.version == "version")
     assert(pojo.packaging.contains("packaging"))
-    assert(pojo.xml == "xml")
     assert(pojo.parent != null)
     assert(pojo.dependencies != null)
     assert(pojo.licenses != null)
@@ -151,7 +150,6 @@ class ProtocolTest extends FunSuite{
     assert(pojo.dependencies == null)
     assert(pojo.licenses == null)
     assert(pojo.repositories == null)
-    assert(pojo.xml == "xml")
     assert(pojo.parent == null)
     assert(pojo.organization == null)
     assert(pojo.packaging == null)

@@ -9,7 +9,6 @@ import org.json4s.ext.JavaTimeSerializers
 import org.json4s.jackson.JsonMethods.parse
 import org.json4s.jackson.Serialization.read
 import org.json4s.{DefaultFormats, Formats, JValue}
-import org.jsoup.Jsoup
 import org.tudelft.plugins.npm.protocol.Protocol
 import org.tudelft.plugins.npm.protocol.Protocol.{Dependency, NpmProject, NpmReleaseExt, PersonObject, TimeObject}
 import scalaj.http.Http
@@ -44,22 +43,29 @@ object NpmService extends Logging with Serializable {
    * Creates a JSON String for this project
    *
    * @param projectName the project for which to get the information and create the JSON String
-   * @return the JSON in Option[String] (so None, if something went wrong)
+   * @return the JSON in Option[String] (so None, if something went wrong and also None when UNPUBLISHED!!)
    */
   def createJsonStringFor(updateStreamBaseURL : String, projectName: String) : Option[String] = {
     val jsonString: Option[String] = getProjectRaw(updateStreamBaseURL, projectName)
-    // I think during debugging this is already JSON... so skip the doc, escapedString/jsonString?
     if (jsonString.isEmpty || jsonString.get == """{"error":"Not found"}""") {
       logger.error(s"Couldn't retrieve npm project with name $projectName.")
       return None
     }
-    jsonString
+    // check if UNPUBLISHED, if so => err msg/None, else just the jsonString
+    val json = parse(jsonString.get)
+    (json \ "time") \ "unpublished" match {
+      case JNothing => jsonString
+      case other => {
+        logger.error(s"skiping UNPUBLISHED state of project with name $projectName.")
+        return None
+      }
+    }
   }
 
   /**
    * Creates a NpmProject from given JSON String while taking care of some error handling as well
    * @param json the JSON String to parse
-   * @return None if something went wrong or Some[NpmProject]
+   * @return None if something went wrong, or Some[NpmProject]
    */
   def convertProjectFrom(json : String) : Option[NpmProject] = {
     implicit val formats: Formats = new DefaultFormats {} ++ JavaTimeSerializers.all
@@ -80,11 +86,11 @@ object NpmService extends Logging with Serializable {
    */
   def buildNpmReleaseExtUsing(projectName: String, jsonString: String, project: NpmProject): NpmReleaseExt = {
     val json = parse(jsonString)
-    // STEP 1: now set the time right (find the created / modified field and update the time)
+    // STEP 1: Now set the time right (find the created / modified field and update the time)
     val myTime = extractTimeFrom(json)
     // STEP 2 : Now lookup the dependencies
     val myDependencies = extractDependenciesFrom(json)
-    // STEP 3:
+    // STEP 3: Then lookup the author
     val myAuthor = extractAuthorFrom(json)
     // STEP 4: Update the Case Class with the results of time & dependencies
     NpmReleaseExt(projectName, new Date(), project.copy(time = myTime, author = myAuthor, dependencies = Some(myDependencies)))
@@ -199,7 +205,3 @@ object NpmService extends Logging with Serializable {
 
   override def toString() = "NpmService Companion Object"
 }
-/* NOTES: subtle difference between \ and \\ ->
-    -> \ gets root.children field if it's there,
-    -> \\ gets all fields author (also not BFS, but FCFS in file)
- */

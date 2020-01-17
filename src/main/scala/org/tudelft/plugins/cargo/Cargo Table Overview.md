@@ -1,0 +1,82 @@
+All fields in a table are ordered alphabetically.
+Table names are always between quotation marks. Or Ctrl+f on '--'.
+Keys are marked after the type annotation with either PK or FK.
+
+************************** CARGO **************************
+
+-- "Cargo"
+- crate:                        Crate
+    -- "CargoCrate"
+    - id:                       String      PK
+    - name:                     String
+    - updated_at:               Long
+    - versions:                 List[Int]
+    - keywords:                 List[String]
+    - categories:               List[String]
+    - created_at:               Long
+    - downloads:                Int
+    - recent_downloads:         Int
+    - max_version:              String
+    - description:              String
+    - homepage:                 String
+    - documentation:            String
+    - repository:               String
+    - links:                    CrateLinks
+        -- "CargoCrateLinks"
+        - crateId:              String      FK
+        - version_downloads:    String
+        - versions:             String
+        - owners:               String
+        - owner_team:           String
+        - owner_user:           String
+        - reverse_dependencies: String
+    - exact_match:              Boolean
+- versions:                     List[CrateVersion]
+    -- "CargoCrateVersions"
+    - id:                       Int         PK
+    - crate:                    String      PK
+    - num:                      String
+    - dl_path:                  String
+    - readme_path:              String
+    - updated_at:               Long
+    - created_at:               Long
+    - downloads:                Int
+    - features:                 CrateVersionFeatures
+        -- "CargoCrateVersionFeatures"
+        - versionId:            String      FK
+        - crate:                String      FK
+    - yanked:                   Boolean
+    - license:                  String
+    - links:                    CrateVersionLinks
+        -- "CargoCrateVersionLinks"
+        - versionId:            String      FK
+        - crate:                String      FK
+        - dependencies:         String
+        - version_downloads:    String
+        - authors:              String
+    - crate_size:               Int
+    - published_by:             CrateVersionPublishedBy
+        -- "CargoCrateVersionPublishedBy"
+        - versionId:            String      FK
+        - crate:                String      FK
+        - id:                   Int
+        - login:                String
+        - name:                 String
+        - avatar:               String
+        - url:                  String
+- keywords:                     List[CrateKeyword]
+    -- "CargoCrateKeywords"
+    - id:                       String      PK
+    - crate:                    String      FK
+    - keyword:                  String
+    - created_at:               String
+    - crates_cnt:               Int
+- categories:                   List[CrateCategory]
+    -- "CargoCrateCategories"
+    - id:                       String      PK
+    - crate:                    String      FK
+    - category:                 String
+    - slug:                     String
+    - description:              String
+    - created_at:               String
+    - crates_cnt:               Int

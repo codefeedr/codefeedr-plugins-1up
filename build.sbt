@@ -28,28 +28,22 @@ val sqlDependencies = Seq(
   "org.scala-lang" % "scala-reflect" % "2.12.8"
 )
 
-val otherDependencies = Seq(
-  "org.jsoup" % "jsoup" % "1.6.1"
+val testDependencies = Seq(
+  //"org.scalatest" %% "scalatest" % "3.0.5" % Test
+  "org.scalatest" %% "scalatest" % "3.1.0" % "test"
 )
 
-lazy val dependencies =
-  new {
-    val scalatest          = "org.scalatest"             %% "scalatest"                      % "3.0.5"           % Test
-    val spray              = "io.spray"                  %% "spray-json"                     % "1.3.4"
-  }
+val cargoDependencies = Seq(
+  "io.spray" %% "spray-json" % "1.3.4"
+)
 
 lazy val root = (project in file(".")).
   settings(
     libraryDependencies ++= flinkDependencies,
-    libraryDependencies ++= otherDependencies,
     libraryDependencies ++= codefeedrDependencies,
-    libraryDependencies ++= sqlDependencies ++ Seq(
-      // JSON
-      dependencies.spray,
-
-      // testing
-      dependencies.scalatest
-    )
+    libraryDependencies ++= sqlDependencies,
+    libraryDependencies ++= testDependencies,
+    libraryDependencies ++= cargoDependencies
   )
 
 assembly / mainClass := Some("org.tudelft.Main")

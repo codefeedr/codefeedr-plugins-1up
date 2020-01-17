@@ -3,6 +3,8 @@ package org.tudelft.plugins.json
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.DataStream
 import org.codefeedr.stages.TransformStage
+import org.json4s.DefaultFormats
+import org.json4s.jackson.Serialization.write
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -25,6 +27,7 @@ case class StringWrapper(s: String)
 class JsonTransformStage[T <: Serializable with AnyRef : ClassTag : TypeTag] extends TransformStage[T, StringWrapper] {
   override def transform(source: DataStream[T]): DataStream[StringWrapper] = {
     implicit val typeInfo: TypeInformation[StringWrapper] = TypeInformation.of(classOf[StringWrapper])
-    source.map((x: T) => StringWrapper(JsonService.toJson(x)))(typeInfo)
+    implicit lazy val formats = DefaultFormats
+    source.map((x: T) => StringWrapper(write(x)))(typeInfo)
   }
 }
