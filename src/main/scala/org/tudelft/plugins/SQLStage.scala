@@ -17,7 +17,8 @@ object SQLStage {
     *
     * @tparam T Type of the input stream
     */
-  class SQLStage[T <: Serializable with AnyRef : ClassTag : TypeTag](query: String) extends OutputStage[T] {
+  class SQLStage[T <: Serializable with AnyRef : ClassTag : TypeTag](query: String)
+    extends OutputStage[T](stageId = Some(System.currentTimeMillis().toString)) {
 
     override def main(source: DataStream[T]): Unit = {
       val tEnv = SQLService.setupEnv()

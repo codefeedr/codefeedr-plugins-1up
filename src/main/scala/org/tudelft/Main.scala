@@ -7,6 +7,7 @@ import org.apache.flink.api.common.time.Time
 import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
 import org.tudelft.plugins.SQLStage
+import org.tudelft.plugins.SQLStage.SQLStage
 import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
@@ -70,29 +71,25 @@ object Main {
 
     val query: String = "Select tool, title from ClearlyDefinedDescribedScore, Maven"
 
+    val cargoQuery: String =
+      """
+        | SELECt name
+        | FROM CargoCrate
+        |""".stripMargin
+
     val releaseSource = new MavenReleasesStage()
     val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage2 = SQLStage.createSQLStage2[ClearlyDefinedRelease, MavenReleaseExt](query)
-    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("Select title from Maven")
+//    val sqlStage2 = SQLStage.createSQLStage2[ClearlyDefinedRelease, MavenReleaseExt](query)
+//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("Select title from Maven")
 
     //val cdSource = new ClearlyDefinedReleasesStage()
     //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
+    val cargoSqlStage = new SQLStage[CrateRelease](cargoQuery)
 
 //    val npmReleaseSource = new NpmReleasesStage()
 //    val npmExtendedReleases = new NpmReleasesExtStage()
-//    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
-//    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
-//    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
-//    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
-//    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
-//    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
-//    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
-//    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
-//    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
-//    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -108,11 +105,10 @@ object Main {
       .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
       .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
       //      .edge(cdSource, cdSQLStage)
-      .edge(releaseSource, enrichReleases)
-      .edge(enrichReleases, sqlStage)
+      .edge(cargoSource, cargoSqlStage)
       //      .edge(releaseSource, sqlStage)
       .build()
-      .start(args)
+      .startLocal
   }
 }
 
