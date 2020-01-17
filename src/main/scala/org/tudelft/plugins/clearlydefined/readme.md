@@ -14,12 +14,12 @@ CodeFeedr, but in stead in one input stage fetches both the datastream of update
 
 To see output for Clearly Defined manually extend an exitStage yourself, overriding `def main` with a
 print statement and use that as an edge to build a CodeFeedr pipeline. Or choose a JsonExitStage, providing the type of
-output and use `startMock()` to see some output.
+output and use `startMock()` to see some output.`startLocal` is also possible but requires a working Kafka/Zookeeper instance 
+on your computer.
 
 **What Data is being tracked?**
 -------------------------------
 The Clearly Defined plugin for CodeFeedr is keeping track of the following data:
-
 
 *ClearlyDefinedRelease* 
 
@@ -172,3 +172,9 @@ The Clearly Defined plugin for CodeFeedr is keeping track of the following data:
 |:-----|:----|
 |effective| Int|
 |tool| Int|
+
+TODO
+====
+- [ ] add the PK, FK from the registerTables method 
+- [ ] create image for table overview
+- [ ] review this whole document
