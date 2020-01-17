@@ -14,6 +14,10 @@ Using CodeFeedr's pipeline abstraction, you add an edge to the pipeline by:
 - finally, based on your needs, you either add an exit Stage which writes output to JSON, or 
 an SQLStage, which enables to query the datastream[NPMRelease] using streaming SQL.
 
+If you just want to play around and see some output, create an edge from NpmRelease to NpmReleaseExt
+then add an edge from NpmReleaseExt stage to jsonStage and use `startMock` to get some output on your terminal
+or `startLocal` to run it with Kafka/Zookeeper
+
 
 **What Data is being tracked?**
 -------------------------------
@@ -92,3 +96,9 @@ The NPM plugin for CodeFeedr is keeping track of the following data:
 |:-----|:----|
 |created  | String|
 |modified | Option[String]|
+
+TODO
+====
+- [ ] add the PK, FK from the registerTables method 
+- [ ] create image for table overview
+- [ ] review this whole document
