@@ -1,6 +1,8 @@
 package org.tudelft.plugins.clearlydefined.operators
 
 import java.text.SimpleDateFormat
+
+import javassist.bytecode.stackmap.TypeTag
 import org.apache.flink.api.common.accumulators.LongCounter
 import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
 import org.apache.flink.configuration.Configuration
@@ -13,6 +15,9 @@ import scalaj.http.Http
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.read
+import org.tudelft.plugins.clearlydefined.protocol.Protocol
+import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
+
 import scala.collection.JavaConverters._
 
 /**
@@ -22,6 +27,7 @@ import scala.collection.JavaConverters._
  */
 case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
                                       maxNumberOfRuns: Int = -1)
+  extends PluginSourceConfig
 
 /**
  * Important to note in retrieving data from the stream of projects in ClearlyDefined is the following:
@@ -31,40 +37,22 @@ case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
  * @param config the ClearlyDefined source configuration, has pollingInterval and maxNumberOfRuns fields
  */
 class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
-  extends RichSourceFunction[ClearlyDefinedRelease]
-    with CheckpointedFunction {
+  extends PluginReleasesSource[ClearlyDefinedRelease](config)(TypeTag[ClearlyDefinedRelease])
+    with CheckpointedFunction{
 
   /** url for the stream of new CD projects */
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
-
   /** The first x number of packages to process with each poll */
   val packageAmount = 10
-
+  /** Date format used in ClearlyDefined */
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
-
-  /** Accumulator for the amount of processed releases. */
-  val releasesProcessed = new LongCounter()
-
-  // Some track variables of this source
-  private var isRunning = false
-  private var runsLeft = 0
+  /** Checkpointed last release processed */
   private var lastItem: Option[ClearlyDefinedRelease] = None
+  /** Checkpointed state of the last release Processed */
   @transient
   private var checkpointedState: ListState[ClearlyDefinedRelease] = _
 
   def getCheckpointedstate: ListState[ClearlyDefinedRelease] = checkpointedState
-  def getIsRunning        : Boolean                          = isRunning
-
-  /** Opens this source. */
-  override def open(parameters: Configuration): Unit = {
-    isRunning = true
-    runsLeft = config.maxNumberOfRuns
-  }
-
-  /** Closes this source. */
-  override def cancel(): Unit = {
-    isRunning = false
-  }
 
   /**
    * Main fetcher of new items in the ClearlyDefined package source
@@ -95,20 +83,11 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           }
 
           // Wait until the next poll
-          waitPollingInterval()
+          waitPollingInterval(1, config)
         } catch {
           case _: Throwable =>
         }
       }
-    }
-  }
-
-  /**
-   * Reduces runsLeft by 1
-   */
-  def decreaseRunsLeft(): Unit = {
-    if (runsLeft > 0) {
-      runsLeft -= 1
     }
   }
 
@@ -128,15 +107,6 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           true
       })
       .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => dateFormat.parse(x._meta.updated).before(dateFormat.parse(y._meta.updated)))
-  }
-
-  /**
-   * Wait a certain amount of times the polling interval
-   *
-   * @param times Times the polling interval should be waited
-   */
-  def waitPollingInterval(times: Int = 1): Unit = {
-    Thread.sleep(times * config.pollingInterval)
   }
 
   /**
