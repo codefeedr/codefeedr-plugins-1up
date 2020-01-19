@@ -15,7 +15,7 @@ import scalaj.http.Http
 import scala.collection.JavaConverters._
 import scala.xml.XML
 
-case class MavenSourceConfig(pollingInterval: Int = 1000,
+case class MavenSourceConfig(pollingInterval: Int = 60000, // 1 min interval
                              maxNumberOfRuns: Int = -1)
 
 
@@ -147,8 +147,9 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
   def sortAndDropDuplicates(items: Seq[MavenRelease]): Seq[MavenRelease] = {
     items
       .filter((x: MavenRelease) => {
-        if (lastItem.isDefined)
-          lastItem.get.pubDate.before(x.pubDate)
+        if (lastItem.isDefined){
+          lastItem.get.pubDate.before(x.pubDate) && lastItem.get.link != x.link
+        }
         else
           true
       })
