@@ -2,23 +2,14 @@ package org.tudelft.plugins.clearlydefined.operators
 
 import java.text.SimpleDateFormat
 
-import javassist.bytecode.stackmap.TypeTag
-import org.apache.flink.api.common.accumulators.LongCounter
-import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
-import org.apache.flink.configuration.Configuration
-import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
-import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
-import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
+import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import scalaj.http.Http
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.read
-import org.tudelft.plugins.clearlydefined.protocol.Protocol
 import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
-
-import scala.collection.JavaConverters._
 
 /**
  * The configuration class for the ClearlyDefinedReleasesSource class
@@ -37,8 +28,7 @@ case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
  * @param config the ClearlyDefined source configuration, has pollingInterval and maxNumberOfRuns fields
  */
 class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
-  extends PluginReleasesSource[ClearlyDefinedRelease](config)(TypeTag[ClearlyDefinedRelease])
-    with CheckpointedFunction{
+  extends PluginReleasesSource[ClearlyDefinedRelease](config) {
 
   /** url for the stream of new CD projects */
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
@@ -46,13 +36,6 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   val packageAmount = 10
   /** Date format used in ClearlyDefined */
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
-  /** Checkpointed last release processed */
-  private var lastItem: Option[ClearlyDefinedRelease] = None
-  /** Checkpointed state of the last release Processed */
-  @transient
-  private var checkpointedState: ListState[ClearlyDefinedRelease] = _
-
-  def getCheckpointedstate: ListState[ClearlyDefinedRelease] = checkpointedState
 
   /**
    * Main fetcher of new items in the ClearlyDefined package source
@@ -66,24 +49,16 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       lock.synchronized { // Synchronize to the checkpoint lock.
         try {
           // Polls the RSS feed
-          val rssAsString = getRSSAsString.get
+          val rssAsString:      String = getRSSAsString.get
           // Parses the received rss items
-          val items: Seq[ClearlyDefinedRelease] = parseRSSString(rssAsString)
-
-          // Decrease the amount of runs left.
-          decreaseRunsLeft()
-
+          val items:            Seq[ClearlyDefinedRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
-          val validSortedItems = sortAndDropDuplicates(items)
+          val validSortedItems: Seq[ClearlyDefinedRelease] = sortAndDropDuplicates(items)
+          // Add a timestamp to the item
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, dateFormat.parse(x._meta.updated).getTime))
-          releasesProcessed.add(validSortedItems.size)
-          if (validSortedItems.nonEmpty) {
-            lastItem = Some(validSortedItems.last)
-          }
-
-          // Wait until the next poll
-          waitPollingInterval(1, config)
+          // Call run in parent
+          super.runPlugin(ctx, validSortedItems)
         } catch {
           case _: Throwable =>
         }
@@ -152,23 +127,6 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       case _: Throwable =>
         printf("Failed parsing the RSSString in the ClearlyDefinedReleasesSource.scala file")
         Nil
-    }
-  }
-
-  override def snapshotState(context: FunctionSnapshotContext): Unit = {
-    if (lastItem.isDefined) {
-      checkpointedState.clear()
-      checkpointedState.add(lastItem.get)
-    }
-  }
-
-  override def initializeState(context: FunctionInitializationContext): Unit = {
-    val descriptor = new ListStateDescriptor[ClearlyDefinedRelease]("last_element", classOf[ClearlyDefinedRelease])
-
-    checkpointedState = context.getOperatorStateStore.getListState(descriptor)
-
-    if(context.isRestored) {
-      checkpointedState.get().asScala.foreach { x => lastItem = Some(x)}
     }
   }
 }
