@@ -2,53 +2,24 @@ package org.tudelft.plugins.maven.operators
 
 import java.text.SimpleDateFormat
 
-import org.apache.flink.api.common.accumulators.LongCounter
-import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
-import org.apache.flink.configuration.Configuration
-import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
-import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
-import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
+import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
+import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenRelease}
 import scalaj.http.Http
 
-import scala.collection.JavaConverters._
 import scala.xml.XML
 
 case class MavenSourceConfig(pollingInterval: Int = 60000, // 1 min interval
                              maxNumberOfRuns: Int = -1)
+    extends PluginSourceConfig
 
 
 class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
-  extends RichSourceFunction[MavenRelease]
-    with CheckpointedFunction {
+  extends PluginReleasesSource[MavenRelease](config) {
   // Date formats + URL
   val pubDateFormat = "EEE, dd MMM yyyy HH:mm:ss ZZ"
   val url = "https://mvnrepository.com/feeds/rss2.0.xml"
-
-  /** Some track variables of this source. */
-  private var isRunning = false
-  private var runsLeft = 0
-  private var lastItem: Option[MavenRelease] = None
-  @transient
-  private var checkpointedState: ListState[MavenRelease] = _
-
-  def getIsRunning: Boolean = isRunning
-
-  /** Accumulator for the amount of processed releases. */
-  val releasesProcessed = new LongCounter()
-
-  /** Opens this source. */
-  override def open(parameters: Configuration): Unit = {
-    isRunning = true
-    runsLeft = config.maxNumberOfRuns
-  }
-
-  /** Close the source. */
-  override def cancel(): Unit = {
-    isRunning = false
-
-  }
 
   /** Runs the source.
    *
@@ -65,21 +36,15 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
           val rssAsString = getRSSAsString
           // Parses the received rss items
           val items: Seq[MavenRelease] = parseRSSString(rssAsString)
-
-          // Decrease the amount of runs left.
-          decreaseRunsLeft()
-
           // Collect right items and update last item
           val validSortedItems = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
+          // Timestamp the items
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, x.pubDate.getTime))
-          releasesProcessed.add(validSortedItems.size)
-          if (validSortedItems.nonEmpty) {
-            lastItem = Some(validSortedItems.last)
-          }
-
-          // Wait until the next poll
-          waitPollingInterval()
+          // Call parent run
+          super.runPlugin(ctx, validSortedItems)
         } catch {
           case _: Throwable =>
         }
@@ -132,12 +97,6 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
     MavenRelease(title, link, description, pubDate, Guid(tag))
   }
 
-  def decreaseRunsLeft(): Unit = {
-    if (runsLeft > 0) {
-      runsLeft -= 1
-    }
-  }
-
   /**
    * Drops items that already have been collected and sorts them based on times
    *
@@ -155,36 +114,4 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
       })
       .sortWith((x: MavenRelease, y: MavenRelease) => x.pubDate.before(y.pubDate))
   }
-
-  /**
-   * Wait a certain amount of times the polling interval
-   *
-   * @param times Times the polling interval should be waited
-   */
-  def waitPollingInterval(times: Int = 1): Unit = {
-    Thread.sleep(times * config.pollingInterval)
-  }
-
-  /** Make a snapshot of the current state. */
-  override def snapshotState(context: FunctionSnapshotContext): Unit = {
-    if (lastItem.isDefined) {
-      checkpointedState.clear()
-      checkpointedState.add(lastItem.get)
-    }
-  }
-
-  /** Initializes state by reading from a checkpoint or creating an empty one. */
-  override def initializeState(context: FunctionInitializationContext): Unit = {
-    val descriptor =
-      new ListStateDescriptor[MavenRelease]("last_element", classOf[MavenRelease])
-
-    checkpointedState = context.getOperatorStateStore.getListState(descriptor)
-
-    if (context.isRestored) {
-      checkpointedState.get().asScala.foreach { x =>
-        lastItem = Some(x)
-      }
-    }
-  }
-
 }

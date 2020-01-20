@@ -71,7 +71,7 @@ object Main {
     val query: String =
       """
         | SELECT *
-        | FROM Cargo
+        | FROM CargoCrate
         |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
@@ -87,7 +87,7 @@ object Main {
 
 //    val npmReleaseSource = new NpmReleasesStage()
 //    val npmExtendedReleases = new NpmReleasesExtStage()
-//    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
+////    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
 //    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
 //    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
 //    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
@@ -107,13 +107,13 @@ object Main {
       .setBufferProperty(KafkaBuffer.AMOUNT_OF_PARTITIONS, "8")
       .setBufferProperty(KafkaBuffer.AMOUNT_OF_REPLICAS, "2")
       .setBufferProperty(KafkaBuffer.COMPRESSION_TYPE, "gzip")
-      .setBufferProperty(KafkaBuffer.BROKER, "kafka-0.kafka-headless.codefeedr:9092,kafka-1.kafka-headless.codefeedr:9092,kafka-2.kafka-headless.codefeedr:9092")
-      .setBufferProperty(KafkaBuffer.ZOOKEEPER, "zookeeper-0.zookeeper-headless.codefeedr:2181,zookeeper-1.zookeeper-headless.codefeedr:2181,zookeeper-2.zookeeper-headless.codefeedr:2181")
+      .setBufferProperty(KafkaBuffer.BROKER, "localhost:9092")
+      .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
       .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
       .edge(cargoSource, cargoSqlStage)
       .build()
-      .start(args)
+      .startMock()
   }
 }
 
