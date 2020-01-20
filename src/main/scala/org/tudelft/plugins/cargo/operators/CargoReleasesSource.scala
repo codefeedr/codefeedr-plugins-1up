@@ -42,6 +42,8 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
           val items:            Seq[CrateRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
           val validSortedItems: Seq[CrateRelease] = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
           // Add a timestamp to the item
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, x.crate.updated_at.getTime))

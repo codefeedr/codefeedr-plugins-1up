@@ -38,6 +38,8 @@ class MavenReleasesSource(config: MavenSourceConfig = MavenSourceConfig())
           val items: Seq[MavenRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
           val validSortedItems = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
           // Timestamp the items
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, x.pubDate.getTime))

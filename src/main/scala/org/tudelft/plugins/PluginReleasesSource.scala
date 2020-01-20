@@ -94,9 +94,6 @@ abstract class PluginReleasesSource[T: ClassTag](config: PluginSourceConfig)
    * @param ctx
    */
   def runPlugin(ctx: SourceFunction.SourceContext[T], validSortedItems: Seq[T]): Unit = {
-    // Decrease the amount of runs left.
-    decreaseRunsLeft()
-
     releasesProcessed.add(validSortedItems.size)
     if (validSortedItems.nonEmpty) {
       lastItem = Some(validSortedItems.last)

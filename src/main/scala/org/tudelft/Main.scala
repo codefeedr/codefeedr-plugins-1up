@@ -71,19 +71,19 @@ object Main {
     val query: String =
       """
         | SELECT *
-        | FROM MavenProject
+        | FROM CargoCrate
         |""".stripMargin
 
-    val releaseSource = new MavenReleasesStage()
-    val jsonStage = new JsonExitStage[MavenRelease]
-    val enrichReleases = new MavenReleasesExtStage()
-    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+//    val releaseSource = new MavenReleasesStage()
+//    val jsonStage = new JsonExitStage[MavenRelease]
+//    val enrichReleases = new MavenReleasesExtStage()
+//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 
     //val cdSource = new ClearlyDefinedReleasesStage()
     //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
-    //val cargoSource = new CargoReleasesStage()
-    //val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
+    val cargoSource = new CargoReleasesStage()
+    val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
 
 //    val npmReleaseSource = new NpmReleasesStage()
 //    val npmExtendedReleases = new NpmReleasesExtStage()
@@ -111,8 +111,7 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
       .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
-      .edge(releaseSource, enrichReleases)
-      .edge(enrichReleases, sqlStage)
+      .edge(cargoSource, cargoSqlStage)
       .build()
       .startMock()
   }

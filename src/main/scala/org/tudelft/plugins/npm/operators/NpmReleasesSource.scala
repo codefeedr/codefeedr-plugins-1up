@@ -63,6 +63,8 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
           val items: Seq[NpmRelease] = createListOfUpdatedNpmIdsFrom(resultString.get, now)
           // Sort and drop the duplicate releases
           val newItems: Seq[NpmRelease] = sortAndDropDuplicates(items, now)
+          // Decrease runs left
+          super.decreaseRunsLeft()
           // Timestamp each item
           newItems.foreach(x => ctx.collectWithTimestamp(x, x.retrieveDate.getTime))
           // Update lastPoll

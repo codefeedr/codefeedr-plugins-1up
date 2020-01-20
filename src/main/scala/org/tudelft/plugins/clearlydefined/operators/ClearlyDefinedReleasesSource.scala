@@ -54,6 +54,8 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           val items:            Seq[ClearlyDefinedRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
           val validSortedItems: Seq[ClearlyDefinedRelease] = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
           // Add a timestamp to the item
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, dateFormat.parse(x._meta.updated).getTime))
