@@ -6,40 +6,17 @@ import org.apache.flink.api.common.restartstrategy.RestartStrategies
 import org.apache.flink.api.common.time.Time
 import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
-import org.tudelft.plugins.SQLStage
-import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
-import org.tudelft.plugins.cargo.stages.CargoReleasesStage
-import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
-import org.tudelft.plugins.clearlydefined.stages.ClearlyDefinedReleasesStage
-import org.tudelft.plugins.json.JsonExitStage
-import org.tudelft.plugins.maven.protocol.Protocol.{MavenRelease, MavenReleaseExt}
-import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesStage}
-import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
-import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
 
-// Maven
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val query: String =
-      """
-        | SELECT *
-        | FROM Cargo
-        |""".stripMargin
+    val query: String = args.mkString(" ")
 
-//    val releaseSource = new MavenReleasesStage()
-//    val jsonStage = new JsonExitStage[MavenRelease]
-//    val enrichReleases = new MavenReleasesExtStage()
-//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+    println(query)
 
-    //val cdSource = new ClearlyDefinedReleasesStage()
-    //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
-
-    val cargoSource = new CargoReleasesStage()
-
-    new PipelineBuilder()
-      .setPipelineName("Cargo plugin")
+    val builder = new PipelineBuilder()
+      .setPipelineName("Demo")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
         3,
         Time.of(10, TimeUnit.SECONDS))) // try restarting 3 times
@@ -51,9 +28,10 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
       .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
-//      .edge(cargoSource, cargoSqlStage)
-      .build()
-      .start(args)
+
+    val pipeline = InputParser.createCorrespondingStages(query, builder)
+
+    pipeline.build().startMock()
   }
 }
 
