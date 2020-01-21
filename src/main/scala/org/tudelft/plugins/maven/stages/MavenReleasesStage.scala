@@ -9,7 +9,7 @@ import org.tudelft.plugins.maven.operators.{MavenReleasesSource, MavenSourceConf
 
 /** Fetches real-time releases from Maven. */
 class MavenReleasesStage(stageId: String = "maven_releases_min",
-                         sourceConfig: MavenSourceConfig = MavenSourceConfig())
+                         sourceConfig: MavenSourceConfig = MavenSourceConfig(1000, -1, 4))
   extends InputStage[MavenRelease](Some(stageId)) {
 
   /** Fetches [[MavenRelease]] from real-time Maven feed.

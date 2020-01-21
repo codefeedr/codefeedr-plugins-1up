@@ -9,7 +9,7 @@ import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 
 /** fetches real-time releases from Cargo */
 class CargoReleasesStage(stageId: String = "cargo_releases_min",
-                         sourceConfig: CargoSourceConfig = CargoSourceConfig())
+                         sourceConfig: CargoSourceConfig = CargoSourceConfig(500, -1, 4))
   extends InputStage[CrateRelease](Some(stageId)){
 
   /** Fetches [[CrateRelease]] from real-time Cargo feed.

@@ -320,10 +320,3 @@ class NpmServiceTest extends FunSuite {
 
 
 }
-
-/* Notes
-TODO
- - fix the Author == None bug
- - fix code duplication
- - possibly deploy Futures in testing to test bogus domains
- */

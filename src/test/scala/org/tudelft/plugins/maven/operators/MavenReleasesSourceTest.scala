@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 class MavenReleasesSourceTest extends FunSuite{
 
-  val mavenReleasesSource = new MavenReleasesSource(MavenSourceConfig(500, -1))
+  val mavenReleasesSource = new MavenReleasesSource(MavenSourceConfig(500, -1, 4))
 
   test("parseRSSString bad"){
     val res = mavenReleasesSource.parseRSSString("wrong string")

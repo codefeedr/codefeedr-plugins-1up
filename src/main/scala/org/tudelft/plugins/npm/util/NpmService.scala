@@ -26,6 +26,8 @@ object NpmService extends Logging with Serializable {
    */
   val url_packageInfo = "http://registry.npmjs.com/"
 
+  //var timeout = 32; // timeout to override for speeding up testing purposes
+
   /**
    * Retrieves a Npm project, resulting in the Protocol case class with information filled in where possible.
    *

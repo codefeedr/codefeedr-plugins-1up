@@ -11,7 +11,8 @@ import scalaj.http.Http
 import scala.xml.XML
 
 case class MavenSourceConfig(pollingInterval: Int = 60000, // 1 min interval
-                             maxNumberOfRuns: Int = -1)
+                             maxNumberOfRuns: Int = -1,
+                             timeout : Int = 32)
     extends PluginSourceConfig
 
 
