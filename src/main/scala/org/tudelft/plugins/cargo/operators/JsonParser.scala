@@ -14,11 +14,12 @@ object JsonParser {
   /**
    * Gets the total number of crates in the Cargo package source currently available
    * @param jsObject body of the Crate.io summary page parsed into JsObject
+   * @param field string which denotes either 'num_crates' or 'num_downloads' to retrieve the corresponding value
    * @return Number of crates
    */
-  def getNumCratesFromSummary(jsObject: JsObject): Option[Int] = {
+  def getNumCratesOrDownloadsFromSummary(jsObject: JsObject, field: String): Option[Int] = {
     try {
-      val numCrates :Option[JsValue] = jsObject.fields.get("num_crates")
+      val numCrates :Option[JsValue] = jsObject.fields.get(field)
 
       Some(numCrates
         .get
@@ -32,54 +33,14 @@ object JsonParser {
   }
 
   /**
-   * Gets the total number of downloads in the Cargo package source
-   * @param jsObject body of the Crate.io summary page parsed into JsObject
-   * @return Number of downloads
-   */
-  def getNumDownloadsFromSummary(jsObject: JsObject): Option[Int] = {
-    try {
-      val numDownloads :Option[JsValue] = jsObject.fields.get("num_downloads")
-
-      Some(numDownloads
-        .get
-        .asInstanceOf[JsNumber]
-        .value
-        .toInt)
-    }
-    catch {
-      case _: Throwable => None
-    }
-  }
-
-  /**
-   * Retrieves the ten most recently added Crates from the summary page
+   * Retrieves the ten most recently updated or brand new Crates from the summary page
    * @param jsObject Summary page parsed into a JsObject (crates.io/api/v1/summary)
-   * @return A Vector consisting of 10 JsObjects which are the most recently added crates
+   * @param field "new_crates" or "just_updated" for the type of crates to retrieve
+   * @return A Vector consisting of 10 JsObjects which are the most recently updated or new crates
    */
-  def getNewCratesFromSummary(jsObject: JsObject): Option[Vector[JsObject]] = {
+  def getNewOrUpdatedCratesFromSummary(jsObject: JsObject, field: String): Option[Vector[JsObject]] = {
     try {
-      val newCrates :Option[JsValue] = jsObject.fields.get("new_crates")
-
-      Some(newCrates
-        .get
-        .asInstanceOf[JsArray]
-        .elements
-        .distinct
-        .map(x => x.asJsObject()))
-    }
-    catch {
-      case _: Throwable => None
-    }
-  }
-
-  /**
-   * Retrieves the ten most recently updated Crates from the summary page
-   * @param jsObject Summary page parsed into a JsObject (crates.io/api/v1/summary)
-   * @return A Vector consisting of 10 JsObjects which are the most recently updated crates
-   */
-  def getUpdatedCratesFromSummary(jsObject: JsObject): Option[Vector[JsObject]] = {
-    try {
-      val updatedCrates :Option[JsValue] = jsObject.fields.get("just_updated")
+      val updatedCrates :Option[JsValue] = jsObject.fields.get(field)
 
       Some(updatedCrates
         .get

@@ -14,7 +14,7 @@ class JsonParserTests extends FunSuite {
 
   test("getNumCratesFromSummary success") {
     // Act
-    val numCrates   :Option[Int]  = JsonParser.getNumCratesFromSummary(cargoReleaseSnapshot)
+    val numCrates   :Option[Int]  = JsonParser.getNumCratesOrDownloadsFromSummary(cargoReleaseSnapshot, "num_crates")
 
     // Assert
     assert(numCrates.get == 32478)
@@ -22,7 +22,7 @@ class JsonParserTests extends FunSuite {
 
   test("getNumCratesFromSummary throws with wrong input") {
     // Act
-    val numCrates   :Option[Int] = JsonParser.getNumCratesFromSummary(crateSnapshot)
+    val numCrates   :Option[Int] = JsonParser.getNumCratesOrDownloadsFromSummary(crateSnapshot, "num_crates")
 
     // Assert
     assert(numCrates.isEmpty)
@@ -30,7 +30,7 @@ class JsonParserTests extends FunSuite {
 
   test("getNumDownloadsFromSummary success") {
     // Act
-    val numDownloads   :Option[Int] = JsonParser.getNumDownloadsFromSummary(cargoReleaseSnapshot)
+    val numDownloads   :Option[Int] = JsonParser.getNumCratesOrDownloadsFromSummary(cargoReleaseSnapshot, "num_downloads")
 
     // Assert
     assert(numDownloads.get == 1820298166)
@@ -38,7 +38,7 @@ class JsonParserTests extends FunSuite {
 
   test("getNumDownloadsFromSummary throws with wrong input") {
     // Act
-    val numDownloads   :Option[Int] = JsonParser.getNumDownloadsFromSummary(crateSnapshot)
+    val numDownloads   :Option[Int] = JsonParser.getNumCratesOrDownloadsFromSummary(crateSnapshot, "num_downloads")
 
     // Assert
     assert(numDownloads.isEmpty)
@@ -46,21 +46,21 @@ class JsonParserTests extends FunSuite {
 
   test("getNewCratesFromSummary success") {
     // Act
-    val newCrates   :Option[Vector[JsObject]] = JsonParser.getNewCratesFromSummary(cargoReleaseSnapshot)
+    val newCrates   :Option[Vector[JsObject]] = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "new_crates")
 
     assert(newCrates.get.size == 10)
   }
 
   test("getNewCratesFromSummary throws with wrong input") {
     // Act
-    val newCrates   :Option[Vector[JsObject]] = JsonParser.getNewCratesFromSummary(crateSnapshot)
+    val newCrates   :Option[Vector[JsObject]] = JsonParser.getNewOrUpdatedCratesFromSummary(crateSnapshot, "new_crates")
 
     assert(newCrates.isEmpty)
   }
 
   test("getIntFieldFromCrate success") {
     // Arrange (first crate has id "dtd")
-    val firstCrate = JsonParser.getNewCratesFromSummary(cargoReleaseSnapshot).get(0)
+    val firstCrate = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "new_crates").get(0)
 
     // Act
     val downloads: Int = JsonParser.getIntFieldFromCrate(firstCrate, "downloads").get
@@ -85,7 +85,7 @@ class JsonParserTests extends FunSuite {
 
   test("getStringFieldFromCrate success") {
     // Arrange (first crate has id "dtd")
-    val firstCrate = JsonParser.getNewCratesFromSummary(cargoReleaseSnapshot).get(0)
+    val firstCrate = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "new_crates").get(0)
 
     // Act
     val id :Option[String] = JsonParser.getStringFieldFromCrate(firstCrate, "id")
@@ -95,7 +95,7 @@ class JsonParserTests extends FunSuite {
 
   test("getDateFieldFromCrate success") {
     // Arrange
-    val firstCrate = JsonParser.getNewCratesFromSummary(cargoReleaseSnapshot).get(0)
+    val firstCrate = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "new_crates").get(0)
 
     // Act
     val created_at: Option[Date] = JsonParser.getDateFieldFromCrate(firstCrate, "created_at")
@@ -105,7 +105,7 @@ class JsonParserTests extends FunSuite {
 
   test("getDateFieldFromCrate fails with wrong input") {
     // Arrange
-    val firstCrate = JsonParser.getNewCratesFromSummary(cargoReleaseSnapshot).get(0)
+    val firstCrate = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "new_crates").get(0)
 
     // Act
     val created_at: Option[Date] = JsonParser.getDateFieldFromCrate(firstCrate, "id")
@@ -115,7 +115,7 @@ class JsonParserTests extends FunSuite {
 
   test("getUpdatedCratesFromSummary success") {
     // Act
-    val updatedCrates = JsonParser.getUpdatedCratesFromSummary(cargoReleaseSnapshot)
+    val updatedCrates = JsonParser.getNewOrUpdatedCratesFromSummary(cargoReleaseSnapshot, "just_updated")
 
     // Assert
     assert(updatedCrates.isDefined)
@@ -123,7 +123,7 @@ class JsonParserTests extends FunSuite {
 
   test("getUpdatedCratesFromSummary fails with wrong input") {
     // Act
-    val updatedCrates = JsonParser.getUpdatedCratesFromSummary(crateSnapshot)
+    val updatedCrates = JsonParser.getNewOrUpdatedCratesFromSummary(crateSnapshot, "just_updated")
 
     // Assert
     assert(updatedCrates.isEmpty)
