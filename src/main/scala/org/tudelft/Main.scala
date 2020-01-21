@@ -7,7 +7,6 @@ import org.apache.flink.api.common.time.Time
 import org.codefeedr.buffer._
 import org.codefeedr.pipeline.PipelineBuilder
 import org.tudelft.plugins.SQLStage
-import org.tudelft.plugins.SQLStage.SQLStage
 import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 import org.tudelft.plugins.cargo.stages.CargoReleasesStage
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
@@ -18,78 +17,26 @@ import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesSta
 import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
-// Cargo
-/*
-object Main {
-  def main(args: Array[String]): Unit = {
-    new PipelineBuilder()
-      .append(new CargoReleasesStage())
-      .append (new CrateDownloadsOutput)
-      .build()
-      .startMock()
-  }
-}
-
-class CrateDownloadsOutput extends OutputStage[CrateRelease] {
-  override def main(source: DataStream[CrateRelease]): Unit = {
-    source
-      .map { item => (item.crate.name,
-        " " + item.crate.downloads,
-        " Nr. of versions: " + item.crate.versions.size) }
-      .print()
-  }
-}
-*/
-
-
-// ClearlyDefined
-/*
-object Main {
-  def main(args: Array[String]): Unit = {
-
-    new PipelineBuilder()
-      .append(new MavenReleasesStage())
-      .append(new MavenReleasesExtStage())
-//      .append(SQLStage.createSQLStage[MavenReleaseExt]("Select * from Maven"))
-      .append(new JsonExitStage[MavenReleaseExt]())
-//      .append (new CrateDownloadsOutput)
-      .build()
-      .startMock()
-  }
-}
-
-class CrateDownloadsOutput extends OutputStage[StringWrapper] {
-  override def main(source: DataStream[StringWrapper]): Unit = {
-    source.map(x => println(x.s))
-  }
-}
-*/
 
 // Maven
 object Main {
   def main(args: Array[String]): Unit = {
 
-    val query: String = "Select tool, title from ClearlyDefinedDescribedScore, Maven"
-
-    val cargoQuery: String =
+    val query: String =
       """
-        | SELECt name
-        | FROM CargoCrate
+        | SELECT *
+        | FROM Cargo
         |""".stripMargin
 
-    val releaseSource = new MavenReleasesStage()
-    val enrichReleases = new MavenReleasesExtStage()
-//    val sqlStage2 = SQLStage.createSQLStage2[ClearlyDefinedRelease, MavenReleaseExt](query)
-//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt]("Select title from Maven")
+//    val releaseSource = new MavenReleasesStage()
+//    val jsonStage = new JsonExitStage[MavenRelease]
+//    val enrichReleases = new MavenReleasesExtStage()
+//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 
     //val cdSource = new ClearlyDefinedReleasesStage()
     //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = new SQLStage[CrateRelease](cargoQuery)
-
-//    val npmReleaseSource = new NpmReleasesStage()
-//    val npmExtendedReleases = new NpmReleasesExtStage()
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -102,13 +49,11 @@ object Main {
       .setBufferProperty(KafkaBuffer.COMPRESSION_TYPE, "gzip")
       .setBufferProperty(KafkaBuffer.BROKER, "localhost:9092")
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
-      .setBufferProperty("message.max.bytes", "5000000") // max message size is 5mb
-      .setBufferProperty("max.request.size", "5000000") // max message size is 5 mb
-      //      .edge(cdSource, cdSQLStage)
-      .edge(cargoSource, cargoSqlStage)
-      //      .edge(releaseSource, sqlStage)
+      .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
+      .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
+//      .edge(cargoSource, cargoSqlStage)
       .build()
-      .startLocal
+      .start(args)
   }
 }
 

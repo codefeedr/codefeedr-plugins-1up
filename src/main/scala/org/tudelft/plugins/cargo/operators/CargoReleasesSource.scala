@@ -1,22 +1,15 @@
 package org.tudelft.plugins.cargo.operators
 
-import java.util.Date
-
-import org.apache.flink.api.common.accumulators.LongCounter
-import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
-import org.apache.flink.configuration.Configuration
-import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
-import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
-import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
+import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
+import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
 import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 import scalaj.http.Http
 import spray.json._
 
-import scala.collection.JavaConverters._
-
 case class CargoSourceConfig(pollingInterval: Int = 10000,
                              maxNumberOfRuns: Int = -1)
+    extends PluginSourceConfig
 
 /**
  * Important to note in retrieving data from the stream of crates in Cargo is the following:
@@ -27,36 +20,10 @@ case class CargoSourceConfig(pollingInterval: Int = 10000,
  * @param config the cargo source configuration, has pollingInterval and maxNumberOfRuns fields
  */
 class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
-  extends RichSourceFunction[CrateRelease]
-    with CheckpointedFunction {
+  extends PluginReleasesSource[CrateRelease](config) {
 
   /** url for the stream of updated and new crates */
   val url = "https://crates.io/api/v1/summary"
-
-  /** Accumulator for the amount of processed releases. */
-  val releasesProcessed = new LongCounter()
-
-  // Some track variables of this source
-  private var isRunning = false
-  private var runsLeft = 0
-  private var lastItem: Option[CrateRelease] = None
-  private var lastPollTimestamp = System.currentTimeMillis();
-  @transient
-  private var checkpointedState: ListState[CrateRelease] = _
-
-  def getCheckpointedstate: ListState[CrateRelease] = checkpointedState
-  def getIsRunning        : Boolean                 = isRunning
-
-  /** Opens this source. */
-  override def open(parameters: Configuration): Unit = {
-    isRunning = true
-    runsLeft = config.maxNumberOfRuns
-  }
-
-  /** Closes this source. */
-  override def cancel(): Unit = {
-    isRunning = false
-  }
 
   /**
    * Main fetcher of new items in the Crates.io package source
@@ -70,42 +37,22 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
       lock.synchronized { // Synchronize to the checkpoint lock.
         try {
           // Polls the RSS feed
-          val rssAsString = getRSSAsString.get
+          val rssAsString:      String = getRSSAsString.get
           // Parses the received rss items
-          val items: Seq[CrateRelease] = parseRSSString(rssAsString)
-
-          // Decrease the amount of runs left.
-          decreaseRunsLeft()
-
+          val items:            Seq[CrateRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
-          val validSortedItems = sortAndDropDuplicates(items)
+          val validSortedItems: Seq[CrateRelease] = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
+          // Add a timestamp to the item
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, x.crate.updated_at.getTime))
-          releasesProcessed.add(validSortedItems.size)
-          if (validSortedItems.nonEmpty) {
-            lastItem = Some(validSortedItems.last)
-          }
-
-          println(items.size)
-          println(validSortedItems.size)
-          print("Poll interval: " + (System.currentTimeMillis() - lastPollTimestamp) + "\n")
-          lastPollTimestamp = System.currentTimeMillis()
-
-          // Wait until the next poll
-          waitPollingInterval()
+          // Call the parent run
+          super.runPlugin(ctx, validSortedItems)
         } catch {
           case _: Throwable =>
         }
       }
-    }
-  }
-
-  /**
-   * Reduces runsLeft by 1
-   */
-  def decreaseRunsLeft(): Unit = {
-    if (runsLeft > 0) {
-      runsLeft -= 1
     }
   }
 
@@ -124,15 +71,6 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
           true
       })
       .sortWith((x: CrateRelease, y: CrateRelease) => x.crate.updated_at.before(y.crate.updated_at))
-  }
-
-  /**
-   * Wait a certain amount of times the polling interval
-   *
-   * @param times Times the polling interval should be waited
-   */
-  def waitPollingInterval(times: Int = 1): Unit = {
-    Thread.sleep(times * config.pollingInterval)
   }
 
   /**
@@ -214,23 +152,4 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
         Nil
     }
   }
-
-  override def snapshotState(context: FunctionSnapshotContext): Unit = {
-    if (lastItem.isDefined) {
-      checkpointedState.clear()
-      checkpointedState.add(lastItem.get)
-    }
-  }
-
-  override def initializeState(context: FunctionInitializationContext): Unit = {
-    val descriptor = new ListStateDescriptor[CrateRelease]("last_element", classOf[CrateRelease])
-
-    checkpointedState = context.getOperatorStateStore.getListState(descriptor)
-
-    if(context.isRestored) {
-      checkpointedState.get().asScala.foreach { x => lastItem = Some(x)}
-    }
-  }
-
-
 }

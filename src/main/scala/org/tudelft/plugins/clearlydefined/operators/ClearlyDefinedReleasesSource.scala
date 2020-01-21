@@ -1,19 +1,15 @@
 package org.tudelft.plugins.clearlydefined.operators
 
 import java.text.SimpleDateFormat
-import org.apache.flink.api.common.accumulators.LongCounter
-import org.apache.flink.api.common.state.{ListState, ListStateDescriptor}
-import org.apache.flink.configuration.Configuration
-import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
-import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
-import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
+
+import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import scalaj.http.Http
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.read
-import scala.collection.JavaConverters._
+import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
 
 /**
  * The configuration class for the ClearlyDefinedReleasesSource class
@@ -22,6 +18,7 @@ import scala.collection.JavaConverters._
  */
 case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
                                       maxNumberOfRuns: Int = -1)
+  extends PluginSourceConfig
 
 /**
  * Important to note in retrieving data from the stream of projects in ClearlyDefined is the following:
@@ -31,40 +28,14 @@ case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
  * @param config the ClearlyDefined source configuration, has pollingInterval and maxNumberOfRuns fields
  */
 class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
-  extends RichSourceFunction[ClearlyDefinedRelease]
-    with CheckpointedFunction {
+  extends PluginReleasesSource[ClearlyDefinedRelease](config) {
 
   /** url for the stream of new CD projects */
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
-
   /** The first x number of packages to process with each poll */
   val packageAmount = 10
-
+  /** Date format used in ClearlyDefined */
   val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
-
-  /** Accumulator for the amount of processed releases. */
-  val releasesProcessed = new LongCounter()
-
-  // Some track variables of this source
-  private var isRunning = false
-  private var runsLeft = 0
-  private var lastItem: Option[ClearlyDefinedRelease] = None
-  @transient
-  private var checkpointedState: ListState[ClearlyDefinedRelease] = _
-
-  def getCheckpointedstate: ListState[ClearlyDefinedRelease] = checkpointedState
-  def getIsRunning        : Boolean                          = isRunning
-
-  /** Opens this source. */
-  override def open(parameters: Configuration): Unit = {
-    isRunning = true
-    runsLeft = config.maxNumberOfRuns
-  }
-
-  /** Closes this source. */
-  override def cancel(): Unit = {
-    isRunning = false
-  }
 
   /**
    * Main fetcher of new items in the ClearlyDefined package source
@@ -78,37 +49,22 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       lock.synchronized { // Synchronize to the checkpoint lock.
         try {
           // Polls the RSS feed
-          val rssAsString = getRSSAsString.get
+          val rssAsString:      String = getRSSAsString.get
           // Parses the received rss items
-          val items: Seq[ClearlyDefinedRelease] = parseRSSString(rssAsString)
-
-          // Decrease the amount of runs left.
-          decreaseRunsLeft()
-
+          val items:            Seq[ClearlyDefinedRelease] = parseRSSString(rssAsString)
           // Collect right items and update last item
-          val validSortedItems = sortAndDropDuplicates(items)
+          val validSortedItems: Seq[ClearlyDefinedRelease] = sortAndDropDuplicates(items)
+          // Decrease runs left
+          super.decreaseRunsLeft()
+          // Add a timestamp to the item
           validSortedItems.foreach(x =>
             ctx.collectWithTimestamp(x, dateFormat.parse(x._meta.updated).getTime))
-          releasesProcessed.add(validSortedItems.size)
-          if (validSortedItems.nonEmpty) {
-            lastItem = Some(validSortedItems.last)
-          }
-
-          // Wait until the next poll
-          waitPollingInterval()
+          // Call run in parent
+          super.runPlugin(ctx, validSortedItems)
         } catch {
           case _: Throwable =>
         }
       }
-    }
-  }
-
-  /**
-   * Reduces runsLeft by 1
-   */
-  def decreaseRunsLeft(): Unit = {
-    if (runsLeft > 0) {
-      runsLeft -= 1
     }
   }
 
@@ -128,15 +84,6 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           true
       })
       .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => dateFormat.parse(x._meta.updated).before(dateFormat.parse(y._meta.updated)))
-  }
-
-  /**
-   * Wait a certain amount of times the polling interval
-   *
-   * @param times Times the polling interval should be waited
-   */
-  def waitPollingInterval(times: Int = 1): Unit = {
-    Thread.sleep(times * config.pollingInterval)
   }
 
   /**
@@ -182,23 +129,6 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
       case _: Throwable =>
         printf("Failed parsing the RSSString in the ClearlyDefinedReleasesSource.scala file")
         Nil
-    }
-  }
-
-  override def snapshotState(context: FunctionSnapshotContext): Unit = {
-    if (lastItem.isDefined) {
-      checkpointedState.clear()
-      checkpointedState.add(lastItem.get)
-    }
-  }
-
-  override def initializeState(context: FunctionInitializationContext): Unit = {
-    val descriptor = new ListStateDescriptor[ClearlyDefinedRelease]("last_element", classOf[ClearlyDefinedRelease])
-
-    checkpointedState = context.getOperatorStateStore.getListState(descriptor)
-
-    if(context.isRestored) {
-      checkpointedState.get().asScala.foreach { x => lastItem = Some(x)}
     }
   }
 }

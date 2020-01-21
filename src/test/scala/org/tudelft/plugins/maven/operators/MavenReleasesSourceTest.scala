@@ -24,7 +24,7 @@ class MavenReleasesSourceTest extends FunSuite{
     val config = MavenSourceConfig()
 
     assert(config.maxNumberOfRuns == -1)
-    assert(config.pollingInterval == 1000)
+    assert(config.pollingInterval == 60000)
   }
 
 }
