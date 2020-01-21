@@ -17,52 +17,6 @@ import org.tudelft.plugins.maven.stages.{MavenReleasesExtStage, MavenReleasesSta
 import org.tudelft.plugins.npm.protocol.Protocol.NpmReleaseExt
 import org.tudelft.plugins.npm.stages.{NpmReleasesExtStage, NpmReleasesStage}
 
-// Cargo
-/*
-object Main {
-  def main(args: Array[String]): Unit = {
-    new PipelineBuilder()
-      .append(new CargoReleasesStage())
-      .append (new CrateDownloadsOutput)
-      .build()
-      .startMock()
-  }
-}
-
-class CrateDownloadsOutput extends OutputStage[CrateRelease] {
-  override def main(source: DataStream[CrateRelease]): Unit = {
-    source
-      .map { item => (item.crate.name,
-        " " + item.crate.downloads,
-        " Nr. of versions: " + item.crate.versions.size) }
-      .print()
-  }
-}
-*/
-
-
-// ClearlyDefined
-/*
-object Main {
-  def main(args: Array[String]): Unit = {
-
-    new PipelineBuilder()
-      .append(new MavenReleasesStage())
-      .append(new MavenReleasesExtStage())
-//      .append(SQLStage.createSQLStage[MavenReleaseExt]("Select * from Maven"))
-      .append(new JsonExitStage[MavenReleaseExt]())
-//      .append (new CrateDownloadsOutput)
-      .build()
-      .startMock()
-  }
-}
-
-class CrateDownloadsOutput extends OutputStage[StringWrapper] {
-  override def main(source: DataStream[StringWrapper]): Unit = {
-    source.map(x => println(x.s))
-  }
-}
-*/
 
 // Maven
 object Main {
@@ -71,7 +25,7 @@ object Main {
     val query: String =
       """
         | SELECT *
-        | FROM CargoCrate
+        | FROM Cargo
         |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
@@ -83,20 +37,6 @@ object Main {
     //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
 
     val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = SQLStage.createSQLStage[CrateRelease](query)
-
-//    val npmReleaseSource = new NpmReleasesStage()
-//    val npmExtendedReleases = new NpmReleasesExtStage()
-////    val npmSQlstage0 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM Npm")
-//    val npmSQlstage1 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmProject")
-//    val npmSQlstage2 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmDependency")
-//    val npmSQlstage3 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmAuthor")
-//    val npmSQlstage4 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmContributors")
-//    val npmSQlstage5 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmMaintainers")
-//    val npmSQlstage6 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmRepository")
-//    val npmSQlstage7 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmBug")
-//    val npmSQlstage8 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmTime")
-//    val npmSQlstage9 = SQLStage.createSQLStage[NpmReleaseExt]("SELECT * FROM NpmKeywords")
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -111,9 +51,9 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
       .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
-      .edge(cargoSource, cargoSqlStage)
+//      .edge(cargoSource, cargoSqlStage)
       .build()
-      .startMock()
+      .start(args)
   }
 }
 

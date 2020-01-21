@@ -148,7 +148,7 @@ object PipelineCommand extends Parser with Command {
       case x if x.startsWith("SQL") => {
         val query = x.substring(x.indexOf("(") + 1, x.indexOf(")"))
         //TODO MavenRelease is now hardcoded, but this should be somehow inferred
-        Some(builder.append(SQLStage.createSQLStage[MavenRelease](query)))
+        None
       }
       case x if x.startsWith("Json") => buildJsonStage(x.substring(x.indexOf("[") + 1, x.indexOf("]")), builder)
 
