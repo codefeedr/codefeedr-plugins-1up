@@ -75,5 +75,4 @@ class AllfieldTest extends FunSuite {
     assert(result.time == TimeObject("2018-09-09T13:24:15.691Z",Some("2020-01-08T22:19:07.288Z")))
   }
 
-
 }

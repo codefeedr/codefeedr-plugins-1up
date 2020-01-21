@@ -5,11 +5,11 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala.StreamTableEnvironment
 import org.apache.flink.types.Row
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.tudelft.plugins.npm.protocol.Protocol.{BugPojo, NpmReleaseExtPojo}
 import org.tudelft.plugins.npm.protocol.ProtocolTest
 
-class NpmSQLServiceTest extends FunSuite {
+class NpmSQLServiceTest extends AnyFunSuite {
 
   val env = StreamExecutionEnvironment.getExecutionEnvironment
   val settings = EnvironmentSettings.newInstance()

@@ -78,7 +78,7 @@ class ClearlyDefinedReleasesSourceTests extends FunSuite{
   test("waitPollingInterval waits for x+ seoncds") {
     // Assert
     val withSeconds = 1000
-    val newCdrs = new ClearlyDefinedReleasesSource(ClearlyDefinedSourceConfig(withSeconds, -1))
+    val newCdrs = new ClearlyDefinedReleasesSource(ClearlyDefinedSourceConfig(withSeconds, -1, 4))
     val startTime = System.currentTimeMillis()
 
     // Act

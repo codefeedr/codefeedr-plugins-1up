@@ -17,7 +17,8 @@ import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
  * @param maxNumberOfRuns if positive, runs definitely up till x. If negative, runs indefinitely.
  */
 case class ClearlyDefinedSourceConfig(pollingInterval: Int = 30000,
-                                      maxNumberOfRuns: Int = -1)
+                                      maxNumberOfRuns: Int = -1,
+                                      timeout : Int = 32)
   extends PluginSourceConfig
 
 /**

@@ -8,7 +8,8 @@ import scalaj.http.Http
 import spray.json._
 
 case class CargoSourceConfig(pollingInterval: Int = 10000,
-                             maxNumberOfRuns: Int = -1)
+                             maxNumberOfRuns: Int = -1,
+                             timeout : Int = 32)
     extends PluginSourceConfig
 
 /**

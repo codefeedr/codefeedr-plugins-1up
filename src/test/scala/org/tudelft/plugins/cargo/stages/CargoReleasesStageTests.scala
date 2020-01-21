@@ -11,7 +11,7 @@ import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
 class CargoReleasesStageTests extends FunSuite {
 
   test("CargoReleasesIntegrationTest") {
-    val source = new CargoReleasesStage(sourceConfig = CargoSourceConfig(1000, 4))
+    val source = new CargoReleasesStage(sourceConfig = CargoSourceConfig(1000, 4, 4))
     val sink = new LimitingSinkStage(4)
 
     val pipeline = new PipelineBuilder()
