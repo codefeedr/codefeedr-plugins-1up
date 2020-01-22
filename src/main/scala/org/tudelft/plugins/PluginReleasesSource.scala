@@ -7,7 +7,6 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.runtime.state.{FunctionInitializationContext, FunctionSnapshotContext}
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction
 import org.apache.flink.streaming.api.functions.source.{RichSourceFunction, SourceFunction}
-import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

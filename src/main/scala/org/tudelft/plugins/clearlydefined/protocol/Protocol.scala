@@ -16,6 +16,10 @@ object Protocol {
     var scores: CDScoresPojo = _
   }
 
+  class ClearlyDefinedReleasePojoExt extends ClearlyDefinedReleasePojo {
+    var name: String = _
+  }
+
   object ClearlyDefinedReleasePojo {
     def fromClearlyDefinedRelease(clearlyDefinedRelease: ClearlyDefinedRelease): ClearlyDefinedReleasePojo = {
       val pojo = new ClearlyDefinedReleasePojo
@@ -52,6 +56,10 @@ object Protocol {
     var score: CDDescribedScorePojo = _
   }
 
+  class CDDescribedPojoExt extends CDDescribedPojo {
+    var name: String = _
+  }
+
   object CDDescribedPojo {
     def fromCDDescribed(cdDescribed: CDDescribed): CDDescribedPojo = {
       val pojo = new CDDescribedPojo
@@ -84,6 +92,10 @@ object Protocol {
     var download: String = _
   }
 
+  class CDDescribedUrlsPojoExt extends CDDescribedUrlsPojo {
+    var name: String = _
+  }
+
   object CDDescribedUrlsPojo {
     def fromCDDescribedUrls(cdDescribedUrls: CDDescribedUrls): CDDescribedUrlsPojo = {
       val pojo = new CDDescribedUrlsPojo
@@ -104,6 +116,10 @@ object Protocol {
     var sha256: String = _
   }
 
+  class CDDescribedHashesPojoExt extends CDDescribedHashesPojo {
+    var name: String = _
+  }
+
   object CDDescribedHashesPojo {
     def fromCDDescribedHashes(cdDescribedHashes: CDDescribedHashes): CDDescribedHashesPojo = {
       val pojo = new CDDescribedHashesPojo
@@ -122,6 +138,10 @@ object Protocol {
     var total: Int = _
     var date: Int = _
     var source: Int = _
+  }
+
+  class CDDescribedToolScorePojoExt extends CDDescribedToolScorePojo {
+    var name: String = _
   }
 
   object CDDescribedToolScorePojo {
@@ -150,6 +170,10 @@ object Protocol {
     var url: String = _
   }
 
+  class CDDescribedSourceLocationPojoExt extends CDDescribedSourceLocationPojo {
+    var packageName: String = _
+  }
+
   object CDDescribedSourceLocationPojo {
     def fromCDDescribedSourceLocation(cdDescribedSourceLocation: CDDescribedSourceLocation): CDDescribedSourceLocationPojo = {
       val pojo = new CDDescribedSourceLocationPojo
@@ -173,6 +197,10 @@ object Protocol {
     var source: Int = _
   }
 
+  class CDDescribedScorePojoExt extends CDDescribedScorePojo {
+    var name: String = _
+  }
+
   object CDDescribedScorePojo {
     def fromCDDescribedScore(cdDescribedScore: CDDescribedScore): CDDescribedScorePojo = {
       val pojo = new CDDescribedScorePojo
@@ -193,6 +221,10 @@ object Protocol {
     var toolScore: CDLicensedToolScorePojo = _
     var facets: CDLicensedFacetsPojo = _
     var score: CDLicensedScorePojo = _
+  }
+
+  class CDLicensedPojoExt extends CDLicensedPojo {
+    var name: String = _
   }
 
   object CDLicensedPojo {
@@ -224,6 +256,10 @@ object Protocol {
     var texts: Int = _
   }
 
+  class CDLicensedToolScorePojoExt extends CDLicensedToolScorePojo {
+    var name: String = _
+  }
+
   object CDLicensedToolScorePojo {
     def fromCDLicensedToolScore(cdLicensedToolScore: CDLicensedToolScore): CDLicensedToolScorePojo = {
       val pojo = new CDLicensedToolScorePojo
@@ -243,6 +279,10 @@ object Protocol {
     var core: CDLFCorePojo = _
   }
 
+  class CDLicensedFacetsPojoExt extends CDLicensedFacetsPojo {
+    var name: String = _
+  }
+
   object CDLicensedFacetsPojo {
     def fromCDLicensedFacets(cdLicensedFacets: CDLicensedFacets): CDLicensedFacetsPojo = {
       val pojo = new CDLicensedFacetsPojo
@@ -259,6 +299,10 @@ object Protocol {
     var attribution: CDLFCoreAttributionPojo = _
     var discovered: CDLFCoreDiscoveredPojo = _
     var files: Int = _
+  }
+
+  class CDLFCorePojoExt extends CDLFCorePojo {
+    var name: String = _
   }
 
   object CDLFCorePojo {
@@ -335,6 +379,10 @@ object Protocol {
     var texts: Int = _
   }
 
+  class CDLicensedScorePojoExt extends CDLicensedScorePojo {
+    var name: String = _
+  }
+
   object CDLicensedScorePojo {
     def fromCDLicensedScore(cdLicensedScore: CDLicensedScore): CDLicensedScorePojo = {
       val pojo = new CDLicensedScorePojo
@@ -382,6 +430,10 @@ object Protocol {
     var updated: String = _
   }
 
+  class CD_metaPojoExt extends CD_metaPojo {
+    var name: String = _
+  }
+
   object CD_metaPojo {
     def fromCD_meta(cd_meta: CD_meta): CD_metaPojo = {
       val pojo = new CD_metaPojo
@@ -397,6 +449,10 @@ object Protocol {
   class CDScoresPojo extends Serializable {
     var effective: Int = _
     var tool: Int = _
+  }
+
+  class CDScoresPojoExt extends CDScoresPojo {
+    var name: String = _
   }
 
   object CDScoresPojo {

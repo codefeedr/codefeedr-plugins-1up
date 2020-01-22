@@ -22,8 +22,6 @@ val codefeedrDependencies = Seq(
 )
 
 val sqlDependencies = Seq(
-  "org.apache.flink" %% "flink-table-api-scala-bridge" % flinkVersion,
-  "org.apache.flink" %% "flink-table-api-java-bridge" % flinkVersion,
   "org.apache.flink" %% "flink-table-planner" % flinkVersion,
   "org.scala-lang" % "scala-reflect" % "2.12.8"
 )
