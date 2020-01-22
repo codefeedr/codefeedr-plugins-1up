@@ -25,7 +25,7 @@ object Main {
     val query: String =
       """
         | SELECT *
-        | FROM Cargo
+        | FROM CDLFCore
         |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
@@ -33,10 +33,11 @@ object Main {
 //    val enrichReleases = new MavenReleasesExtStage()
 //    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 
-    //val cdSource = new ClearlyDefinedReleasesStage()
-    //val cdSQLStage = SQLStage.createSQLStage[ClearlyDefinedRelease](query)
+    val cdSource = new ClearlyDefinedReleasesStage()
+    val cdSQLStage = new SQLStage[ClearlyDefinedRelease](query)
 
-    val cargoSource = new CargoReleasesStage()
+    //val cargoSource = new CargoReleasesStage()
+   // val cargoSqlStage = new SQLStage[CrateRelease](query)
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -51,9 +52,9 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
       .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
-//      .edge(cargoSource, cargoSqlStage)
+      .edge(cdSource, cdSQLStage)
       .build()
-      .start(args)
+      .startMock
   }
 }
 

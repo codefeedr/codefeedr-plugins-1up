@@ -2,7 +2,7 @@ package org.tudelft.plugins
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.{EnvironmentSettings, Table}
+import org.apache.flink.table.api.Table
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.scala.DataStream

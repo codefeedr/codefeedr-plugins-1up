@@ -22,83 +22,86 @@ class ClearlyDefinedSQLServiceTest extends FunSuite {
   implicit val typeInfo = TypeInformation.of(classOf[ClearlyDefinedReleasePojo])
   val stream = env.fromElements(pojo)
 
+  //  added to fix testing
+  val streamExt = ClearlyDefinedSQLService.getExtendedStream(stream)
+
   test("registerDescribedTableTest"){
-    ClearlyDefinedSQLService.registerDescribedTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedTableName))
   }
 
   test("registerDescribedUrlsTableTest"){
-    ClearlyDefinedSQLService.registerDescribedUrlsTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedUrlsTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedUrlsTableName))
   }
 
   test("registerDescribedHashesTableTest"){
-    ClearlyDefinedSQLService.registerDescribedHashesTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedHashesTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedHashesTableName))
   }
 
   test("registerDescribedToolScoreTableTest"){
-    ClearlyDefinedSQLService.registerDescribedToolScoreTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedToolScoreTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedToolScoreTableName))
   }
 
   test("registerDescribedSourceLocationTableTest"){
-    ClearlyDefinedSQLService.registerDescribedSourceLocationTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedSourceLocationTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedSourceLocationTableName))
   }
 
   test("registerDescribedScoreTableTest"){
-    ClearlyDefinedSQLService.registerDescribedScoreTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerDescribedScoreTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.describedScoreTableName))
   }
 
   test("registerLicensedTableTest"){
-    ClearlyDefinedSQLService.registerLicensedTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedTableName))
   }
 
   test("registerLicensedToolScoreTableTest"){
-    ClearlyDefinedSQLService.registerLicensedToolScoreTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedToolScoreTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedToolScoreTableName))
   }
 
   test("registerLicensedFacetsTableTest"){
-    ClearlyDefinedSQLService.registerLicensedFacetsTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedFacetsTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedFacetsTableName))
   }
 
   test("registerLicensedFacetsCDLFCoreTableTest"){
-    ClearlyDefinedSQLService.registerLicensedFacetsCDLFCoreTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedFacetsCDLFCoreTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedFacetsCoreTableName))
   }
 
   test("registerLicensedCDLFCoreAttributionTableTest"){
-    ClearlyDefinedSQLService.registerLicensedCDLFCoreAttributionTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedCDLFCoreAttributionTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedFacetsCoreAttributionTableName))
   }
 
   test("registerLicensedCDLFCoreDiscoveredTableTest"){
-    ClearlyDefinedSQLService.registerLicensedCDLFCoreDiscoveredTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedCDLFCoreDiscoveredTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedFacetsCoreDiscoveredTableName))
   }
 
   test("registerLicensedScoreTableTest"){
-    ClearlyDefinedSQLService.registerLicensedScoreTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerLicensedScoreTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.licensedScoreTableName))
   }
 
   test("registerCoordinatesTableTest"){
-    ClearlyDefinedSQLService.registerCoordinatesTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerCoordinatesTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.coordinatesTableName))
   }
 
   test("registerMetaTableTest"){
-    ClearlyDefinedSQLService.registerMetaTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerMetaTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.metaTableName))
   }
 
   test("registerScoresTableTest"){
-    ClearlyDefinedSQLService.registerScoresTable(stream, tEnv)
+    ClearlyDefinedSQLService.registerScoresTable(streamExt, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.scoresTableName))
   }
 
