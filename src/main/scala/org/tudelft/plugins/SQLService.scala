@@ -43,7 +43,7 @@ object SQLService {
     * Perform a given query in a given StreamTableEnvironment
     *
     * @param query The query to be performed
-    * @param tEnv The StreamTableEnvironment in which to perform the query (tEnv holds all the registered tables)
+    * @param tEnv  The StreamTableEnvironment in which to perform the query (tEnv holds all the registered tables)
     */
   def performQuery(query: String, tEnv: StreamTableEnvironment): Unit = {
     //Perform query
@@ -71,7 +71,7 @@ object SQLService {
       case x if typeOf[T] <:< typeOf[MavenReleasePojo] => tEnv.registerDataStream("Maven", stream)
       case x if typeOf[T] <:< typeOf[MavenReleaseExtPojo] => tEnv.registerDataStream("Maven", stream)
 
-      // Maven cases
+      // MavenRelease case
       case x if typeOf[T] <:< typeOf[MavenRelease] => {
         val in = x.asInstanceOf[DataStream[MavenRelease]]
         val pojos = in.map(x => {
@@ -81,6 +81,7 @@ object SQLService {
         tEnv.registerDataStream("Maven", pojos)
       }
 
+      // MavenReleaseExt case
       case x if typeOf[T] <:< typeOf[MavenReleaseExt] => {
         val in = x.asInstanceOf[DataStream[MavenReleaseExt]]
         val pojos: DataStream[MavenReleaseExtPojo] = in.map(x => {

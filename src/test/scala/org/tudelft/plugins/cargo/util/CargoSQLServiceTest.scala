@@ -13,13 +13,8 @@ import org.tudelft.plugins.cargo.protocol.ProtocolTests
 
 class CargoSQLServiceTest extends FunSuite with BeforeAndAfter {
 
-
   //Get the required environments
   val env = StreamExecutionEnvironment.getExecutionEnvironment
-  val settings = EnvironmentSettings.newInstance()
-    .useOldPlanner()
-    .inStreamingMode()
-    .build()
 
   val tEnv = StreamTableEnvironment.create(env)
 
