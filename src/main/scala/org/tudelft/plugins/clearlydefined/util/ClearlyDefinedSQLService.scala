@@ -8,6 +8,20 @@ import scala.reflect.runtime.universe._
 
 object ClearlyDefinedSQLService {
 
+  def getExtendedStream(releaseStream : DataStream[ClearlyDefinedReleasePojo]) = {
+    implicit val typeInfo = TypeInformation.of(classOf[ClearlyDefinedReleasePojoExt])
+    val extendedReleasesStream = releaseStream.map(x => new ClearlyDefinedReleasePojoExt() {
+    described = x.described
+    licensed = x.licensed
+    coordinates = x.coordinates
+    _meta = x._meta
+    scores = x.scores
+    name = x.coordinates.name
+    })
+    extendedReleasesStream
+  }
+
+
   val rootTableName: String = "ClearlyDefined"
 
   val describedTableName: String = "ClearlyDefinedDescribed"
@@ -33,14 +47,7 @@ object ClearlyDefinedSQLService {
     case _ if typeOf[T] <:< typeOf[ClearlyDefinedReleasePojo] => {
       implicit val typeInfo = TypeInformation.of(classOf[ClearlyDefinedReleasePojoExt])
       val releasesStream = stream.asInstanceOf[DataStream[ClearlyDefinedReleasePojo]]
-      val releasesStreamExt = releasesStream.map(x => new ClearlyDefinedReleasePojoExt() {
-        described = x.described
-        licensed = x.licensed
-        coordinates = x.coordinates
-        _meta = x._meta
-        scores = x.scores
-        name = x.coordinates.name
-      })
+      val releasesStreamExt = getExtendedStream(releasesStream)
       tEnv.registerDataStream(rootTableName, releasesStreamExt)
 
       //Register all other tables
