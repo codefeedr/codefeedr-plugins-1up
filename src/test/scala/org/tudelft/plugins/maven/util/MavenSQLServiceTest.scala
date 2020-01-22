@@ -4,20 +4,15 @@ import java.util.Date
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala.StreamTableEnvironment
 import org.apache.flink.types.Row
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.tudelft.plugins.maven.protocol.Protocol.{Guid, MavenReleaseExt, MavenReleaseExtPojo, OrganizationPojo}
 import org.tudelft.plugins.maven.protocol.ProtocolTest
 
-class MavenSQLServiceTest extends FunSuite{
+class MavenSQLServiceTest extends AnyFunSuite {
   //Get the required environments
   val env = StreamExecutionEnvironment.getExecutionEnvironment
-  val settings = EnvironmentSettings.newInstance()
-    .useOldPlanner()
-    .inStreamingMode()
-    .build()
 
   val tEnv = StreamTableEnvironment.create(env)
 

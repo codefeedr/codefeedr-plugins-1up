@@ -12,10 +12,6 @@ import org.tudelft.plugins.npm.protocol.ProtocolTest
 class NpmSQLServiceTest extends AnyFunSuite {
 
   val env = StreamExecutionEnvironment.getExecutionEnvironment
-  val settings = EnvironmentSettings.newInstance()
-    .useOldPlanner()
-    .inStreamingMode()
-    .build()
 
   val tEnv = StreamTableEnvironment.create(env)
 
