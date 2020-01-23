@@ -149,6 +149,10 @@ object Protocol {
     }
   }
 
+  class MavenProjectPojoExt extends MavenProjectPojo {
+    var title : String = _
+  }
+
   class DependencyPojo extends Serializable {
     var groupId: String = _
     var artifactId: String = _
