@@ -28,14 +28,6 @@ class CargoReleasesSourceTests extends FunSuite with BeforeAndAfter {
     assert(shtolaCrate.get.startsWith("{\"crate\":{\"id\":\"shtola-markdown\",\"name\":\"shtola-markdown\",\"updated_at\":\""))
   }
 
-  test("parseRSSString /api/v1/summary crate object success") {
-    // Parse the RSS string
-    val asListOfCrates: Seq[CrateRelease] = crs.parseRSSString(crs.getRSSAsString.get)
-
-    // Assert Seq type with Option[CrateRelease] content
-    assert(asListOfCrates(0).isInstanceOf[CrateRelease])
-  }
-
   test("snapshotState no lastItem") {
     // Arrange
     val ctx = new FunctionSnapshotContext {
