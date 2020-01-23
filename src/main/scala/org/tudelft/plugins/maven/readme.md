@@ -123,10 +123,4 @@ The Maven plugin for CodeFeedr is keeping track of the following data:
 |version | Option[String]|
 |`type` | Option[String]|
 |scope | Option[String]|
-|optional | Option[Boolean]|
-
-TODO
-====
-- [ ] add the PK, FK from the registerTables method 
-- [ ] create image for table overview
-- [ ] review this whole document         
+|optional | Option[Boolean]|    

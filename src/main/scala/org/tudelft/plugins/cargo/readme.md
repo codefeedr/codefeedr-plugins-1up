@@ -133,10 +133,3 @@ The Cargo plugin for CodeFeedr is keeping track of the following data:
 |description| String||
 |created_at| String||
 |crates_cnt| Int||
-
-TODO
-====
-- [ ] review comments from table **Crate** & update where necessary
-- [ ] review this whole document
-- [ ] implement parsing badges field from table **Crate**
-- [ ] create image for table overview

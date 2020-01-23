@@ -96,9 +96,3 @@ The NPM plugin for CodeFeedr is keeping track of the following data:
 |:-----|:----|
 |created  | String|
 |modified | Option[String]|
-
-TODO
-====
-- [ ] add the PK, FK from the registerTables method 
-- [ ] create image for table overview
-- [ ] review this whole document

@@ -172,9 +172,3 @@ The Clearly Defined plugin for CodeFeedr is keeping track of the following data:
 |:-----|:----|
 |effective| Int|
 |tool| Int|
-
-TODO
-====
-- [ ] add the PK, FK from the registerTables method 
-- [ ] create image for table overview
-- [ ] review this whole document
