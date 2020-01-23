@@ -39,8 +39,24 @@ object MavenSQLService {
   implicit val projectTypeInfo = TypeInformation.of(classOf[MavenProjectPojo])
 
   def registerProjectTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
-    val projectStream: DataStream[MavenProjectPojo] = stream.map(x => x.project)
-    tEnv.registerDataStream(projectTableName, projectStream)
+    implicit val typeInfo = TypeInformation.of(classOf[MavenProjectPojoExt])
+    val mavenProjectPojoStream : DataStream[MavenProjectPojoExt] = stream
+      .map(x => new MavenProjectPojoExt() {
+        title = x.title
+        modelVersion = x.project.modelVersion
+        groupId = x.project.groupId
+        artifactId = x.project.artifactId
+        version = x.project.version
+        parent = x.project.parent
+        dependencies = x.project.dependencies
+        licenses = x.project.licenses
+        repositories = x.project.repositories
+        organization = x.project.organization
+        packaging = x.project.packaging
+        issueManagement = x.project.issueManagement
+        scm = x.project.scm
+      })
+    tEnv.registerDataStream(projectTableName, mavenProjectPojoStream)
   }
 
   def registerParentTable(stream: DataStream[MavenReleaseExtPojo], tEnv: StreamTableEnvironment): Unit = {
