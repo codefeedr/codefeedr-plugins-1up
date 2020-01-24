@@ -3,7 +3,7 @@ package org.tudelft.plugins.cargo.operators
 import org.apache.flink.streaming.api.functions.source.SourceFunction
 import org.codefeedr.stages.utilities.{HttpRequester, RequestException}
 import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
-import org.tudelft.plugins.cargo.protocol.Protocol.CrateRelease
+import org.tudelft.plugins.cargo.protocol.Protocol.{CrateFromPoll, CrateRelease}
 import scalaj.http.Http
 import spray.json._
 
@@ -39,17 +39,19 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
         try {
           // Polls the RSS feed
           val rssAsString:      String = getRSSAsString.get
-          // Parses the received rss items
-          val items:            Seq[CrateRelease] = parseRSSString(rssAsString)
-          // Collect right items and update last item
-          val validSortedItems: Seq[CrateRelease] = sortAndDropDuplicates(items)
+          // Parse into polled micro-crates
+          val polledItems:      Seq[CrateFromPoll] = getPolledCrates(rssAsString)
+          // Collect only new crates and sort them based on updated date
+          val validSortedItems: Seq[CrateFromPoll] = sortAndDropDuplicates(polledItems)
+          // Parses the polled crates into full crates
+          val items:            Seq[CrateRelease] = parseNewCrates(validSortedItems)
           // Decrease runs left
           super.decreaseRunsLeft()
           // Add a timestamp to the item
-          validSortedItems.foreach(x =>
+          items.foreach(x =>
             ctx.collectWithTimestamp(x, x.crate.updated_at.getTime))
           // Call the parent run
-          super.runPlugin(ctx, validSortedItems)
+          super.runPlugin(ctx, items)
         } catch {
           case _: Throwable =>
         }
@@ -63,15 +65,15 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
    * @param items Potential items to be collected
    * @return Valid sorted items
    */
-  def sortAndDropDuplicates(items: Seq[CrateRelease]): Seq[CrateRelease] = {
+  def sortAndDropDuplicates(items: Seq[CrateFromPoll]): Seq[CrateFromPoll] = {
     items
-      .filter((x: CrateRelease) => {
+      .filter((x: CrateFromPoll) => {
         if (lastItem.isDefined)
-          lastItem.get.crate.updated_at.before(x.crate.updated_at)
+          lastItem.get.crate.updated_at.before(x.updated_at)
         else
           true
       })
-      .sortWith((x: CrateRelease, y: CrateRelease) => x.crate.updated_at.before(y.crate.updated_at))
+      .sortWith((x: CrateFromPoll, y: CrateFromPoll) => x.updated_at.before(y.updated_at))
   }
 
   /**
@@ -105,12 +107,11 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
   }
 
   /**
-   * Parses a string that contains JSON with RSS items into a list of CrateReleases
-   *
-   * @param rssString JSON string with RSS items
-   * @return Sequence of RSS items in type CrateRelease
+   * Processes the html body from the Cargo feed into a list of polled Crates
+   * @param rssString html body of the webrequest to the releases feed
+   * @return A list of polled crates, consisting of 10 new crates and 10 updated crates
    */
-  def parseRSSString(rssString: String): Seq[CrateRelease] = {
+  def getPolledCrates(rssString: String): Seq[CrateFromPoll] = {
     try {
       // Parse the big release string as a Json object
       val json          : JsObject         = rssString.parseJson.asJsObject
@@ -119,12 +120,12 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
       val newCrates     : Vector[JsObject] = JsonParser.getNewOrUpdatedCratesFromSummary(json, "new_crates").get
       val updatedCrates : Vector[JsObject] = JsonParser.getNewOrUpdatedCratesFromSummary(json, "just_updated").get
 
-      // Translate 2x10 JSObjects into CrateReleases
-      val newCratesObjects     : Seq[CrateRelease] = this.transformJsonToCrateReleases(newCrates)
-      val updatedCratesObjects : Seq[CrateRelease] = this.transformJsonToCrateReleases(updatedCrates)
-
-      // Return the desired list of CrateReleases
-      newCratesObjects ++ updatedCratesObjects
+      // Translate 2x10 JSObjects into CrateFromPolls
+      for(crate <- newCrates ++ updatedCrates) yield {
+        val crateId :String = JsonParser.getStringFieldFromCrate(crate, "id").get
+        val crateUpdated = JsonParser.getDateFieldFromCrate(crate, "updated_at").get
+        CrateFromPoll(crateId, crateUpdated)
+      }
     } catch {
       // If the string cannot be parsed return an empty list
       case _: Throwable =>
@@ -134,22 +135,25 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
   }
 
   /**
-   * Method which retrieves the Json of each individual crate, then parses it into an object and put into Seq
-   * @param json Must be a Vector of JsObjects with internal Crate structure
-   * @return Parsed into CrateRelease objects
+   * Parses a string that contains polled crates into a list of CrateReleases
+   *
+   * @param newCrates sequence of polled crates to turn into extended releases
+   * @return Sequence of RSS items in type CrateRelease
    */
-  def transformJsonToCrateReleases(json: Vector[JsObject]): Seq[CrateRelease] = {
+  def parseNewCrates(newCrates: Seq[CrateFromPoll]): Seq[CrateRelease] = {
     try {
-      for (crate <- json) yield {
-        val crateId :String = JsonParser.getStringFieldFromCrate(crate, "id").get
-        val crateRSS :String = getRSSFromCrate(crateId).get
+      for (crate <- newCrates) yield {
+        // Get the html body of the crate
+        val crateRSS :String = getRSSFromCrate(crate.id).get
+        // Turn the html body into a json object
         val crateJson :JsObject = crateRSS.parseJson.asJsObject
+        // Turn the json object into a CrateRelease object
         JsonParser.parseCrateJsonToCrateRelease(crateJson).get
       }
-    }
-    catch {
+    } catch {
+      // If the string cannot be parsed return an empty list
       case _: Throwable =>
-        printf("\nFailed transforming json craterelease to its case class")
+        printf("Failed parsing the RSSString in the CargoReleasesSource.scala file")
         Nil
     }
   }

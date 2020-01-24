@@ -4,6 +4,8 @@ import java.util.Date
 
 object Protocol extends Enumeration {
 
+  case class CrateFromPoll(id: String,
+                           updated_at: Date)
 
   case class CrateRelease(crate: Crate,
                           versions: List[CrateVersion],
