@@ -15,14 +15,20 @@ val codefeedrVersion = "0.1.4"
 
 val flinkDependencies = Seq(
   "org.apache.flink" %% "flink-scala" % flinkVersion,
-  "org.apache.flink" %% "flink-streaming-scala" % flinkVersion)
+  "org.apache.flink" %% "flink-streaming-scala" % flinkVersion,
+  "org.apache.flink" %% "flink-connector-kafka-0.11" % flinkVersion,
+  "org.apache.flink" % "flink-json" % flinkVersion
+)
 
 val codefeedrDependencies = Seq(
-  "org.codefeedr" %% "codefeedr-core" %  codefeedrVersion
+  "org.codefeedr" %% "codefeedr-core" % codefeedrVersion
 )
 
 val sqlDependencies = Seq(
+  "org.apache.flink" %% "flink-table-api-scala-bridge" % flinkVersion,
   "org.apache.flink" %% "flink-table-planner" % flinkVersion,
+  // https://mvnrepository.com/artifact/org.apache.flink/flink-table-planner-blink
+  "org.apache.flink" %% "flink-table-planner-blink" % flinkVersion,
   "org.scala-lang" % "scala-reflect" % "2.12.8"
 )
 
@@ -44,10 +50,10 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= cargoDependencies
   )
 
-assembly / mainClass := Some("org.tudelft.Main")
+//assembly / mainClass := Some("org.tudelft.Main")
 
 // make run command include the provided dependencies
-Compile / run  := Defaults.runTask(Compile / fullClasspath,
+Compile / run := Defaults.runTask(Compile / fullClasspath,
   Compile / run / mainClass,
   Compile / run / runner
 ).evaluated
@@ -57,4 +63,7 @@ Compile / run / fork := true
 Global / cancelable := true
 
 // exclude Scala library from assembly
-assembly / assemblyOption  := (assembly / assemblyOption).value.copy(includeScala = false)
+//assembly / assemblyOption  := (assembly / assemblyOption).value.copy(includeScala = false)
+
+
+enablePlugins(PackPlugin)
