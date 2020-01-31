@@ -71,4 +71,9 @@ assemblyMergeStrategy in assembly := {
   case x => MergeStrategy.first
 }
 
+dependencyOverrides += "com.twitter" % "chill_2.12" % "0.9.1"
+dependencyOverrides += "com.twitter" % "chill-java" % "0.9.1"
+dependencyOverrides += "org.apache.kafka" % "kafka-clients" % "2.4.0"
+
+
 test in assembly := {}
