@@ -35,7 +35,7 @@ object SQLService {
   def setupEnv(): StreamTableEnvironment = {
     //Get the required environments
     env = StreamExecutionEnvironment.getExecutionEnvironment
-    val settings = EnvironmentSettings.newInstance().inStreamingMode().useBlinkPlanner().build()
+    val settings = EnvironmentSettings.newInstance().inStreamingMode().useOldPlanner().build()
 
     StreamTableEnvironment.create(env, settings)
   }

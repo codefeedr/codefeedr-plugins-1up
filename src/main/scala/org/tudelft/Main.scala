@@ -13,8 +13,6 @@ object Main {
 
     val query: String = args.mkString(" ")
 
-    println(query)
-
     val builder = new PipelineBuilder()
       .setPipelineName("Demo")
       .setRestartStrategy(RestartStrategies.fixedDelayRestart(
