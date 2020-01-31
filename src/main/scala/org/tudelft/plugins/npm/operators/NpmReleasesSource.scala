@@ -17,7 +17,7 @@ import scalaj.http.Http
  * @author Roald van der Heijden
  * Date: 2019 - 12 - 03
  */
-case class NpmSourceConfig(pollingInterval: Int = 10000, maxNumberOfRuns: Int = -1) // 10 sec polling interval
+case class NpmSourceConfig(pollingInterval: Int = 10000, maxNumberOfRuns: Int = -1, timeout : Int = 32) // 10 sec polling interval
     extends PluginSourceConfig
 
 /**
@@ -39,6 +39,8 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
    * URL to get update stream from
    */
   val url_updatestream = "https://npm-update-stream.libraries.io/"
+
+  //var timeout = 2 // timeout set specifically to speed up testing
 
   /**
     * The latest poll
@@ -105,7 +107,7 @@ class NpmReleasesSource(config: NpmSourceConfig = NpmSourceConfig())
   def retrieveUpdateStringFrom(urlEndpoint : String) : Option[String] = {
     val response = try {
       val request = Http(urlEndpoint)
-      return Some(new HttpRequester().retrieveResponse(request).body)
+      return Some(new HttpRequester(config.timeout).retrieveResponse(request).body)
     } catch {
       case _ : Throwable => None
     }

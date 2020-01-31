@@ -16,6 +16,7 @@ import scala.reflect._
 abstract class PluginSourceConfig{
   def pollingInterval: Int
   def maxNumberOfRuns: Int
+  def timeout : Int
 }
 
 abstract class PluginReleasesSource[T: ClassTag](config: PluginSourceConfig)

@@ -8,7 +8,8 @@ import scalaj.http.Http
 import spray.json._
 
 case class CargoSourceConfig(pollingInterval: Int = 10000,
-                             maxNumberOfRuns: Int = -1)
+                             maxNumberOfRuns: Int = -1,
+                             timeout : Int = 32)
     extends PluginSourceConfig
 
 /**
@@ -115,8 +116,8 @@ class CargoReleasesSource(config: CargoSourceConfig = CargoSourceConfig())
       val json          : JsObject         = rssString.parseJson.asJsObject
 
       // Retrieve 2x10 JsObjects of Crates
-      val newCrates     : Vector[JsObject] = JsonParser.getNewCratesFromSummary(json).get
-      val updatedCrates : Vector[JsObject] = JsonParser.getUpdatedCratesFromSummary(json).get
+      val newCrates     : Vector[JsObject] = JsonParser.getNewOrUpdatedCratesFromSummary(json, "new_crates").get
+      val updatedCrates : Vector[JsObject] = JsonParser.getNewOrUpdatedCratesFromSummary(json, "just_updated").get
 
       // Translate 2x10 JSObjects into CrateReleases
       val newCratesObjects     : Seq[CrateRelease] = this.transformJsonToCrateReleases(newCrates)

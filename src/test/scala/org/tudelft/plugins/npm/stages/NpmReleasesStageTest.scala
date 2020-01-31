@@ -16,7 +16,7 @@ import org.tudelft.plugins.npm.protocol.Protocol.NpmRelease
  */
 class NpmReleasesStageTest extends FunSuite {
   test("NpmReleasesIntegrationTest") {
-    val source = new NpmReleasesStage(sourceConfig = NpmSourceConfig(1000,12))
+    val source = new NpmReleasesStage(sourceConfig = NpmSourceConfig(1000,12,8))
     val sink = new LimitingSinkStage(4)
 
     val pipeline = new PipelineBuilder()

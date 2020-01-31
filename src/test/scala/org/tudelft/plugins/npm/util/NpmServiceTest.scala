@@ -61,14 +61,19 @@ class NpmServiceTest extends FunSuite {
 
   // tests for getProjectRaw
 
+  test("getProjectRAW - fetching a from a NONEXISTING domain returns None") {
+    val result = NpmService.getProjectRaw(incorrect_base_url, nonExistingProject, NpmService.timeout)
+    assert(result.isEmpty)
+  }
+
   test("getProjectRAW - fetching a NONEXISTING Npm package returns a JSON ERROR string") {
-    val result = NpmService.getProjectRaw(correct_base_url, nonExistingProject)
+    val result = NpmService.getProjectRaw(correct_base_url, nonExistingProject, NpmService.timeout)
     assert(result.get=="""{"error":"Not found"}""")
   }
 
   test("getProjectRaw - fetching an UNPUBLISHED Npm package returns some JSON string") {
     // Act
-    val result = NpmService.getProjectRaw(correct_base_url, unPublishedProject)
+    val result = NpmService.getProjectRaw(correct_base_url, unPublishedProject, NpmService.timeout)
     val json = parse(result.get)
     val unpublishedTimeField =  (json \ "time") \ "unpublished"
 
@@ -80,7 +85,7 @@ class NpmServiceTest extends FunSuite {
   }
 
   test("getProjectRAW - fetching a EXISTING Npm package returns a good JSON string") {
-    val optionString = NpmService.getProjectRaw(correct_base_url, existingProject)
+    val optionString = NpmService.getProjectRaw(correct_base_url, existingProject, NpmService.timeout)
     assert(optionString.isInstanceOf[Option[String]])
   }
 
@@ -320,10 +325,3 @@ class NpmServiceTest extends FunSuite {
 
 
 }
-
-/* Notes
-TODO
- - fix the Author == None bug
- - fix code duplication
- - possibly deploy Futures in testing to test bogus domains
- */

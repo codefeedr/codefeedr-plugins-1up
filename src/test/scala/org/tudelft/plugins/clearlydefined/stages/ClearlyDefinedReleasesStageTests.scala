@@ -11,7 +11,7 @@ import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedReleas
 class ClearlyDefinedReleasesStageTests extends FunSuite {
 
   test("ClearlyDefinedReleasesIntegrationTest") {
-    val source = new ClearlyDefinedReleasesStage(sourceConfig = ClearlyDefinedSourceConfig(1000, 10))
+    val source = new ClearlyDefinedReleasesStage(sourceConfig = ClearlyDefinedSourceConfig(1000, 10, 4))
     val sink = new LimitingSinkStage(10)
 
     val pipeline = new PipelineBuilder()

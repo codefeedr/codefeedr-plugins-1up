@@ -21,6 +21,8 @@ import scalaj.http.Http
  */
 object NpmService extends Logging with Serializable {
 
+  var timeout = 8
+
   /**
    * the API url to retrieve projects from.
    */
@@ -46,7 +48,7 @@ object NpmService extends Logging with Serializable {
    * @return the JSON in Option[String] (so None, if something went wrong and also None when UNPUBLISHED!!)
    */
   def createJsonStringFor(updateStreamBaseURL : String, projectName: String) : Option[String] = {
-    val jsonString: Option[String] = getProjectRaw(updateStreamBaseURL, projectName)
+    val jsonString: Option[String] = getProjectRaw(updateStreamBaseURL, projectName, timeout)
     if (jsonString.isEmpty || jsonString.get == """{"error":"Not found"}""") {
       logger.error(s"Couldn't retrieve npm project with name $projectName.")
       return None
@@ -186,10 +188,10 @@ object NpmService extends Logging with Serializable {
    *
    * @return an optional JSON String.
    */
-  def getProjectRaw(base_url : String, endpoint : String): Option[String] = {
+  def getProjectRaw(base_url : String, endpoint : String, maxTimeOutInsec : Int): Option[String] = {
     val response = try {
       val request = Http(base_url + endpoint).headers(withConfiguredHeaders)
-      new HttpRequester().retrieveResponse(request)
+      new HttpRequester(maxTimeOutInsec).retrieveResponse(request)
     } catch {
       case _: Throwable => return None
     }

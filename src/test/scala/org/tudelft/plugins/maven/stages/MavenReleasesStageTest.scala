@@ -11,7 +11,7 @@ import org.tudelft.plugins.maven.protocol.Protocol.MavenRelease
 class MavenReleasesStageTest extends FunSuite {
 
   test("MavenReleasesIntegrationTest") {
-    val source = new MavenReleasesStage(sourceConfig = MavenSourceConfig(1000, 12))
+    val source = new MavenReleasesStage(sourceConfig = MavenSourceConfig(1000, 12, 4))
     val sink = new LimitingSinkStage(4)
 
     val pipeline = new PipelineBuilder()
