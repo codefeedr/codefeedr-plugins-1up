@@ -24,9 +24,25 @@ object Main {
 
     val query: String =
       """
-        | SELECT *
+        | SELECT
+        |  description,
+        |  TUMBLE_START(updated_at, INTERVAL '1' DAY) as wStart
         | FROM CargoCrate
+        | GROUP BY TUMBLE(updated_at, INTERVAL '1' DAY), description
         |""".stripMargin
+
+    val query2: String =
+      """
+        |SELECT proctime
+        |FROM CargoCrate
+        |""".stripMargin
+
+    val query3: String =
+      """
+        | SELECT name, updated_at
+        | FROM CargoCrate
+        | GROUP BY HOP(updated_at, INTERVAL '1' HOUR, INTERVAL '1' DAY), name, updated_at
+    """.stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
 //    val jsonStage = new JsonExitStage[MavenRelease]
@@ -37,7 +53,7 @@ object Main {
     //val cdSQLStage = new SQLStage[ClearlyDefinedRelease](query)
 
     val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = new SQLStage[CrateRelease](query)
+    val cargoSqlStage = new SQLStage[CrateRelease](query3)
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -50,8 +66,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.COMPRESSION_TYPE, "gzip")
       .setBufferProperty(KafkaBuffer.BROKER, "localhost:9092")
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
-      .setBufferProperty("message.max.bytes", "10485760") // max message size is 10mb
-      .setBufferProperty("max.request.size", "10485760") // max message size is 10 mb
+      .setBufferProperty("message.max.bytes", "41943040") // max message size is 40mb
+      .setBufferProperty("max.request.size", "41943040") // max message size is 40 mb
       .edge(cargoSource, cargoSqlStage)
       .build()
       .startMock

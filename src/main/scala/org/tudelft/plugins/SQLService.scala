@@ -5,6 +5,7 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.Table
 import org.tudelft.plugins.maven.protocol.Protocol._
 import org.apache.flink.api.scala._
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.DataStream
 import org.apache.flink.table.api.scala._
 import org.apache.flink.types.Row
@@ -35,8 +36,11 @@ object SQLService {
   def setupEnv(): StreamTableEnvironment = {
     //Get the required environments
     env = StreamExecutionEnvironment.getExecutionEnvironment
+    env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    StreamTableEnvironment.create(env)
+    val tEnv : StreamTableEnvironment = StreamTableEnvironment.create(env)
+    //tEnv.fromDataStream(null, 'oijioejaiofj.)
+    tEnv
   }
 
   /**
@@ -48,7 +52,7 @@ object SQLService {
   def performQuery(query: String, tEnv: StreamTableEnvironment): Unit = {
     //Perform query
     val queryTable: Table = tEnv.sqlQuery(query)
-    tEnv.explain(queryTable)
+    println(tEnv.explain(queryTable))
 
     // Just for printing purposes, in reality you would need something other than Row
     implicit val typeInfo = TypeInformation.of(classOf[Row])
