@@ -64,6 +64,13 @@ object Main {
         | GROUP BY HOP(pubDate, INTERVAL '1' HOUR, INTERVAL '1' DAY), pubDate, title
         |""".stripMargin
 
+    val npmQuery =
+      """
+        |SELECT name, retrieveDate
+        |FROM Npm
+        |GROUP BY HOP(retrieveDate, INTERVAL '30' SECOND, INTERVAL '1' MINUTE), name, retrieveDate
+        |""".stripMargin
+
     val releaseSource = new MavenReleasesStage()
 //    val jsonStage = new JsonExitStage[MavenRelease]
     val enrichReleases = new MavenReleasesExtStage()
@@ -74,6 +81,10 @@ object Main {
 
     val cargoSource = new CargoReleasesStage()
     val cargoSqlStage = new SQLStage[CrateRelease](query4)
+
+    val npmSource = new NpmReleasesStage()
+    val npmEnrich = new NpmReleasesExtStage()
+    val npmSQL = new SQLStage[NpmReleaseExt](npmQuery)
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -88,8 +99,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "41943040") // max message size is 40mb
       .setBufferProperty("max.request.size", "41943040") // max message size is 40 mb
-      .edge(releaseSource, enrichReleases)
-      .edge(enrichReleases, sqlStage)
+      .edge(npmSource, npmEnrich)
+      .edge(npmEnrich, npmSQL)
       .build()
       .startMock
   }
