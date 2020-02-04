@@ -109,7 +109,7 @@ class ClearlyDefinedSQLServiceTest extends FunSuite {
     val tEnv = StreamTableEnvironment.create(env)
     assert(tEnv.listTables().length == 0)
     ClearlyDefinedSQLService.registerTables(stream, tEnv)
-    assert(tEnv.listTables().size == 17)
+    assert(tEnv.listTables().size == 18)
 
     //The only way to test the inner map functions (which are lazy) is to execute a query
     val queryTable = tEnv.sqlQuery("Select * from " + ClearlyDefinedSQLService.rootTableName)

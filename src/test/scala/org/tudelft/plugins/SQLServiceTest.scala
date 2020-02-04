@@ -74,7 +74,7 @@ class SQLServiceTest extends AnyFunSuite with BeforeAndAfterEach {
     val stream = env.fromElements(element)
     SQLService.registerTableFromStream(stream, tEnv)
     assert(tEnv.listTables().contains(ClearlyDefinedSQLService.rootTableName))
-    assert(tEnv.listTables().length == 17)
+    assert(tEnv.listTables().length == 18)
   }
 
   test("registerTableFromStreamFailTest"){
