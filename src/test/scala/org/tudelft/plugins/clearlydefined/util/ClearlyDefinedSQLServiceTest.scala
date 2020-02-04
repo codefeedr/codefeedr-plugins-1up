@@ -1,6 +1,7 @@
 package org.tudelft.plugins.clearlydefined.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala.StreamTableEnvironment
@@ -14,6 +15,7 @@ class ClearlyDefinedSQLServiceTest extends FunSuite {
 
   //Get the required environments
   val env = StreamExecutionEnvironment.getExecutionEnvironment
+  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
   val tEnv = StreamTableEnvironment.create(env)
 
   val release = new ProtocolTests().cdRelease

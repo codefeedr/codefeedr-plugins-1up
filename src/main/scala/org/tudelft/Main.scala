@@ -46,8 +46,8 @@ object Main {
 
     val cdQuery =
       """
-        | SELECT *
-        | FROM ClearlyDefined
+        | SELECT updated
+        | FROM ClearlyDefinedMeta
         |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()

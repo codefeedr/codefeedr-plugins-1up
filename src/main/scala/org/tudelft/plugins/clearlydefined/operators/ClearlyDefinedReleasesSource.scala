@@ -9,6 +9,7 @@ import scalaj.http.Http
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.read
+import org.tudelft.plugins.clearlydefined.protocol.Protocol
 import org.tudelft.plugins.{PluginReleasesSource, PluginSourceConfig}
 
 /**
@@ -35,8 +36,7 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
   val url = "https://api.clearlydefined.io/definitions?matchCasing=false&sort=releaseDate&sortDesc=true"
   /** The first x number of packages to process with each poll */
   val packageAmount = 10
-  /** Date format used in ClearlyDefined */
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+
 
   /**
    * Main fetcher of new items in the ClearlyDefined package source
@@ -59,7 +59,7 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           super.decreaseRunsLeft()
           // Add a timestamp to the item
           validSortedItems.foreach(x =>
-            ctx.collectWithTimestamp(x, dateFormat.parse(x._meta.updated).getTime))
+            ctx.collectWithTimestamp(x, Protocol.dateFormat.parse(x._meta.updated).getTime))
           // Call run in parent
           super.runPlugin(ctx, validSortedItems)
         } catch {
@@ -80,11 +80,11 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
     items
       .filter((x: ClearlyDefinedRelease) => {
         if (lastItem.isDefined)
-          dateFormat.parse(lastItem.get._meta.updated).before(dateFormat.parse(x._meta.updated))
+          Protocol.dateFormat.parse(lastItem.get._meta.updated).before(Protocol.dateFormat.parse(x._meta.updated))
         else
           true
       })
-      .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => dateFormat.parse(x._meta.updated).before(dateFormat.parse(y._meta.updated)))
+      .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => Protocol.dateFormat.parse(x._meta.updated).before(Protocol.dateFormat.parse(y._meta.updated)))
   }
 
   /**

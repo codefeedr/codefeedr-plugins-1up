@@ -1,6 +1,13 @@
 package org.tudelft.plugins.clearlydefined.protocol
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.{Calendar, Date}
+
 object Protocol {
+
+  /** Date format used in ClearlyDefined */
+  val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
 
   case class ClearlyDefinedRelease(described: CDDescribed,
                                    licensed: CDLicensed,
@@ -427,7 +434,7 @@ object Protocol {
 
   class CD_metaPojo extends Serializable {
     var schemaVersion: String = _
-    var updated: String = _
+    var updated: Timestamp = _
   }
 
   class CD_metaPojoExt extends CD_metaPojo {
@@ -438,7 +445,13 @@ object Protocol {
     def fromCD_meta(cd_meta: CD_meta): CD_metaPojo = {
       val pojo = new CD_metaPojo
       pojo.schemaVersion = cd_meta.schemaVersion
-      pojo.updated = cd_meta.updated
+
+      val dateField: Date = dateFormat.parse(cd_meta.updated)
+      val cal: Calendar   = Calendar.getInstance
+      cal.setTime(dateField)
+      val time = new Timestamp(cal.getTimeInMillis)
+
+      pojo.updated = time
       pojo
     }
   }
