@@ -38,9 +38,7 @@ object SQLService {
     env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    val tEnv : StreamTableEnvironment = StreamTableEnvironment.create(env)
-    //tEnv.fromDataStream(null, 'oijioejaiofj.)
-    tEnv
+    StreamTableEnvironment.create(env)
   }
 
   /**
@@ -52,7 +50,7 @@ object SQLService {
   def performQuery(query: String, tEnv: StreamTableEnvironment): Unit = {
     //Perform query
     val queryTable: Table = tEnv.sqlQuery(query)
-    println(tEnv.explain(queryTable))
+    tEnv.explain(queryTable)
 
     // Just for printing purposes, in reality you would need something other than Row
     implicit val typeInfo = TypeInformation.of(classOf[Row])

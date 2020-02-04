@@ -1,16 +1,10 @@
 package org.tudelft.plugins.cargo.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
-import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.table.api.Table
-import org.tudelft.plugins.maven.protocol.Protocol._
-import org.apache.flink.api.scala._
-import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala.DataStream
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.table.api.scala._
-import org.apache.flink.types.Row
 import org.tudelft.plugins.cargo.protocol.Protocol._
 
 import scala.reflect.runtime.universe._
@@ -52,15 +46,29 @@ object CargoSQLService {
   def registerCrateTable(stream: DataStream[CrateReleasePojo], tEnv: StreamTableEnvironment): Unit = {
     val crateStream: DataStream[CratePojo] = stream.map(x => x.crate)
 
-    val newStream = crateStream.assignTimestampsAndWatermarks(
+    val timestampedStream = crateStream.assignTimestampsAndWatermarks(
       new BoundedOutOfOrdernessTimestampExtractor[CratePojo](Time.seconds(10)) {
         override def extractTimestamp(element: CratePojo): Long = element.updated_at.getTime
       })
-    //JavaExpression.fromDataStream2(tEnv, newStream)
-    tEnv.registerDataStream("CargoCrate", newStream, 'name, 'updated_at.rowtime)
 
-    // Assign time attribute(s)
-    //tEnv.registerDataStream(crateTableName, crateStream)
+    tEnv.registerDataStream(crateTableName, timestampedStream,
+      'id,
+      'name,
+      'updated_at.rowtime,
+      'versions,
+      'keywords,
+      'categories,
+      'created_at,
+      'downloads,
+      'recent_downloads,
+      'max_version,
+      'description,
+      'homepage,
+      'documentation,
+      'repository,
+      'links,
+      'exact_match
+      )
   }
 
   def registerCrateLinksTable(stream: DataStream[CrateReleasePojo], tEnv: StreamTableEnvironment): Unit = {

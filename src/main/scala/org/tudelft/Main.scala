@@ -33,27 +33,33 @@ object Main {
 
     val query2: String =
       """
-        |SELECT proctime
-        |FROM CargoCrate
+        |SELECT dl_path
+        |FROM CargoCrateVersions
         |""".stripMargin
 
     val query3: String =
       """
-        | SELECT name, updated_at
+        | SELECT description, updated_at
         | FROM CargoCrate
-        | GROUP BY HOP(updated_at, INTERVAL '1' HOUR, INTERVAL '1' DAY), name, updated_at
+        | GROUP BY HOP(updated_at, INTERVAL '1' HOUR, INTERVAL '1' DAY), description, updated_at
     """.stripMargin
+
+    val cdQuery =
+      """
+        | SELECT *
+        | FROM ClearlyDefined
+        |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
 //    val jsonStage = new JsonExitStage[MavenRelease]
 //    val enrichReleases = new MavenReleasesExtStage()
 //    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
 
-    //val cdSource = new ClearlyDefinedReleasesStage()
-    //val cdSQLStage = new SQLStage[ClearlyDefinedRelease](query)
+    val cdSource = new ClearlyDefinedReleasesStage()
+    val cdSQLStage = new SQLStage[ClearlyDefinedRelease](cdQuery)
 
-    val cargoSource = new CargoReleasesStage()
-    val cargoSqlStage = new SQLStage[CrateRelease](query3)
+    //val cargoSource = new CargoReleasesStage()
+    //val cargoSqlStage = new SQLStage[CrateRelease](query2)
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")
@@ -68,7 +74,7 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "41943040") // max message size is 40mb
       .setBufferProperty("max.request.size", "41943040") // max message size is 40 mb
-      .edge(cargoSource, cargoSqlStage)
+      .edge(cdSource, cdSQLStage)
       .build()
       .startMock
   }
