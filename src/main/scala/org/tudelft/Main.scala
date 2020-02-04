@@ -44,10 +44,17 @@ object Main {
         | GROUP BY HOP(updated_at, INTERVAL '1' HOUR, INTERVAL '1' DAY), description, updated_at
     """.stripMargin
 
+    val query4: String =
+      """
+        | SELECT updated_at
+        | FROM CargoCrate
+    """.stripMargin
+
     val cdQuery =
       """
-        | SELECT updated
+        | SELECT updated, name, schemaVersion
         | FROM ClearlyDefinedMeta
+        | GROUP BY HOP(updated, INTERVAL '1' HOUR, INTERVAL '1' DAY), updated, name, schemaVersion
         |""".stripMargin
 
 //    val releaseSource = new MavenReleasesStage()
@@ -58,8 +65,8 @@ object Main {
     val cdSource = new ClearlyDefinedReleasesStage()
     val cdSQLStage = new SQLStage[ClearlyDefinedRelease](cdQuery)
 
-    //val cargoSource = new CargoReleasesStage()
-    //val cargoSqlStage = new SQLStage[CrateRelease](query2)
+    val cargoSource = new CargoReleasesStage()
+    val cargoSqlStage = new SQLStage[CrateRelease](query4)
 
     new PipelineBuilder()
       .setPipelineName("Cargo plugin")

@@ -59,7 +59,7 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
           super.decreaseRunsLeft()
           // Add a timestamp to the item
           validSortedItems.foreach(x =>
-            ctx.collectWithTimestamp(x, Protocol.dateFormat.parse(x._meta.updated).getTime))
+            ctx.collectWithTimestamp(x, Protocol.getDate(x._meta.updated).getTime))
           // Call run in parent
           super.runPlugin(ctx, validSortedItems)
         } catch {
@@ -80,11 +80,11 @@ class ClearlyDefinedReleasesSource(config: ClearlyDefinedSourceConfig = ClearlyD
     items
       .filter((x: ClearlyDefinedRelease) => {
         if (lastItem.isDefined)
-          Protocol.dateFormat.parse(lastItem.get._meta.updated).before(Protocol.dateFormat.parse(x._meta.updated))
+          Protocol.getDate(lastItem.get._meta.updated).before(Protocol.getDate(x._meta.updated))
         else
           true
       })
-      .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => Protocol.dateFormat.parse(x._meta.updated).before(Protocol.dateFormat.parse(y._meta.updated)))
+      .sortWith((x: ClearlyDefinedRelease, y: ClearlyDefinedRelease) => Protocol.getDate(x._meta.updated).before(Protocol.getDate(y._meta.updated)))
   }
 
   /**

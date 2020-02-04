@@ -59,7 +59,7 @@ class ClearlyDefinedReleasesSourceTests extends FunSuite{
 
     // Act
     val dateTime = tenCDReleases(0)._meta.updated
-    val parsedDateTime = Protocol.dateFormat.parse(dateTime)
+    val parsedDateTime = Protocol.getDate(dateTime)
 
     // Assert
     assert(parsedDateTime.isInstanceOf[Date])

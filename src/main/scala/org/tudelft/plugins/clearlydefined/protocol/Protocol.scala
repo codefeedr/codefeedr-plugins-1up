@@ -7,7 +7,7 @@ import java.util.{Calendar, Date}
 object Protocol {
 
   /** Date format used in ClearlyDefined */
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS'Z'")
+  val dateFormats = List("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
   case class ClearlyDefinedRelease(described: CDDescribed,
                                    licensed: CDLicensed,
@@ -446,7 +446,8 @@ object Protocol {
       val pojo = new CD_metaPojo
       pojo.schemaVersion = cd_meta.schemaVersion
 
-      val dateField: Date = dateFormat.parse(cd_meta.updated)
+      val dateField: Date = getDate(cd_meta.updated)
+
       val cal: Calendar   = Calendar.getInstance
       cal.setTime(dateField)
       val time = new Timestamp(cal.getTimeInMillis)
@@ -454,6 +455,17 @@ object Protocol {
       pojo.updated = time
       pojo
     }
+  }
+
+  def getDate(field: String): Date = {
+    var dateField: Date = null
+    for(dateFormat <- dateFormats) {
+      try {
+        dateField = new SimpleDateFormat(dateFormat).parse(field)
+      }
+    }
+    if (dateField == null) println("Can't parse date")
+    dateField
   }
 
   case class CDScores(effective: Int,
