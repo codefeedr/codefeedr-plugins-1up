@@ -27,6 +27,7 @@ object ClearlyDefinedSQLService {
   val describedTableName: String = "ClearlyDefinedDescribed"
   val describedUrlsTableName: String = "ClearlyDefinedDescribedUrls"
   val describedHashesTableName: String = "ClearlyDefinedDescribedHashes"
+  val describedToolsTableName: String = "ClearlyDefinedDescribedTools"
   val describedToolScoreTableName: String = "ClearlyDefinedDescribedToolScore"
   val describedSourceLocationTableName: String = "ClearlyDefinedDescribedSourceLocation"
   val describedScoreTableName: String = "ClearlyDefinedDescribedScore"
@@ -54,6 +55,7 @@ object ClearlyDefinedSQLService {
       registerDescribedTable(releasesStreamExt, tEnv)
       registerDescribedUrlsTable(releasesStreamExt, tEnv)
       registerDescribedHashesTable(releasesStreamExt, tEnv)
+      registerDescribedToolsTable(releasesStreamExt, tEnv)
       registerDescribedToolScoreTable(releasesStreamExt, tEnv)
       registerDescribedSourceLocationTable(releasesStreamExt, tEnv)
       registerDescribedScoreTable(releasesStreamExt, tEnv)
@@ -67,6 +69,7 @@ object ClearlyDefinedSQLService {
       registerCoordinatesTable(releasesStreamExt, tEnv)
       registerMetaTable(releasesStreamExt, tEnv)
       registerScoresTable(releasesStreamExt, tEnv)
+
     }
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }
@@ -113,6 +116,27 @@ object ClearlyDefinedSQLService {
       })
     tEnv.registerDataStream(describedHashesTableName, describedHashesStream)
   }
+
+  /**
+   * Register the tools list of a Clearly Described object as a streaming table in Flink
+   * @param releasesStreamExt the stream of ClearlyDefinedReleasePojoExt used as base to glean the tools from
+   * @param tEnv the Flink table environment used for registration
+   */
+  def registerDescribedToolsTable(releasesStreamExt: DataStream[ClearlyDefinedReleasePojoExt], tEnv: StreamTableEnvironment) = {
+    implicit val typeInfo = TypeInformation.of(classOf[ToolPojoExt])
+    val toolName_pojostream : DataStream[ToolPojoExt] = releasesStreamExt
+      .flatMap(x => {
+        x.described.tools.map(y => {
+          val pojo_ext = new ToolPojoExt()
+          pojo_ext.toolname = y.toolname
+          pojo_ext.id = x.name
+          pojo_ext
+        })
+      })
+    tEnv.registerDataStream(describedToolsTableName,toolName_pojostream)
+    
+  }
+
 
   def registerDescribedToolScoreTable(stream: DataStream[ClearlyDefinedReleasePojoExt], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[CDDescribedToolScorePojoExt])

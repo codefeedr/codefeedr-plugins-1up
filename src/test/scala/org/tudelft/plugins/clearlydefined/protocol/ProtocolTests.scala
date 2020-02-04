@@ -68,7 +68,9 @@ class ProtocolTests extends FunSuite {
     assert(pojo.projectWebsite.equals("projectWebsite"))
     assert(pojo.issueTracker.equals("issueTracker"))
     assert(pojo.files == 1)
-    assert(pojo.tools.head.equals("tools1"))
+    assert(pojo.tools.size==2)
+    assert(pojo.tools.head.toolname=="tools1")
+    assert(pojo.tools.last.toolname=="tools2")
 
     // Assert complex fields
     assert(pojo.urls.isInstanceOf[CDDescribedUrlsPojo])
@@ -86,7 +88,8 @@ class ProtocolTests extends FunSuite {
     assert(pojo.projectWebsite == null)
     assert(pojo.issueTracker == null)
     assert(pojo.files == 1)
-    assert(pojo.tools.head.equals("tools1"))
+    assert(pojo.tools.head.toolname=="tools1")
+    assert(pojo.tools.last.toolname=="tools2")
     assert(pojo.sourceLocation == null)
   }
 

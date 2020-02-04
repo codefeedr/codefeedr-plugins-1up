@@ -50,7 +50,8 @@ object Protocol {
     var issueTracker: String = _
     var hashes: CDDescribedHashesPojo = _
     var files: Int = _
-    var tools: List[String] = _
+    //var tools: List[String] = _
+    var tools: List[ToolPojo] = _
     var toolScore: CDDescribedToolScorePojo = _
     var sourceLocation: CDDescribedSourceLocationPojo = _
     var score: CDDescribedScorePojo = _
@@ -69,7 +70,8 @@ object Protocol {
       pojo.issueTracker = cdDescribed.issueTracker.orNull
       pojo.hashes = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribed.hashes)
       pojo.files = cdDescribed.files
-      pojo.tools = cdDescribed.tools
+      //pojo.tools = cdDescribed.tools
+      pojo.tools = cdDescribed.tools.map(toolname => ToolPojo.fromToolAsString(toolname))
       pojo.toolScore = CDDescribedToolScorePojo.fromCDDescribedToolScore(cdDescribed.toolScore)
 
       // Set the source location
@@ -126,6 +128,22 @@ object Protocol {
       pojo.gitSha = cdDescribedHashes.gitSha.orNull
       pojo.sha1 = cdDescribedHashes.sha1.orNull
       pojo.sha256 = cdDescribedHashes.sha256.orNull
+      pojo
+    }
+  }
+
+  class ToolPojo extends Serializable {
+    var toolname : String = _
+  }
+
+  class ToolPojoExt extends ToolPojo {
+    var id : String = _
+  }
+
+  object ToolPojo {
+    def fromToolAsString(toolname : String) : ToolPojo = {
+      val pojo = new ToolPojo()
+      pojo.toolname = toolname
       pojo
     }
   }
