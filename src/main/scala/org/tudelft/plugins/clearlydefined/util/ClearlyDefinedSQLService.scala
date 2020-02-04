@@ -1,7 +1,12 @@
 package org.tudelft.plugins.clearlydefined.util
+
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.table.api.scala.StreamTableEnvironment
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.table.api.scala._
+import org.tudelft.plugins.SQLService.env
 import org.tudelft.plugins.clearlydefined.protocol.Protocol._
 
 import scala.reflect.runtime.universe._
@@ -279,13 +284,23 @@ object ClearlyDefinedSQLService {
 
   def registerMetaTable(stream: DataStream[ClearlyDefinedReleasePojoExt], tEnv: StreamTableEnvironment): Unit = {
     implicit val typeInfo = TypeInformation.of(classOf[CD_metaPojoExt])
-    val metaStream = stream
+    val metaStream: DataStream[CD_metaPojoExt] = stream
       .map(x => new CD_metaPojoExt() {
         name = x.name
         schemaVersion = x._meta.schemaVersion
         updated = x._meta.updated
       })
-    tEnv.registerDataStream(metaTableName, metaStream)
+
+    val timestampedStream = metaStream.assignTimestampsAndWatermarks(
+      new BoundedOutOfOrdernessTimestampExtractor[CD_metaPojoExt](Time.seconds(10)) {
+        override def extractTimestamp(element: CD_metaPojoExt): Long = element.updated.getTime
+      })
+
+    tEnv.registerDataStream(metaTableName, timestampedStream,
+      'name,
+      'schemaVersion,
+      'updated.rowtime
+    )
   }
 
   def registerScoresTable(stream: DataStream[ClearlyDefinedReleasePojoExt], tEnv: StreamTableEnvironment): Unit = {

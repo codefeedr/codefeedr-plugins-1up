@@ -58,7 +58,7 @@ object NpmService extends Logging with Serializable {
     (json \ "time") \ "unpublished" match {
       case JNothing => jsonString
       case other => {
-        logger.error(s"skiping UNPUBLISHED state of project with name $projectName.")
+        logger.error(s"skipping UNPUBLISHED state of project with name $projectName.")
         return None
       }
     }

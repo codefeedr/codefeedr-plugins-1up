@@ -3,6 +3,7 @@ package org.tudelft.plugins
 import java.util.Date
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.scala.StreamTableEnvironment
 import org.scalatest.BeforeAndAfterEach
@@ -21,6 +22,7 @@ class SQLServiceTest extends AnyFunSuite with BeforeAndAfterEach {
 
   //Get the required environments
   val env = StreamExecutionEnvironment.getExecutionEnvironment
+  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
   var tEnv: StreamTableEnvironment = _
 
   /**

@@ -1,6 +1,6 @@
 package org.tudelft.plugins.cargo.protocol
 
-import java.util.Date
+import java.sql.Timestamp
 
 import org.scalatest.FunSuite
 import org.tudelft.plugins.cargo.protocol.Protocol._
@@ -12,14 +12,14 @@ class ProtocolTests extends FunSuite {
   val crateVersionLinks = CrateVersionLinks("dependencies", "version_downloads", "authors")
   val crateVersionPublishedBy = CrateVersionPublishedBy(1, "login", Some("name"), "avatar", "url")
   val crateVersion = CrateVersion(1, "crate", "num", "dl_path", "readme_path",
-    new Date(), new Date(), 100, crateVersionFeatures, true, "license", crateVersionLinks,
+    new Timestamp(0), new Timestamp(0), 100, crateVersionFeatures, true, "license", crateVersionLinks,
     Some(20), Some(crateVersionPublishedBy))
   val crateKeyword = CrateKeyword("id", "keyword", "created_at", 1)
   val crateCategory =  CrateCategory("id", "category", "slug", "description", "created_at", 1)
   val crateLinks = CrateLinks("version_downloads", Some("versions"), "owners",
     "owner_team", "owner_user", "reverse_dependencies")
-  val crate = Crate("id", "name", new Date(), List(1, 2), List("keyword1", "keyword2"),
-    List("category1", "category2"), new Date(), 100, Some(4), "max_version",
+  val crate = Crate("id", "name", new Timestamp(0), List(1, 2), List("keyword1", "keyword2"),
+    List("category1", "category2"), new Timestamp(0), 100, Some(4), "max_version",
     "description", Some("homepage"), Some("documentation"), Some("repository"), crateLinks, true)
 
   val crateRelease = CrateRelease(crate, List(crateVersion, crateVersion), List(crateKeyword, crateKeyword),
@@ -29,11 +29,11 @@ class ProtocolTests extends FunSuite {
   val crateVersionPublishedByEmpty = CrateVersionPublishedBy(1, "login", None, "avatar", "url")
   val crateLinksEmpty = CrateLinks("version_downloads", None, "owners",
     "owner_team", "owner_user", "reverse_dependencies")
-  val crateEmpty = Crate("id", "name", new Date(), List(1, 2), List("keyword1", "keyword2"),
-    List("category1", "category2"), new Date(), 100, None, "max_version",
+  val crateEmpty = Crate("id", "name", new Timestamp(0), List(1, 2), List("keyword1", "keyword2"),
+    List("category1", "category2"), new Timestamp(0), 100, None, "max_version",
     "description", None, None, None, crateLinksEmpty, true)
   val crateVersionEmpty = CrateVersion(1, "crate", "num", "dl_path", "readme_path",
-    new Date(), new Date(), 100, crateVersionFeatures, true, "license", crateVersionLinks,
+    new Timestamp(0), new Timestamp(0), 100, crateVersionFeatures, true, "license", crateVersionLinks,
     None, None)
 
   val crateReleaseEmpty = CrateRelease(crateEmpty, List(crateVersionEmpty, crateVersionEmpty),

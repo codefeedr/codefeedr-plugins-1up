@@ -7,6 +7,7 @@ import org.scalatest.FunSuite
 import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedRelease
 import org.tudelft.plugins.clearlydefined.resources.ClearlyDefinedPackageSnapshot
 import org.json4s.jackson.Serialization.read
+import org.tudelft.plugins.clearlydefined.protocol.Protocol
 
 class ClearlyDefinedReleasesSourceTests extends FunSuite{
 
@@ -58,7 +59,7 @@ class ClearlyDefinedReleasesSourceTests extends FunSuite{
 
     // Act
     val dateTime = tenCDReleases(0)._meta.updated
-    val parsedDateTime = cdrs.dateFormat.parse(dateTime)
+    val parsedDateTime = Protocol.getDate(dateTime)
 
     // Assert
     assert(parsedDateTime.isInstanceOf[Date])

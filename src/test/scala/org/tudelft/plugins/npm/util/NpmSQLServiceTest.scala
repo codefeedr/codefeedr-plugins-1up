@@ -1,6 +1,7 @@
 package org.tudelft.plugins.npm.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.EnvironmentSettings
 import org.apache.flink.table.api.scala.StreamTableEnvironment
@@ -12,6 +13,7 @@ import org.tudelft.plugins.npm.protocol.ProtocolTest
 class NpmSQLServiceTest extends AnyFunSuite {
 
   val env = StreamExecutionEnvironment.getExecutionEnvironment
+  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
   val tEnv = StreamTableEnvironment.create(env)
 
