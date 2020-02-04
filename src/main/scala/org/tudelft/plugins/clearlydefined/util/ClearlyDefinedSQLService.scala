@@ -134,22 +134,7 @@ object ClearlyDefinedSQLService {
         })
       })
     tEnv.registerDataStream(describedToolsTableName,toolName_pojostream)
-    /*
-     def registerNpmKeywordsTable(stream: DataStream[NpmReleaseExtPojo], tEnv: StreamTableEnvironment) = {  // OK
-      implicit val typeInfo = TypeInformation.of(classOf[NpmKeyWordPojoExt])                                // OK
-      val keywords_pojostream : DataStream[NpmKeyWordPojoExt] = stream
-        .filter(x => x.project.keywords != null)
-        .flatMap(x => {
-          x.project.keywords.map(y => {
-          val pojo_ext = new NpmKeyWordPojoExt()
-          pojo_ext.id = x.project._id
-          pojo_ext.keyword = y.keyword
-          pojo_ext
-          })
-        })
-        tEnv.registerDataStream(npm_keywordsTableName, keywords_pojostream)
-    }
-     */
+    
   }
 
 
