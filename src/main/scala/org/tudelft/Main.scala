@@ -57,10 +57,17 @@ object Main {
         | GROUP BY HOP(updated, INTERVAL '1' HOUR, INTERVAL '1' DAY), updated, name, schemaVersion
         |""".stripMargin
 
-//    val releaseSource = new MavenReleasesStage()
+    val mavenQuery =
+      """
+        | SELECT title, pubDate
+        | FROM Maven
+        | GROUP BY HOP(pubDate, INTERVAL '1' HOUR, INTERVAL '1' DAY), pubDate, title
+        |""".stripMargin
+
+    val releaseSource = new MavenReleasesStage()
 //    val jsonStage = new JsonExitStage[MavenRelease]
-//    val enrichReleases = new MavenReleasesExtStage()
-//    val sqlStage = SQLStage.createSQLStage[MavenReleaseExt](query)
+    val enrichReleases = new MavenReleasesExtStage()
+    val sqlStage = new SQLStage[MavenReleaseExt](mavenQuery)
 
     val cdSource = new ClearlyDefinedReleasesStage()
     val cdSQLStage = new SQLStage[ClearlyDefinedRelease](cdQuery)
@@ -81,7 +88,8 @@ object Main {
       .setBufferProperty(KafkaBuffer.ZOOKEEPER, "localhost:2181")
       .setBufferProperty("message.max.bytes", "41943040") // max message size is 40mb
       .setBufferProperty("max.request.size", "41943040") // max message size is 40 mb
-      .edge(cdSource, cdSQLStage)
+      .edge(releaseSource, enrichReleases)
+      .edge(enrichReleases, sqlStage)
       .build()
       .startMock
   }

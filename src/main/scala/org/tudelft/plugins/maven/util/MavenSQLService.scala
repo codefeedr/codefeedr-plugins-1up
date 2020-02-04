@@ -1,8 +1,10 @@
 package org.tudelft.plugins.maven.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.table.api.scala.StreamTableEnvironment
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.table.api.scala._
 import org.tudelft.plugins.maven.protocol.Protocol._
 
 import scala.reflect.runtime.universe._
@@ -21,16 +23,28 @@ object MavenSQLService {
   def registerTables[T: TypeTag](stream: DataStream[T], tEnv: StreamTableEnvironment): Unit = stream match {
     case _ if typeOf[T] <:< typeOf[MavenReleaseExtPojo] => {
       val releasesStream = stream.asInstanceOf[DataStream[MavenReleaseExtPojo]]
-      tEnv.registerDataStream(rootTableName, releasesStream)
 
-      this.registerProjectTable(releasesStream, tEnv)
-      this.registerParentTable(releasesStream, tEnv)
-      this.registerOrganizationTable(releasesStream, tEnv)
-      this.registerIssueManagementTable(releasesStream, tEnv)
-      this.registerSCMTable(releasesStream, tEnv)
-      this.registerDependenciesTable(releasesStream, tEnv)
-      this.registerLicensesTable(releasesStream, tEnv)
-      this.registerRepositoriesTable(releasesStream, tEnv)
+      val timestampedStream = releasesStream.assignTimestampsAndWatermarks(
+        new BoundedOutOfOrdernessTimestampExtractor[MavenReleaseExtPojo](Time.seconds(10)) {
+          override def extractTimestamp(element: MavenReleaseExtPojo): Long = element.pubDate
+        })
+
+      tEnv.registerDataStream(rootTableName, timestampedStream,
+        'title,
+        'link,
+      'description,
+      'pubDate.rowtime,
+      'guid_tag,
+      'project)
+
+      this.registerProjectTable(timestampedStream, tEnv)
+      this.registerParentTable(timestampedStream, tEnv)
+      this.registerOrganizationTable(timestampedStream, tEnv)
+      this.registerIssueManagementTable(timestampedStream, tEnv)
+      this.registerSCMTable(timestampedStream, tEnv)
+      this.registerDependenciesTable(timestampedStream, tEnv)
+      this.registerLicensesTable(timestampedStream, tEnv)
+      this.registerRepositoriesTable(timestampedStream, tEnv)
     }
 
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
