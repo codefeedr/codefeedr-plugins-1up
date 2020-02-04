@@ -1,6 +1,13 @@
 package org.tudelft.plugins.clearlydefined.protocol
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.util.{Calendar, Date}
+
 object Protocol {
+
+  /** Date format used in ClearlyDefined */
+  val dateFormats = List("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
 
   case class ClearlyDefinedRelease(described: CDDescribed,
                                    licensed: CDLicensed,
@@ -14,6 +21,10 @@ object Protocol {
     var coordinates: CDCoordinatesPojo = _
     var _meta: CD_metaPojo = _
     var scores: CDScoresPojo = _
+  }
+
+  class ClearlyDefinedReleasePojoExt extends ClearlyDefinedReleasePojo {
+    var name: String = _
   }
 
   object ClearlyDefinedReleasePojo {
@@ -46,10 +57,15 @@ object Protocol {
     var issueTracker: String = _
     var hashes: CDDescribedHashesPojo = _
     var files: Int = _
-    var tools: List[String] = _
+    //var tools: List[String] = _
+    var tools: List[ToolPojo] = _
     var toolScore: CDDescribedToolScorePojo = _
     var sourceLocation: CDDescribedSourceLocationPojo = _
     var score: CDDescribedScorePojo = _
+  }
+
+  class CDDescribedPojoExt extends CDDescribedPojo {
+    var name: String = _
   }
 
   object CDDescribedPojo {
@@ -61,7 +77,8 @@ object Protocol {
       pojo.issueTracker = cdDescribed.issueTracker.orNull
       pojo.hashes = CDDescribedHashesPojo.fromCDDescribedHashes(cdDescribed.hashes)
       pojo.files = cdDescribed.files
-      pojo.tools = cdDescribed.tools
+      //pojo.tools = cdDescribed.tools
+      pojo.tools = cdDescribed.tools.map(toolname => ToolPojo.fromToolAsString(toolname))
       pojo.toolScore = CDDescribedToolScorePojo.fromCDDescribedToolScore(cdDescribed.toolScore)
 
       // Set the source location
@@ -84,6 +101,10 @@ object Protocol {
     var download: String = _
   }
 
+  class CDDescribedUrlsPojoExt extends CDDescribedUrlsPojo {
+    var name: String = _
+  }
+
   object CDDescribedUrlsPojo {
     def fromCDDescribedUrls(cdDescribedUrls: CDDescribedUrls): CDDescribedUrlsPojo = {
       val pojo = new CDDescribedUrlsPojo
@@ -104,12 +125,32 @@ object Protocol {
     var sha256: String = _
   }
 
+  class CDDescribedHashesPojoExt extends CDDescribedHashesPojo {
+    var name: String = _
+  }
+
   object CDDescribedHashesPojo {
     def fromCDDescribedHashes(cdDescribedHashes: CDDescribedHashes): CDDescribedHashesPojo = {
       val pojo = new CDDescribedHashesPojo
       pojo.gitSha = cdDescribedHashes.gitSha.orNull
       pojo.sha1 = cdDescribedHashes.sha1.orNull
       pojo.sha256 = cdDescribedHashes.sha256.orNull
+      pojo
+    }
+  }
+
+  class ToolPojo extends Serializable {
+    var toolname : String = _
+  }
+
+  class ToolPojoExt extends ToolPojo {
+    var id : String = _
+  }
+
+  object ToolPojo {
+    def fromToolAsString(toolname : String) : ToolPojo = {
+      val pojo = new ToolPojo()
+      pojo.toolname = toolname
       pojo
     }
   }
@@ -122,6 +163,10 @@ object Protocol {
     var total: Int = _
     var date: Int = _
     var source: Int = _
+  }
+
+  class CDDescribedToolScorePojoExt extends CDDescribedToolScorePojo {
+    var name: String = _
   }
 
   object CDDescribedToolScorePojo {
@@ -150,6 +195,10 @@ object Protocol {
     var url: String = _
   }
 
+  class CDDescribedSourceLocationPojoExt extends CDDescribedSourceLocationPojo {
+    var packageName: String = _
+  }
+
   object CDDescribedSourceLocationPojo {
     def fromCDDescribedSourceLocation(cdDescribedSourceLocation: CDDescribedSourceLocation): CDDescribedSourceLocationPojo = {
       val pojo = new CDDescribedSourceLocationPojo
@@ -173,6 +222,10 @@ object Protocol {
     var source: Int = _
   }
 
+  class CDDescribedScorePojoExt extends CDDescribedScorePojo {
+    var name: String = _
+  }
+
   object CDDescribedScorePojo {
     def fromCDDescribedScore(cdDescribedScore: CDDescribedScore): CDDescribedScorePojo = {
       val pojo = new CDDescribedScorePojo
@@ -193,6 +246,10 @@ object Protocol {
     var toolScore: CDLicensedToolScorePojo = _
     var facets: CDLicensedFacetsPojo = _
     var score: CDLicensedScorePojo = _
+  }
+
+  class CDLicensedPojoExt extends CDLicensedPojo {
+    var name: String = _
   }
 
   object CDLicensedPojo {
@@ -224,6 +281,10 @@ object Protocol {
     var texts: Int = _
   }
 
+  class CDLicensedToolScorePojoExt extends CDLicensedToolScorePojo {
+    var name: String = _
+  }
+
   object CDLicensedToolScorePojo {
     def fromCDLicensedToolScore(cdLicensedToolScore: CDLicensedToolScore): CDLicensedToolScorePojo = {
       val pojo = new CDLicensedToolScorePojo
@@ -243,6 +304,10 @@ object Protocol {
     var core: CDLFCorePojo = _
   }
 
+  class CDLicensedFacetsPojoExt extends CDLicensedFacetsPojo {
+    var name: String = _
+  }
+
   object CDLicensedFacetsPojo {
     def fromCDLicensedFacets(cdLicensedFacets: CDLicensedFacets): CDLicensedFacetsPojo = {
       val pojo = new CDLicensedFacetsPojo
@@ -259,6 +324,10 @@ object Protocol {
     var attribution: CDLFCoreAttributionPojo = _
     var discovered: CDLFCoreDiscoveredPojo = _
     var files: Int = _
+  }
+
+  class CDLFCorePojoExt extends CDLFCorePojo {
+    var name: String = _
   }
 
   object CDLFCorePojo {
@@ -335,6 +404,10 @@ object Protocol {
     var texts: Int = _
   }
 
+  class CDLicensedScorePojoExt extends CDLicensedScorePojo {
+    var name: String = _
+  }
+
   object CDLicensedScorePojo {
     def fromCDLicensedScore(cdLicensedScore: CDLicensedScore): CDLicensedScorePojo = {
       val pojo = new CDLicensedScorePojo
@@ -379,16 +452,38 @@ object Protocol {
 
   class CD_metaPojo extends Serializable {
     var schemaVersion: String = _
-    var updated: String = _
+    var updated: Timestamp = _
+  }
+
+  class CD_metaPojoExt extends CD_metaPojo {
+    var name: String = _
   }
 
   object CD_metaPojo {
     def fromCD_meta(cd_meta: CD_meta): CD_metaPojo = {
       val pojo = new CD_metaPojo
       pojo.schemaVersion = cd_meta.schemaVersion
-      pojo.updated = cd_meta.updated
+
+      val dateField: Date = getDate(cd_meta.updated)
+
+      val cal: Calendar   = Calendar.getInstance
+      cal.setTime(dateField)
+      val time = new Timestamp(cal.getTimeInMillis)
+
+      pojo.updated = time
       pojo
     }
+  }
+
+  def getDate(field: String): Date = {
+    var dateField: Date = null
+    for(dateFormat <- dateFormats) {
+      try {
+        dateField = new SimpleDateFormat(dateFormat).parse(field)
+      }
+    }
+    if (dateField == null) println("Can't parse date")
+    dateField
   }
 
   case class CDScores(effective: Int,
@@ -397,6 +492,10 @@ object Protocol {
   class CDScoresPojo extends Serializable {
     var effective: Int = _
     var tool: Int = _
+  }
+
+  class CDScoresPojoExt extends CDScoresPojo {
+    var name: String = _
   }
 
   object CDScoresPojo {

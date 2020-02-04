@@ -1,8 +1,12 @@
 package org.tudelft.plugins.cargo.operators
 
 import java.text.SimpleDateFormat
+import java.sql.Timestamp
+import java.time.LocalDateTime
 import java.util.Date
+import java.util.Calendar
 
+import org.joda.time.format.DateTimeFormat
 import org.tudelft.plugins.cargo.protocol.Protocol._
 import spray.json.{JsArray, JsBoolean, JsNumber, JsObject, JsString, JsValue}
 
@@ -95,11 +99,11 @@ object JsonParser {
     try {
       val id              : String         = this.getStringFieldFromCrate(jsObject, "id").get
       val name            : String         = this.getStringFieldFromCrate(jsObject, "name").get
-      val updated_at      : Date           = this.getDateFieldFromCrate(jsObject, "updated_at").get
+      val updated_at      : Timestamp      = this.getDateFieldFromCrate(jsObject, "updated_at").get
       val versions        : List[Int]      = this.getListOfIntsFieldFromCrate(jsObject, "versions").get
       val keywords        : List[String]   = this.getListOfStringsFieldFromCrate(jsObject, "keywords").get
       val categories      : List[String]   = this.getListOfStringsFieldFromCrate(jsObject, "categories").get
-      val created_at      : Date           = this.getDateFieldFromCrate(jsObject, "created_at").get
+      val created_at      : Timestamp       = this.getDateFieldFromCrate(jsObject, "created_at").get
       val downloads       : Int            = this.getIntFieldFromCrate(jsObject, "downloads").get
       val recent_downloads: Option[Int]    = this.getIntFieldFromCrate(jsObject, "recent_downloads")
       val max_version     : String         = this.getStringFieldFromCrate(jsObject, "max_version").get
@@ -135,8 +139,8 @@ object JsonParser {
       val num         : String  = this.getStringFieldFromCrate(jsObject, "num").get
       val dl_path     : String  = this.getStringFieldFromCrate(jsObject, "dl_path").get
       val readme_path : String  = this.getStringFieldFromCrate(jsObject, "readme_path").get
-      val updated_at  : Date    = this.getDateFieldFromCrate(jsObject, "updated_at").get
-      val created_at  : Date    = this.getDateFieldFromCrate(jsObject, "created_at").get
+      val updated_at  : Timestamp = this.getDateFieldFromCrate(jsObject, "updated_at").get
+      val created_at  : Timestamp = this.getDateFieldFromCrate(jsObject, "created_at").get
       val downloads   : Int     = this.getIntFieldFromCrate(jsObject, "downloads").get
       val features    : CrateVersionFeatures = new CrateVersionFeatures // this is always empty
       val yanked      : Boolean = this.getBoolFieldFromCrate(jsObject, "yanked").get
@@ -306,14 +310,20 @@ object JsonParser {
     }
   }
 
-  def getDateFieldFromCrate(jsObject: JsObject, field: String): Option[Date] = {
+  def getDateFieldFromCrate(jsObject: JsObject, field: String): Option[Timestamp] = {
     try {
       val fieldValue: String = jsObject.fields(field).asInstanceOf[JsString].value
+      val dateField: Date = dateFormat.parse(fieldValue)
+      val cal = Calendar.getInstance
 
-      Some(dateFormat.parse(fieldValue))
+      cal.setTime(dateField)
+      val time = new Timestamp(cal.getTimeInMillis)
+
+      Some(time)
     }
     catch {
       case _: Throwable =>
+        println("Failed parsing the Date")
         None
     }
   }

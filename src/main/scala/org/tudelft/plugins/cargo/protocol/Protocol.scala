@@ -1,9 +1,11 @@
 package org.tudelft.plugins.cargo.protocol
 
-import java.util.Date
+import java.sql.Timestamp
 
 object Protocol extends Enumeration {
 
+  case class CrateFromPoll(id: String,
+                           updated_at: Timestamp)
 
   case class CrateRelease(crate: Crate,
                           versions: List[CrateVersion],
@@ -43,12 +45,12 @@ object Protocol extends Enumeration {
 
   case class Crate(id: String,
                    name: String,
-                   updated_at: Date,
+                   updated_at: Timestamp,
                    versions: List[Int],
                    keywords: List[String],
                    categories: List[String],
                    //badges: Option[List[String]], //Unimportant information / Too extensive, See natvis-pdbs
-                   created_at: Date,
+                   created_at: Timestamp,
                    downloads: Int, // Assuming no more than 2B downloads
                    recent_downloads: Option[Int],
                    max_version: String,
@@ -63,11 +65,11 @@ object Protocol extends Enumeration {
   class CratePojo extends Serializable {
     var id: String = _
     var name: String = _
-    var updated_at: Long = _
+    var updated_at: Timestamp = _
     var versions: List[Int] = _
     var keywords: List[String] = _
     var categories: List[String] = _
-    var created_at: Long = _
+    var created_at: Timestamp = _
     var downloads: Int = _
     var recent_downloads: Int = _
     var max_version: String = _
@@ -84,11 +86,11 @@ object Protocol extends Enumeration {
       val pojo = new CratePojo
       pojo.id = crate.id
       pojo.name = crate.name
-      pojo.updated_at = crate.updated_at.getTime
+      pojo.updated_at = crate.updated_at
       pojo.versions = crate.versions
       pojo.keywords = crate.keywords
       pojo.categories = crate.categories
-      pojo.created_at = crate.created_at.getTime
+      pojo.created_at = crate.created_at
       pojo.downloads = crate.downloads
       if(crate.recent_downloads.isDefined) {
         pojo.recent_downloads = crate.recent_downloads.get
@@ -142,8 +144,8 @@ object Protocol extends Enumeration {
                           num: String,
                           dl_path: String,
                           readme_path: String,
-                          updated_at: Date,
-                          created_at: Date,
+                          updated_at: Timestamp,
+                          created_at: Timestamp,
                           downloads: Int,
                           features: CrateVersionFeatures,
                           yanked: Boolean,
@@ -159,8 +161,8 @@ object Protocol extends Enumeration {
     var num: String = _
     var dl_path: String = _
     var readme_path: String = _
-    var updated_at: Long = _
-    var created_at: Long = _
+    var updated_at: Timestamp = _
+    var created_at: Timestamp = _
     var downloads: Int = _
     var features: CrateVersionFeaturesPojo = _
     var yanked: Boolean = _
@@ -178,8 +180,8 @@ object Protocol extends Enumeration {
       pojo.num = crateVersion.num
       pojo.dl_path = crateVersion.dl_path
       pojo.readme_path = crateVersion.readme_path
-      pojo.updated_at = crateVersion.updated_at.getTime
-      pojo.created_at = crateVersion.created_at.getTime
+      pojo.updated_at = crateVersion.updated_at
+      pojo.created_at = crateVersion.created_at
       pojo.downloads = crateVersion.downloads
       pojo.features = CrateVersionFeaturesPojo.fromCrateVersionFeatures(crateVersion.features)
       pojo.yanked = crateVersion.yanked

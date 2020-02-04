@@ -1,9 +1,12 @@
 package org.tudelft.plugins.npm.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.table.api.scala.StreamTableEnvironment
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.table.api.scala._
 import org.tudelft.plugins.npm.protocol.Protocol._
+
 import scala.reflect.runtime.universe._ // for TypeInformation
 
 /**
@@ -37,19 +40,28 @@ object NpmSQLService {
   def registerTables[T: TypeTag](stream: DataStream[T], tEnv: StreamTableEnvironment): Unit = stream match {
     case _ if typeOf[T] <:< typeOf[NpmReleaseExtPojo] => {
       val releasesStream = stream.asInstanceOf[DataStream[NpmReleaseExtPojo]]
-      tEnv.registerDataStream(npm_rootTableName, releasesStream)
 
-      this.registerNpmProjectTable(releasesStream, tEnv)
-      this.registerNpmDependencyTable(releasesStream, tEnv)
+      val timestampedStream = releasesStream.assignTimestampsAndWatermarks(
+        new BoundedOutOfOrdernessTimestampExtractor[NpmReleaseExtPojo](Time.seconds(10)) {
+          override def extractTimestamp(element: NpmReleaseExtPojo): Long = element.retrieveDate
+        })
+
+      tEnv.registerDataStream(npm_rootTableName, timestampedStream,
+        'name,
+        'retrieveDate.rowtime,
+        'project)
+
+      this.registerNpmProjectTable(timestampedStream, tEnv)
+      this.registerNpmDependencyTable(timestampedStream, tEnv)
       // author & contributors thus twice!
-      this.registerNpmPerson_AuthorTable(releasesStream, tEnv)
-      this.registerNpmPerson_ContributorsTable(releasesStream, tEnv)
-      this.registerNpmRepositoryTable(releasesStream, tEnv)
-      this.registerNpmBugTable(releasesStream, tEnv)
-      this.registerNpmTimeTable(releasesStream, tEnv)
+      this.registerNpmPerson_AuthorTable(timestampedStream, tEnv)
+      this.registerNpmPerson_ContributorsTable(timestampedStream, tEnv)
+      this.registerNpmRepositoryTable(timestampedStream, tEnv)
+      this.registerNpmBugTable(timestampedStream, tEnv)
+      this.registerNpmTimeTable(timestampedStream, tEnv)
       // maintainers & keywords have to be registered as table as well!!
-      this.registerNpmMaintainersTable(releasesStream, tEnv)
-      this.registerNpmKeywordsTable(releasesStream, tEnv)
+      this.registerNpmMaintainersTable(timestampedStream, tEnv)
+      this.registerNpmKeywordsTable(timestampedStream, tEnv)
     }
    case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }

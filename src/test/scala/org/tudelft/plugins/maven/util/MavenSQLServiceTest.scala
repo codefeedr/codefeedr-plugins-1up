@@ -3,6 +3,7 @@ package org.tudelft.plugins.maven.util
 import java.util.Date
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.table.api.scala.StreamTableEnvironment
 import org.apache.flink.types.Row
@@ -13,6 +14,7 @@ import org.tudelft.plugins.maven.protocol.ProtocolTest
 class MavenSQLServiceTest extends AnyFunSuite {
   //Get the required environments
   val env = StreamExecutionEnvironment.getExecutionEnvironment
+  env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
   val tEnv = StreamTableEnvironment.create(env)
 

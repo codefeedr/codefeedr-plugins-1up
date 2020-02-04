@@ -1,8 +1,10 @@
 package org.tudelft.plugins.cargo.util
 
 import org.apache.flink.api.common.typeinfo.TypeInformation
+import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala.DataStream
-import org.apache.flink.table.api.scala.StreamTableEnvironment
+import org.apache.flink.streaming.api.windowing.time.Time
+import org.apache.flink.table.api.scala._
 import org.tudelft.plugins.cargo.protocol.Protocol._
 
 import scala.reflect.runtime.universe._
@@ -26,24 +28,47 @@ object CargoSQLService {
 
   def registerTables[T: TypeTag](stream: DataStream[T], tEnv: StreamTableEnvironment): Unit = stream match {
     case _ if typeOf[T] <:< typeOf[CrateReleasePojo] =>
-      val releasesStream: DataStream[CrateReleasePojo] = stream.asInstanceOf[DataStream[CrateReleasePojo]]
-      tEnv.registerDataStream(rootTableName, releasesStream)
+      val newStream: DataStream[CrateReleasePojo] = stream.asInstanceOf[DataStream[CrateReleasePojo]]
+      tEnv.registerDataStream(rootTableName, newStream)
 
-      this.registerCrateTable(releasesStream, tEnv)
-      this.registerCrateLinksTable(releasesStream, tEnv)
-      this.registerCrateVersionTable(releasesStream, tEnv)
-      this.registerCrateVersionFeaturesTable(releasesStream, tEnv)
-      this.registerCrateVersionLinksTable(releasesStream, tEnv)
-      this.registerCrateVersionPublishedByTable(releasesStream, tEnv)
-      this.registerCrateKeywordsTable(releasesStream, tEnv)
-      this.registerCrateCategoriesTable(releasesStream, tEnv)
+      this.registerCrateTable(newStream, tEnv)
+      this.registerCrateLinksTable(newStream, tEnv)
+      this.registerCrateVersionTable(newStream, tEnv)
+      this.registerCrateVersionFeaturesTable(newStream, tEnv)
+      this.registerCrateVersionLinksTable(newStream, tEnv)
+      this.registerCrateVersionPublishedByTable(newStream, tEnv)
+      this.registerCrateKeywordsTable(newStream, tEnv)
+      this.registerCrateCategoriesTable(newStream, tEnv)
 
     case _: T => print("Have not implemented registering a table for object of type " + typeOf[T].toString)
   }
 
   def registerCrateTable(stream: DataStream[CrateReleasePojo], tEnv: StreamTableEnvironment): Unit = {
     val crateStream: DataStream[CratePojo] = stream.map(x => x.crate)
-    tEnv.registerDataStream(crateTableName, crateStream)
+
+    val timestampedStream = crateStream.assignTimestampsAndWatermarks(
+      new BoundedOutOfOrdernessTimestampExtractor[CratePojo](Time.seconds(10)) {
+        override def extractTimestamp(element: CratePojo): Long = element.updated_at.getTime
+      })
+
+    tEnv.registerDataStream(crateTableName, timestampedStream,
+      'id,
+      'name,
+      'updated_at.rowtime,
+      'versions,
+      'keywords,
+      'categories,
+      'created_at,
+      'downloads,
+      'recent_downloads,
+      'max_version,
+      'description,
+      'homepage,
+      'documentation,
+      'repository,
+      'links,
+      'exact_match
+      )
   }
 
   def registerCrateLinksTable(stream: DataStream[CrateReleasePojo], tEnv: StreamTableEnvironment): Unit = {

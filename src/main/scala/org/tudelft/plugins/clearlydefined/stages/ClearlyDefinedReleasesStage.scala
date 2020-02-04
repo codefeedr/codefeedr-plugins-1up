@@ -9,7 +9,7 @@ import org.tudelft.plugins.clearlydefined.protocol.Protocol.ClearlyDefinedReleas
 
 /** fetches real-time releases from ClearlyDefined */
 class ClearlyDefinedReleasesStage(stageId: String = "clearlydefined_releases_min",
-                         sourceConfig: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig())
+                         sourceConfig: ClearlyDefinedSourceConfig = ClearlyDefinedSourceConfig(30000, -1, 32))
   extends InputStage[ClearlyDefinedRelease](Some(stageId)){
 
   /** Fetches [[ClearlyDefinedRelease]] from real-time ClearlyDefined feed.
