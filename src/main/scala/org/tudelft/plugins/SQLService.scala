@@ -38,7 +38,7 @@ object SQLService {
     env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
-    StreamTableEnvironment.create(env, settings)
+    StreamTableEnvironment.create(env)
   }
 
   /**
@@ -55,7 +55,7 @@ object SQLService {
     // Just for printing purposes, in reality you would need something other than Row
     implicit val typeInfo = TypeInformation.of(classOf[Row])
 
-    tEnv.toAppendStream(queryTable)(typeInfo).print()
+    tEnv.toRetractStream(queryTable)(typeInfo).filter(x => x._1).map(x => x._2).print()
 
     env.execute()
   }
